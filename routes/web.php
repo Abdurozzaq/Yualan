@@ -29,6 +29,7 @@ use App\Models\PricingPlan;
 use App\Models\SaasSetting;
 use App\Http\Controllers\EmployeeController;
 use App\Models\Tenant;
+use App\Http\Controllers\AccurateController;
 
 Route::get('/', function () {
     $plans = PricingPlan::query()
@@ -303,7 +304,22 @@ Route::middleware(['auth', 'tenant.access'])->group(function () {
     Route::get('/{tenantSlug}/reports/product-margin', [ReportController::class, 'productMargin'])->name('reports.product-margin');
 });
 
-require __DIR__.'/settings.php';
-require __DIR__.'/auth.php';
+Route::middleware(['auth', 'tenant.access'])->group(function () {
+    Route::get('/{tenantSlug}/accurate/auth', [\App\Http\Controllers\AccurateController::class, 'redirectToAccurate'])->name('accurate.auth');
+    Route::get('/{tenantSlug}/accurate/callback', [AccurateController::class, 'handleCallback'])->name('accurate.callback');
+    Route::get('/{tenantSlug}/accurate/oauth', [AccurateController::class, 'redirectToAccurate'])->name('accurate.oauth.redirect');
+});
+
+// Accurate Online login page
+Route::get('/accurate/login', [AccurateController::class, 'showLogin'])->name('accurate.login');
+// Accurate Online login form submission
+Route::post('/accurate/login', [AccurateController::class, 'login'])->name('accurate.login.submit');
+Route::get('/accurate/callback', [AccurateController::class, 'handleCallbackGlobal'])->name('accurate.callback.global');
+
+Route::prefix('api/accurate')->group(function () {
+    Route::get('/db-list', [AccurateController::class, 'dbList']);
+    Route::get('/open-db', [AccurateController::class, 'openDb']);
+    Route::get('/db-check-session', [AccurateController::class, 'dbCheckSession']);
+});
 
 

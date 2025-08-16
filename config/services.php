@@ -1,7 +1,6 @@
 <?php
 
 return [
-
     /*
     |--------------------------------------------------------------------------
     | Third Party Services
@@ -35,4 +34,9 @@ return [
         ],
     ],
 
+    'accurate' => [
+        'client_id' => env('ACCURATE_CLIENT_ID'),
+        'client_secret' => env('ACCURATE_CLIENT_SECRET'),
+        'redirect_uri' => env('ACCURATE_REDIRECT_URI'),
+    ],
 ];

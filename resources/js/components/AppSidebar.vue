@@ -138,6 +138,11 @@ const mainNavItems = computed<NavItem[]>(() => {
             href: route('employees.index', { tenantSlug: tenantSlug.value }),
             icon: Users,
         });
+        items.push({
+            title: 'Export Accounting',
+            href: route('accurate.login'), // pastikan ini route inertia yang render Login.vue
+            icon: FileText,
+        });
     }
 
     return items;
