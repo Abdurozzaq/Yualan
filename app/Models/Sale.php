@@ -37,6 +37,7 @@ class Sale extends Model
         'tenant_id',
         'user_id',
         'customer_id',
+        'voucher_code',
         'invoice_number',
         'order_id',
         'midtrans_transaction_id',

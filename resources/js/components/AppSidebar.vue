@@ -103,6 +103,8 @@ const mainNavItems = computed<NavItem[]>(() => {
                 { title: 'Produk', href: route('products.index', { tenantSlug: tenantSlug.value }) },
                 { title: 'Pelanggan', href: route('customers.index', { tenantSlug: tenantSlug.value }) },
                 { title: 'Supplier', href: route('suppliers.index', { tenantSlug: tenantSlug.value }) },
+                { title: 'Voucher', href: route('vouchers.index', { tenantSlug: tenantSlug.value }) },
+                { title: 'Promo', href: route('promos.index', { tenantSlug: tenantSlug.value }) },
             ],
             icon: Folder,
             href: '' // href for parent is optional if children exist

@@ -57,6 +57,8 @@ const props = defineProps<{
     ipaymuRedirectUrl?: string;
     midtransConfigured: boolean;
     midtransClientKey?: string;
+    vouchers: Voucher[];
+    promos: Promo[];
 }>();
 
 // TypeScript: declare window.snap for Snap.js
@@ -81,6 +83,86 @@ const selectedCategory = ref<string | null>(null);
 const searchTerm = ref('');
 const cartItems = ref<SaleItemFormData[]>([]);
 const selectedCustomer = ref<string | null>(null);
+
+// Voucher & Promo UI State
+interface Voucher {
+    code: string;
+    name: string;
+    type: 'percentage' | 'percentage_max' | 'nominal';
+    value: number;
+    max_nominal?: number;
+    expiry_date: string;
+}
+interface Promo {
+    code: string;
+    name: string;
+    type: 'buyxgetx' | 'buyxgetanother';
+    buyQty: number;
+    getQty: number;
+    productId?: string;
+    anotherProductId?: string;
+    expiryDate: string;
+    typeLabel: string;
+}
+
+const availableVouchers = ref<Voucher[]>(props.vouchers || []);
+const selectedVoucherCodes = ref<string[]>([]);
+const voucherInputCode = ref('');
+const voucherError = ref('');
+const selectedVouchers = computed(() => {
+    return selectedVoucherCodes.value
+        .map(code => availableVouchers.value.find(v => v.code === code))
+        .filter((v): v is Voucher => !!v);
+});
+
+const handleVoucherInput = async () => {
+    voucherError.value = '';
+    const code = voucherInputCode.value.trim();
+    if (!code) {
+        voucherError.value = 'Masukkan kode voucher.';
+        return;
+    }
+    if (selectedVoucherCodes.value.includes(code)) {
+        voucherError.value = 'Voucher sudah dipilih.';
+        return;
+    }
+    if (selectedVoucherCodes.value.length >= 1) {
+        voucherError.value = 'Maksimal 1 voucher.';
+        return;
+    }
+    // Fetch voucher by code from backend for latest status
+    try {
+        const res = await fetch(route('sales.getVoucherByCode', { tenantSlug: props.tenantSlug, code }), {
+            method: 'GET',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            credentials: 'same-origin',
+        });
+        const data = await res.json();
+        if (!data.voucher) {
+            voucherError.value = 'Voucher tidak ditemukan.';
+            return;
+        }
+        if (data.voucher.used) {
+            voucherError.value = 'Voucher sudah digunakan.';
+            return;
+        }
+        // Valid voucher, add to selected
+        selectedVoucherCodes.value.push(data.voucher.code);
+        // Optionally update availableVouchers
+        if (!availableVouchers.value.find(v => v.code === data.voucher.code)) {
+            availableVouchers.value.push(data.voucher);
+        }
+        voucherInputCode.value = '';
+    } catch (e) {
+        voucherError.value = 'Gagal validasi voucher.';
+    }
+};
+
+const availablePromos = ref<Promo[]>(props.promos || []);
+const selectedPromoCode = ref<string | null>(null);
+const selectedPromo = computed(() => {
+    return availablePromos.value.find(p => p.code === selectedPromoCode.value) || null;
+});
 
 // Form data for sale submission
 const form = useForm({
@@ -164,10 +246,27 @@ const overallSubtotal = computed(() => {
     return cartItems.value.reduce((sum, item) => sum + getItemSubtotal(item), 0);
 });
 
-// Calculate total after discount and tax
+// Calculate total voucher discount for up to 3 vouchers
+const voucherDiscount = computed(() => {
+    const sub = overallSubtotal.value;
+    let total = 0;
+    selectedVouchers.value.forEach(voucher => {
+        if (!voucher) return;
+        if (voucher.type === 'percentage') {
+            total += sub * (voucher.value / 100);
+        } else if (voucher.type === 'percentage_max') {
+            const percent = sub * (voucher.value / 100);
+            total += voucher.max_nominal ? Math.min(percent, voucher.max_nominal) : percent;
+        } else if (voucher.type === 'nominal') {
+            total += voucher.value;
+        }
+    });
+    return total;
+});
+
 const totalAmount = computed(() => {
     const sub = overallSubtotal.value;
-    const discounted = sub - form.discount_amount;
+    const discounted = sub - form.discount_amount - voucherDiscount.value;
     const taxed = discounted + (discounted * (form.tax_rate / 100));
     return Math.max(0, taxed); // Ensure total is not negative
 });
@@ -288,7 +387,7 @@ const handleMidtransPay = (snapToken: any) => {
     }
 };
 
-const submitSale = () => {
+const submitSale = async () => {
     if (cartItems.value.length === 0) {
         alert('Keranjang belanja kosong. Tambahkan produk terlebih dahulu.');
         return;
@@ -301,6 +400,36 @@ const submitSale = () => {
     }));
     form.customer_id = selectedCustomer.value;
 
+    // Add voucher discount to discount_amount automatically
+    if (selectedVouchers.value.length > 0) {
+        form.discount_amount = (form.discount_amount || 0) + voucherDiscount.value;
+    }
+
+    // If vouchers are selected, validate again and mark as used
+    for (const voucher of selectedVouchers.value) {
+        if (!voucher) continue;
+        try {
+            const res = await fetch(route('sales.useVoucher', { tenantSlug: props.tenantSlug, code: voucher.code }), {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                },
+                credentials: 'same-origin',
+                body: JSON.stringify({ code: voucher.code }),
+            });
+            const data = await res.json();
+            if (!data.success) {
+                alert(data.message || 'Voucher gagal dipakai.');
+                return;
+            }
+        } catch (e) {
+            alert('Gagal memproses voucher.');
+            return;
+        }
+    }
+
     // Adjust paid_amount for iPaymu before submission
     if (form.payment_method === 'ipaymu') {
         form.paid_amount = totalAmount.value;
@@ -312,7 +441,7 @@ const submitSale = () => {
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
             },
             credentials: 'same-origin',
-            body: JSON.stringify(form.data()),
+            body: JSON.stringify({ ...form.data(), voucher_code: selectedVoucher.value?.code || null }),
         })
         .then(async res => {
             let data;
@@ -339,6 +468,8 @@ const submitSale = () => {
     }
 
     // Untuk cash dan midtrans tetap pakai form.post
+    // Add voucher_codes to form data for backend
+    (form as any).voucher_codes = selectedVoucherCodes.value;
     form.post(route('sales.store', { tenantSlug: props.tenantSlug }), {
         onSuccess: (page) => {
             if (form.payment_method === 'midtrans' && page.props.snapToken) {
@@ -347,6 +478,8 @@ const submitSale = () => {
                 cartItems.value = [];
                 form.reset();
                 selectedCustomer.value = null;
+                selectedVoucherCodes.value = [];
+                voucherInputCode.value = '';
                 alert('Pesanan berhasil dibuat!');
             }
         },
@@ -505,27 +638,71 @@ watch(totalAmount, (newTotal) => {
                 </div>
 
                 <!-- Summary Section -->
-                <div class="border-t pt-4 mt-auto">
-                    <div class="flex justify-between items-center mb-2">
-                        <Label for="customer" class="text-gray-700 dark:text-gray-300">Pelanggan (Opsional)</Label>
-                        <Select v-model="selectedCustomer">
-                            <SelectTrigger class="w-[200px]">
-                                <SelectValue placeholder="Pilih Pelanggan" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem :value="null">Umum</SelectItem>
-                                <SelectItem v-for="customer in customers" :key="customer.id" :value="customer.id">
-                                    {{ customer.name }}
-                                </SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
 
+                <div class="border-t pt-4 mt-auto">
+                    <!-- Subtotal -->
                     <div class="flex justify-between items-center text-gray-700 dark:text-gray-300 mb-2">
                         <span>Subtotal:</span>
                         <span class="font-semibold">{{ formatCurrency(overallSubtotal) }}</span>
                     </div>
 
+                    <!-- Voucher & Promo Section -->
+                    <div class="mb-4">
+                        <Label for="voucher" class="text-gray-700 dark:text-gray-300 flex items-center gap-1">
+                            <ReceiptText class="h-4 w-4" /> Voucher:
+                        </Label>
+                        <div class="flex gap-2 mt-1">
+                            <Input
+                                id="voucher_code"
+                                type="text"
+                                v-model="voucherInputCode"
+                                placeholder="Masukkan kode voucher"
+                                class="flex-1"
+                            />
+                            <Button @click="handleVoucherInput" type="button">Cek Voucher</Button>
+                        </div>
+                        <div v-if="voucherError" class="text-red-500 text-sm mt-1">{{ voucherError }}</div>
+                        <div v-if="selectedVouchers.length > 0" class="mt-2 space-y-2">
+                            <div v-for="voucher in selectedVouchers" :key="voucher?.code" class="p-2 rounded bg-blue-50 dark:bg-blue-900 text-blue-700 dark:text-blue-200 flex items-center gap-2">
+                                <ReceiptText class="h-4 w-4" />
+                                <span v-if="voucher" class="font-semibold">{{ voucher.name }}</span>
+                                <span v-if="voucher" class="text-xs">({{ voucher.type }})</span>
+                                <span v-if="voucher" class="text-xs text-gray-400 ml-auto">Exp: {{ voucher.expiry_date }}</span>
+                                <Button v-if="voucher" size="sm" variant="ghost" class="text-red-500 ml-2" @click="selectedVoucherCodes = selectedVoucherCodes.filter(c => c !== voucher.code)">Hapus</Button>
+                            </div>
+                        </div>
+                        <div v-if="voucherDiscount > 0" class="text-green-600 dark:text-green-400 text-sm mt-1">Diskon voucher: -{{ formatCurrency(voucherDiscount) }}</div>
+                    </div>
+                    <div class="mb-4">
+                        <Label for="promo" class="text-gray-700 dark:text-gray-300 flex items-center gap-1">
+                            <Percent class="h-4 w-4" /> Promo:
+                        </Label>
+                        <Select v-model="selectedPromoCode">
+                            <SelectTrigger class="w-full mt-1">
+                                <SelectValue placeholder="Pilih Promo" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem :value="null">Tidak Pakai Promo</SelectItem>
+                                <SelectItem v-for="promo in availablePromos" :key="promo.code" :value="promo.code">
+                                    <div class="flex flex-col">
+                                        <span class="font-semibold">{{ promo.name }}</span>
+                                        <span class="text-xs text-gray-500">{{ promo.typeLabel }}</span>
+                                        <span class="text-xs text-gray-400">Exp: {{ promo.expiryDate }}</span>
+                                    </div>
+                                </SelectItem>
+                            </SelectContent>
+                        </Select>
+                        <div v-if="selectedPromo" class="mt-2 p-2 rounded bg-green-50 dark:bg-green-900 text-green-700 dark:text-green-200">
+                            <div class="flex items-center gap-2">
+                                <Percent class="h-4 w-4" />
+                                <span class="font-semibold">{{ selectedPromo.name }}</span>
+                                <span class="text-xs">({{ selectedPromo.typeLabel }})</span>
+                                <span class="text-xs text-gray-400 ml-auto">Exp: {{ selectedPromo.expiryDate }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Discount -->
                     <div class="flex justify-between items-center mb-2">
                         <Label for="discount" class="text-gray-700 dark:text-gray-300 flex items-center gap-1">
                             <DollarSign class="h-4 w-4" /> Diskon:
@@ -541,6 +718,7 @@ watch(totalAmount, (newTotal) => {
                         />
                     </div>
 
+                    <!-- Tax -->
                     <div class="flex justify-between items-center mb-2">
                         <Label for="tax_rate" class="text-gray-700 dark:text-gray-300 flex items-center gap-1">
                             <Percent class="h-4 w-4" /> Pajak (%):
@@ -556,12 +734,12 @@ watch(totalAmount, (newTotal) => {
                         />
                     </div>
 
-                    <div class="flex justify-between font-bold text-2xl text-gray-900 dark:text-gray-100 border-t pt-3 mt-3">
+                    <!-- Total & Payment -->
+                    <div class="flex justify-between font-bold text-2xl text-gray-900 dark:text-gray-100 border-t pt-3 mt-3 mb-2">
                         <span>TOTAL:</span>
                         <span>{{ formatCurrency(totalAmount) }}</span>
                     </div>
-
-                    <div class="flex justify-between items-center mt-4 mb-2">
+                    <div class="flex justify-between items-center mb-2">
                         <Label for="payment_method" class="text-gray-700 dark:text-gray-300">Metode Pembayaran:</Label>
                         <Select v-model="form.payment_method">
                             <SelectTrigger class="w-[150px]">
@@ -581,6 +759,7 @@ watch(totalAmount, (newTotal) => {
                         </Select>
                     </div>
 
+                    <!-- Paid Amount & Change (Cash only) -->
                     <div v-if="form.payment_method === 'cash'" class="flex justify-between items-center mb-2">
                         <Label for="paid_amount" class="text-gray-700 dark:text-gray-300">Jumlah Dibayar:</Label>
                         <Input
@@ -592,17 +771,34 @@ watch(totalAmount, (newTotal) => {
                             :min="totalAmount"
                         />
                     </div>
-
-                    <div v-if="form.payment_method === 'cash'" class="flex justify-between font-bold text-xl text-green-600 dark:text-green-400 mb-4">
+                    <div v-if="form.payment_method === 'cash'" class="flex justify-between font-bold text-xl text-green-600 dark:text-green-400 mb-2">
                         <span>Kembalian:</span>
                         <span>{{ formatCurrency(changeAmount) }}</span>
                     </div>
 
+                    <!-- Customer (Optional) -->
+                    <div class="flex justify-between items-center mb-2">
+                        <Label for="customer" class="text-gray-700 dark:text-gray-300">Pelanggan (Opsional)</Label>
+                        <Select v-model="selectedCustomer">
+                            <SelectTrigger class="w-[200px]">
+                                <SelectValue placeholder="Pilih Pelanggan" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem :value="null">Umum</SelectItem>
+                                <SelectItem v-for="customer in customers" :key="customer.id" :value="customer.id">
+                                    {{ customer.name }}
+                                </SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+
+                    <!-- Notes (Optional) -->
                     <div class="mb-4">
                         <Label for="notes" class="text-gray-700 dark:text-gray-300">Catatan (Opsional):</Label>
                         <Textarea id="notes" v-model="form.notes" rows="2" class="mt-1" />
                     </div>
 
+                    <!-- Process Button -->
                     <Button @click="submitSale" :disabled="form.processing || cartItems.length === 0 || (form.payment_method === 'cash' && form.paid_amount < totalAmount)" class="w-full py-3 text-lg">
                         <LoaderCircle v-if="form.processing" class="h-5 w-5 animate-spin mr-2" />
                         Proses Pesanan

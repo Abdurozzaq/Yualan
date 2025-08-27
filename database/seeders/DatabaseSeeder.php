@@ -21,6 +21,7 @@ class DatabaseSeeder extends Seeder
 
         $this->call([
             SaasSettingsSeeder::class,
+            FullTenantSeeder::class
         ]);
     }
 }

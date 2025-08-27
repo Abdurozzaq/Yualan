@@ -314,6 +314,19 @@ Route::middleware(['auth', 'tenant.access'])->group(function () {
 });
 
 
+
+
+Route::middleware(['auth', 'tenant.access'])->group(function () {
+    // Voucher & Promo Management (per tenant)
+    Route::resource('{tenantSlug}/vouchers', App\Http\Controllers\VoucherController::class);
+    Route::resource('{tenantSlug}/promos', App\Http\Controllers\PromoController::class);
+
+    // Voucher API for order page
+    Route::get('/{tenantSlug}/voucher/{code}', [SaleController::class, 'getVoucherByCode'])->name('sales.getVoucherByCode');
+    Route::post('/{tenantSlug}/voucher/{code}/use', [SaleController::class, 'useVoucher'])->name('sales.useVoucher');
+});
+
+
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';
 

@@ -38,7 +38,8 @@ return Application::configure(basePath: dirname(__DIR__))
             '*/products/import',
             '*/products/import/error-rows',
             'midtrans/callback',
-            '*/sales/store'
+            '*/sales/store',
+            '*/voucher/*/use',
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

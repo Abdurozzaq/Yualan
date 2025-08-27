@@ -19,8 +19,38 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Log; // Import Log Facade
 use Illuminate\Support\Str; // Import Str for UUID in Sale model creation
 
-class SaleController extends Controller
-{
+class SaleController extends Controller {
+    /**
+     * Get voucher by code (for validation in frontend)
+     */
+    public function getVoucherByCode(Request $request, $tenantSlug, $code)
+    {
+        $tenant = \App\Models\Tenant::where('slug', $tenantSlug)->firstOrFail();
+        $voucher = \App\Models\Voucher::findByCode($tenant->id, $code);
+        if (!$voucher) {
+            return response()->json(['voucher' => null], 404);
+        }
+        return response()->json(['voucher' => $voucher]);
+    }
+
+    /**
+     * Mark voucher as used (when sale is submitted)
+     */
+    public function useVoucher(Request $request, $tenantSlug, $code)
+    {
+        $tenant = \App\Models\Tenant::where('slug', $tenantSlug)->firstOrFail();
+        $voucher = \App\Models\Voucher::findByCode($tenant->id, $code);
+        if (!$voucher) {
+            return response()->json(['success' => false, 'message' => 'Voucher tidak ditemukan.'], 404);
+        }
+        if ($voucher->used) {
+            return response()->json(['success' => false, 'message' => 'Voucher sudah digunakan.'], 400);
+        }
+        $voucher->used = true;
+        $voucher->save();
+        return response()->json(['success' => true]);
+    }
+
     /**
      * Get Sale ID (UUID) by order_id for Midtrans redirect.
      */
@@ -163,10 +193,20 @@ class SaleController extends Controller
             abort(403, 'Anda tidak memiliki akses ke tenant ini.');
         }
 
-        // Retrieve products, categories, and customers for this tenant
+        // Retrieve products, categories, customers, vouchers, promos for this tenant
         $products = Product::where('tenant_id', $tenant->id)->with('category')->get();
         $categories = Category::where('tenant_id', $tenant->id)->get();
         $customers = Customer::where('tenant_id', $tenant->id)->get();
+        $vouchers = \App\Models\Voucher::
+            // Uncomment if you add tenant_id to vouchers table:
+            // ->where('tenant_id', $tenant->id)
+            whereDate('expiry_date', '>=', now())
+            ->get();
+        $promos = \App\Models\Promo::where('is_active', true)
+            // Uncomment if you add tenant_id to promos table:
+            // ->where('tenant_id', $tenant->id)
+            ->whereDate('expiry_date', '>=', now())
+            ->get();
 
         // Check if iPaymu credentials are configured for the tenant
         $ipaymuConfigured = (bool)$tenant->ipaymu_api_key && (bool)$tenant->ipaymu_secret_key;
@@ -184,6 +224,8 @@ class SaleController extends Controller
             'ipaymuConfigured' => $ipaymuConfigured,
             'midtransConfigured' => $midtransConfigured,
             'midtransClientKey' => $midtransClientKey,
+            'vouchers' => $vouchers,
+            'promos' => $promos,
         ]);
     }
 
@@ -257,6 +299,7 @@ class SaleController extends Controller
             'tenant_id' => $tenant->id,
             'user_id' => Auth::id(), // Cashier who made the sale
             'customer_id' => $request->customer_id,
+            'voucher_code' => $request->voucher_code ?? null,
             'invoice_number' => $invoiceNumber,
             'subtotal_amount' => $subtotal,
             'discount_amount' => $discountAmount,
