@@ -252,11 +252,13 @@ class SaleController extends Controller {
             'payment_method' => ['required', 'string', 'in:cash,ipaymu,midtrans'],
             'paid_amount' => ['required', 'numeric', 'min:0'],
             'notes' => ['nullable', 'string', 'max:500'],
+            'promo_code' => ['nullable', 'string'],
         ]);
 
         // Calculate sale total based on submitted items
         $subtotal = 0;
         $saleItemsData = [];
+        $buyQtyMap = [];
         foreach ($request->items as $item) {
             $product = Product::findOrFail($item['product_id']);
             $itemSubtotal = $product->price * $item['quantity'];
@@ -274,6 +276,41 @@ class SaleController extends Controller {
                 'subtotal' => $itemSubtotal,
                 'cost_price_at_sale' => (float)$product->cost_price, // Explicitly cast to float
             ];
+
+            // Akumulasi jumlah beli untuk promo
+            $buyQtyMap[$product->id] = ($buyQtyMap[$product->id] ?? 0) + $item['quantity'];
+        }
+
+        // Ambil semua promo aktif
+        $promos = \App\Models\Promo::where('is_active', true)
+            ->where('tenant_id', $tenant->id)
+            ->whereDate('expiry_date', '>=', now())
+            ->get();
+
+        // Hitung free item dari semua promo
+        $freeItemMap = [];
+        foreach ($promos as $promo) {
+            $buy_qty = $buyQtyMap[$promo->product_id] ?? 0;
+            $multiplier = intdiv($buy_qty, $promo->buy_qty);
+            $freeProductId = $promo->type === 'buyxgetx' ? $promo->product_id : $promo->another_product_id;
+            if ($multiplier >= 1 && $freeProductId) {
+                $freeQty = $promo->get_qty * $multiplier;
+                $freeItemMap[$freeProductId] = ($freeItemMap[$freeProductId] ?? 0) + $freeQty;
+            }
+        }
+
+        // Tambahkan free item ke saleItemsData
+        foreach ($freeItemMap as $freeProductId => $qty) {
+            $freeProduct = Product::find($freeProductId);
+            if ($freeProduct && $qty > 0) {
+                $saleItemsData[] = [
+                    'product_id' => $freeProduct->id,
+                    'quantity' => $qty,
+                    'price' => 0,
+                    'subtotal' => 0,
+                    'cost_price_at_sale' => (float)$freeProduct->cost_price,
+                ];
+            }
         }
 
         $discountAmount = $request->discount_amount;
@@ -300,6 +337,7 @@ class SaleController extends Controller {
             'user_id' => Auth::id(), // Cashier who made the sale
             'customer_id' => $request->customer_id,
             'voucher_code' => $request->voucher_code ?? null,
+            'promo_code' => $request->promo_code ?? null,
             'invoice_number' => $invoiceNumber,
             'subtotal_amount' => $subtotal,
             'discount_amount' => $discountAmount,

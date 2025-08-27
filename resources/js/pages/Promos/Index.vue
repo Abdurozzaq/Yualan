@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ref as vueRef } from 'vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, usePage, useForm, Link, router } from '@inertiajs/vue3';
@@ -9,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import InputError from '@/components/InputError.vue';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 import { LoaderCircle, PlusCircle, Edit, Trash2, ChevronUp, ChevronDown, Search, XCircle } from 'lucide-vue-next';
 
 interface Promo {
@@ -65,7 +67,7 @@ const form = useForm({
     product_id: null as number | null,
     another_product_id: null as number | null,
     expiry_date: '',
-    is_active: true,
+    is_active: 'true',
     _method: 'post' as 'post' | 'put',
 });
 
@@ -87,29 +89,45 @@ const openFormDialog = (promo: Promo | null = null) => {
         form.product_id = promo.product_id || null;
         form.another_product_id = promo.another_product_id || null;
         form.expiry_date = promo.expiry_date;
-        form.is_active = promo.is_active;
+    form.is_active = promo.is_active ? 'true' : 'false';
         form._method = 'put';
     } else {
         form._method = 'post';
+    form.is_active = 'true';
     }
     isFormDialogOpen.value = true;
 };
 
 const submitForm = () => {
+    const payload = {
+        id: form.id,
+        code: form.code,
+        name: form.name,
+        type: form.type,
+        buy_qty: form.buy_qty,
+        get_qty: form.get_qty,
+        product_id: form.product_id !== null ? String(form.product_id) : null,
+        another_product_id: form.another_product_id !== null ? String(form.another_product_id) : null,
+        expiry_date: form.expiry_date,
+        is_active: form.is_active === 'true',
+        _method: form._method,
+    };
+    const handleResponse = {
+        onSuccess: () => {
+            isFormDialogOpen.value = false;
+            form.reset();
+        },
+        onError: (errors) => {
+            console.error('Form error:', errors);
+        },
+        onFinish: (visit) => {
+            // Jika terjadi redirect tanpa pesan
+        }
+    };
     if (form.id) {
-        form.post(route('promos.update', { tenantSlug: props.tenantSlug, promo: form.id }), {
-            onSuccess: () => {
-                isFormDialogOpen.value = false;
-                form.reset();
-            },
-        });
+        router.post(route('promos.update', { tenantSlug: props.tenantSlug, promo: form.id }), payload, handleResponse);
     } else {
-        form.post(route('promos.store', { tenantSlug: props.tenantSlug }), {
-            onSuccess: () => {
-                isFormDialogOpen.value = false;
-                form.reset();
-            },
-        });
+        router.post(route('promos.store', { tenantSlug: props.tenantSlug }), payload, handleResponse);
     }
 };
 
@@ -125,6 +143,12 @@ const deletePromo = () => {
             isConfirmDeleteDialogOpen.value = false;
             promoToDelete.value = null;
         },
+        onError: (errors) => {
+            console.error('Delete error:', errors);
+        },
+        onFinish: () => {
+            // Jika terjadi redirect tanpa pesan
+        }
     });
 };
 
@@ -169,8 +193,14 @@ const applySearch = () => {
 </script>
 
 <template>
+    <!-- ...existing code... -->
     <Head title="Master Promo" />
     <AppLayout :breadcrumbs="breadcrumbs">
+            <div v-if="$page.props.success" class="mb-4">
+                <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
+                    <span class="block sm:inline">{{ $page.props.success }}</span>
+                </div>
+            </div>
         <div class="flex h-full flex-1 flex-col gap-4 rounded-xl p-4 overflow-x-auto">
             <div class="flex items-center justify-between mb-4">
                 <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">
@@ -223,8 +253,8 @@ const applySearch = () => {
                             <TableCell>{{ promo.type }}</TableCell>
                             <TableCell>{{ promo.buy_qty }}</TableCell>
                             <TableCell>{{ promo.get_qty }}</TableCell>
-                            <TableCell>{{ promo.product_id ? (props.products.find(p => p.id === promo.product_id)?.name || promo.product_id) : '-' }}</TableCell>
-                            <TableCell>{{ promo.another_product_id ? (props.products.find(p => p.id === promo.another_product_id)?.name || promo.another_product_id) : '-' }}</TableCell>
+                                <TableCell>{{ promo.product_id ? ((props.products || []).find(p => p.id === promo.product_id)?.name || promo.product_id) : '-' }}</TableCell>
+                                <TableCell>{{ promo.another_product_id ? ((props.products || []).find(p => p.id === promo.another_product_id)?.name || promo.another_product_id) : '-' }}</TableCell>
                             <TableCell>{{ promo.expiry_date }}</TableCell>
                             <TableCell>
                                 <span :class="promo.is_active ? 'text-green-600' : 'text-red-600'">
@@ -270,6 +300,7 @@ const applySearch = () => {
                     </DialogDescription>
                 </DialogHeader>
                 <form @submit.prevent="submitForm" class="grid gap-4 py-4">
+                    <!-- notification removed -->
                     <div class="grid grid-cols-4 items-center gap-4">
                         <Label for="code" class="text-right">Kode</Label>
                         <Input id="code" v-model="form.code" required class="col-span-3" />
@@ -357,8 +388,8 @@ const applySearch = () => {
                                 <SelectValue placeholder="Pilih Status" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem :value="true">Aktif</SelectItem>
-                                <SelectItem :value="false">Nonaktif</SelectItem>
+                                <SelectItem value="true">Aktif</SelectItem>
+                                <SelectItem value="false">Nonaktif</SelectItem>
                             </SelectContent>
                         </Select>
                         <InputError :message="form.errors.is_active" class="col-span-4 col-start-2" />

@@ -38,6 +38,7 @@ class Sale extends Model
         'user_id',
         'customer_id',
         'voucher_code',
+        'promo_code',
         'invoice_number',
         'order_id',
         'midtrans_transaction_id',

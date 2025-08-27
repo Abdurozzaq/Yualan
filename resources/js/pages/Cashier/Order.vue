@@ -97,11 +97,11 @@ interface Promo {
     code: string;
     name: string;
     type: 'buyxgetx' | 'buyxgetanother';
-    buyQty: number;
-    getQty: number;
-    productId?: string;
-    anotherProductId?: string;
-    expiryDate: string;
+    buy_qty: number;
+    get_qty: number;
+    product_id?: string;
+    another_product_id?: string;
+    expiry_date: string;
     typeLabel: string;
 }
 
@@ -159,9 +159,62 @@ const handleVoucherInput = async () => {
 };
 
 const availablePromos = ref<Promo[]>(props.promos || []);
-const selectedPromoCode = ref<string | null>(null);
-const selectedPromo = computed(() => {
-    return availablePromos.value.find(p => p.code === selectedPromoCode.value) || null;
+// Multiple promo support
+const selectedPromoCodes = ref<string[]>([]);
+const selectedPromos = computed(() => {
+    return selectedPromoCodes.value
+        .map(code => availablePromos.value.find(p => p.code === code))
+        .filter((p): p is Promo => !!p);
+});
+
+// Promo otomatis dan notifikasi promo yang hampir aktif
+// Multiple promo support: cari semua promo yang aktif dan sesuai isi keranjang
+const activePromos = computed(() => {
+    const result: Promo[] = [];
+    for (const promo of availablePromos.value) {
+        if (promo.type === 'buyxgetx' || promo.type === 'buyxgetanother') {
+            // Hitung jumlah produk yang relevan di cart
+            let buy_qty = 0;
+            cartItems.value.forEach(item => {
+                if (item.product_id === promo.product_id) {
+                    buy_qty += item.quantity;
+                }
+            });
+            if (buy_qty >= promo.buy_qty) {
+                result.push(promo);
+            }
+        }
+    }
+    return result;
+});
+
+const showPossiblePromoAlert = ref(true);
+const possiblePromos = computed(() => {
+    // Promo yang hampir aktif (kurang produk)
+    const result: { promo: Promo; missing: number; productName?: string }[] = [];
+    for (const promo of availablePromos.value) {
+        if (promo.type === 'buyxgetx' || promo.type === 'buyxgetanother') {
+            // Cek apakah ada produk relevan di cart
+            const item = cartItems.value.find(i => i.product_id === promo.product_id);
+            const qty = item ? item.quantity : 0;
+            if (qty < promo.buy_qty && qty > 0) {
+                // Kurang berapa produk untuk dapat promo
+                const prod = props.products.find(p => p.id === promo.product_id);
+                result.push({ promo, missing: promo.buy_qty - qty, productName: prod?.name });
+            }
+        }
+    }
+    return result;
+});
+
+// Watcher: jika promo aktif, otomatis set selectedPromoCode
+// Watcher: jika ada promo aktif, otomatis set selectedPromoCodes (multiple)
+watch(activePromos, (promos) => {
+    if (promos.length > 0) {
+        selectedPromoCodes.value = promos.map(p => p.code);
+    } else {
+        selectedPromoCodes.value = [];
+    }
 });
 
 // Form data for sale submission
@@ -195,11 +248,12 @@ const filteredProducts = computed(() => {
 
 // Add product to cart
 const addToCart = (product: Product) => {
-    const existingItem = cartItems.value.find(item => item.product_id === product.id);
+    // Cari item berbayar (price > 0) di cart
+    const paidItem = cartItems.value.find(item => item.product_id === product.id && item.price > 0);
 
-    if (existingItem) {
-        if (existingItem.quantity < existingItem.stock) {
-            existingItem.quantity++;
+    if (paidItem) {
+        if (paidItem.quantity < paidItem.stock) {
+            paidItem.quantity++;
         } else {
             alert(`Stok ${product.name} tidak mencukupi.`);
         }
@@ -217,6 +271,52 @@ const addToCart = (product: Product) => {
             alert(`Produk ${product.name} sedang tidak tersedia (stok kosong).`);
         }
     }
+
+    // Reset semua free item di cart sebelum hitung promo
+    cartItems.value = cartItems.value.filter(item => item.price !== 0 || item.price === 0);
+
+    // Hitung semua promo dan akumulasi free item untuk setiap produk
+    const freeItemMap = new Map<string, number>();
+    for (const promo of availablePromos.value) {
+        const isActive = new Date(promo.expiry_date) >= new Date();
+        if (!isActive) continue;
+        let buy_qty = 0;
+        cartItems.value.forEach(item => {
+            if (item.product_id === promo.product_id && item.price > 0) {
+                buy_qty += item.quantity;
+            }
+        });
+        const multiplier = Math.floor(buy_qty / promo.buy_qty);
+        const freeProduct_id = promo.type === 'buyxgetx' ? promo.product_id : promo.another_product_id;
+        if (multiplier >= 1 && freeProduct_id) {
+            const expectedQty = promo.get_qty * multiplier;
+            // Akumulasi free item
+            freeItemMap.set(freeProduct_id, (freeItemMap.get(freeProduct_id) || 0) + expectedQty);
+        }
+    }
+    // Update cart: set quantity free item sesuai akumulasi, hapus jika tidak ada promo
+    for (const [freeProduct_id, qty] of freeItemMap.entries()) {
+        const prod = props.products.find(p => p.id === freeProduct_id);
+        if (!prod) continue;
+        const freeItem = cartItems.value.find(item => item.product_id === freeProduct_id && item.price === 0);
+        if (freeItem) {
+            freeItem.quantity = qty;
+        } else {
+            cartItems.value.push({
+                product_id: prod.id,
+                quantity: qty,
+                price: 0,
+                name: prod.name,
+                unit: prod.unit,
+                stock: prod.stock,
+            });
+        }
+    }
+    // Hapus free item yang tidak dapat promo
+    cartItems.value = cartItems.value.filter(item => {
+        if (item.price !== 0) return true;
+        return freeItemMap.has(item.product_id);
+    });
 };
 
 // Update quantity in cart
@@ -232,8 +332,8 @@ const updateCartQuantity = (item: SaleItemFormData, delta: number) => {
 };
 
 // Remove item from cart
-const removeFromCart = (productId: string) => {
-    cartItems.value = cartItems.value.filter(item => item.product_id !== productId);
+const removeFromCart = (product_id: string) => {
+    cartItems.value = cartItems.value.filter(item => item.product_id !== product_id);
 };
 
 // Calculate subtotal for each item
@@ -441,7 +541,7 @@ const submitSale = async () => {
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
             },
             credentials: 'same-origin',
-            body: JSON.stringify({ ...form.data(), voucher_code: selectedVoucher.value?.code || null }),
+            body: JSON.stringify({ ...form.data(), promo_codes: selectedPromoCodes.value }),
         })
         .then(async res => {
             let data;
@@ -523,33 +623,51 @@ watch(totalAmount, (newTotal) => {
     <Head title="Pemesanan" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
+        <!-- Alert bar fullwidth untuk possible promo -->
+        <transition name="fade">
+            <div v-if="possiblePromos.length > 0 && showPossiblePromoAlert" class="w-full mb-4 px-4 py-3 bg-orange-100 dark:bg-orange-900 text-orange-800 dark:text-orange-200 rounded-lg border border-orange-300 dark:border-orange-700 flex flex-col gap-2 relative">
+                <button @click="showPossiblePromoAlert = false" class="absolute top-2 right-3 text-orange-700 dark:text-orange-200 hover:text-red-500 text-xl font-bold">&times;</button>
+                <div class="flex items-center gap-2 mb-1">
+                    <Percent class="h-5 w-5 text-orange-600" />
+                    <span class="font-bold text-base">Ada promo yang hampir aktif!</span>
+                </div>
+                <div v-for="item in possiblePromos" :key="item.promo.code" class="flex flex-wrap items-center gap-1 text-sm">
+                    <span class="font-semibold">{{ item.promo.name }}</span>
+                    <span class="text-xs bg-orange-200 dark:bg-orange-700 px-2 py-0.5 rounded-full">{{ item.promo.type }}</span>
+                    <span class="text-xs text-gray-700 dark:text-gray-300">Kurang <span class="font-bold">{{ item.missing }}</span> produk <span class="font-bold">{{ item.productName }}</span></span>
+                    <span class="text-xs text-gray-500 ml-auto">Exp: {{ item.promo.expiry_date }}</span>
+                </div>
+            </div>
+        </transition>
+        
         <!-- Error Modal Dialog -->
         <transition name="fade">
-            <div v-if="errorDialog && errorDialog.show" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-5 backdrop-blur-sm">
-            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-8 max-w-md w-full text-center relative animate-fadeIn">
-                <button @click="errorDialog.show = false" class="absolute top-3 right-3 text-gray-400 hover:text-red-500 text-2xl font-bold">&times;</button>
-                <div class="flex flex-col items-center mb-4">
-                    <svg class="w-12 h-12 text-red-500 mb-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M21 12A9 9 0 1 1 3 12a9 9 0 0 1 18 0z"/></svg>
-                    <h3 class="text-2xl font-bold text-red-600">Terjadi Kesalahan</h3>
-                </div>
-                <p class="mb-4 text-gray-800 dark:text-gray-200 whitespace-pre-line">{{ errorDialog.message }}</p>
-                <div v-if="errorDialog.info" class="mb-6">
-                    <div class="flex items-center justify-center gap-2 bg-blue-50 dark:bg-blue-900 text-blue-700 dark:text-blue-200 rounded px-4 py-3 border border-blue-200 dark:border-blue-800">
-                        <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M12 20a8 8 0 1 1 0-16 8 8 0 0 1 0 16z"/></svg>
-                        <div class="text-left">
-                            <div class="font-semibold text-blue-700 dark:text-blue-200 mb-1">Additional Info</div>
-                            <div class="text-sm leading-relaxed">{{ errorDialog.info }}</div>
+            <div v-if="errorDialog && errorDialog.show" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-6 max-w-md w-full mx-4 text-center relative animate-fadeIn">
+                    <button @click="errorDialog.show = false" class="absolute top-3 right-3 text-gray-400 hover:text-red-500 text-2xl font-bold">&times;</button>
+                    <div class="flex flex-col items-center mb-4">
+                        <svg class="w-12 h-12 text-red-500 mb-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M21 12A9 9 0 1 1 3 12a9 9 0 0 1 18 0z"/></svg>
+                        <h3 class="text-xl font-bold text-red-600">Terjadi Kesalahan</h3>
+                    </div>
+                    <p class="mb-4 text-gray-800 dark:text-gray-200 whitespace-pre-line">{{ errorDialog.message }}</p>
+                    <div v-if="errorDialog.info" class="mb-4">
+                        <div class="flex items-start justify-center gap-2 bg-blue-50 dark:bg-blue-900 text-blue-700 dark:text-blue-200 rounded px-3 py-2 border border-blue-200 dark:border-blue-800 text-sm">
+                            <svg class="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M12 20a8 8 0 1 1 0-16 8 8 0 0 1 0 16z"/></svg>
+                            <div class="text-left">
+                                <div class="font-semibold text-blue-700 dark:text-blue-200 mb-1">Informasi Tambahan</div>
+                                <div class="leading-relaxed">{{ errorDialog.info }}</div>
+                            </div>
                         </div>
                     </div>
+                    <button @click="errorDialog.show = false" class="px-5 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-semibold shadow text-sm">Tutup</button>
                 </div>
-                <button @click="errorDialog.show = false" class="px-6 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition font-semibold shadow">Tutup</button>
             </div>
-        </div>
         </transition>
-        <div class="flex h-full flex-1 flex-col gap-4 rounded-xl p-4 overflow-x-auto lg:flex-row">
+        
+        <div class="flex flex-col gap-4 p-4 lg:flex-row">
             <!-- Product List Section (Left/Top) -->
-            <div class="flex-1 bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 overflow-y-auto max-h-[calc(100vh-120px)] lg:max-h-full">
-                <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">Daftar Produk</h2>
+            <div class="flex-1 bg-white dark:bg-gray-800 rounded-xl shadow p-4 md:p-6 overflow-hidden flex flex-col">
+                <h2 class="text-xl md:text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">Daftar Produk</h2>
 
                 <div class="mb-4 flex flex-col sm:flex-row gap-3">
                     <Input
@@ -559,7 +677,7 @@ watch(totalAmount, (newTotal) => {
                         class="flex-1"
                     />
                     <Select v-model="selectedCategory">
-                        <SelectTrigger class="w-full sm:w-[200px]">
+                        <SelectTrigger class="w-full sm:w-[180px]">
                             <SelectValue placeholder="Filter Kategori" />
                         </SelectTrigger>
                         <SelectContent>
@@ -571,66 +689,68 @@ watch(totalAmount, (newTotal) => {
                     </Select>
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                <div class="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3 overflow-y-auto flex-1 pb-2">
                     <div
                         v-for="product in filteredProducts"
                         :key="product.id"
                         @click="addToCart(product)"
                         :class="[
-                            'relative bg-gray-50 dark:bg-gray-700 p-4 rounded-lg shadow-sm cursor-pointer hover:shadow-md transition-all duration-200 border',
-                            product.stock === 0 ? 'opacity-50 cursor-not-allowed border-red-400' : 'border-gray-200 dark:border-gray-600'
+                            'relative bg-gray-50 dark:bg-gray-700 p-3 rounded-lg shadow-sm cursor-pointer hover:shadow-md transition-all duration-200 border flex flex-col',
+                            product.stock === 0 ? 'opacity-50 cursor-not-allowed border-red-300' : 'border-gray-200 dark:border-gray-600'
                         ]"
                     >
-                        <img
-                            v-if="product.image"
-                            :src="`/storage/${product.image}`"
-                            alt="Product Image"
-                            class="w-full h-24 object-cover rounded-md mb-2"
-                        />
-                        <div v-else class="w-full h-24 bg-gray-200 dark:bg-gray-600 rounded-md mb-2 flex items-center justify-center text-gray-500 dark:text-gray-400">
-                            <ImageIcon class="w-10 h-10" />
+                        <div class="w-full h-28 xs:h-24 sm:h-28 md:h-24 lg:h-28 xl:h-24 bg-gray-100 dark:bg-gray-600 rounded-md mb-2 overflow-hidden flex items-center justify-center">
+                            <img
+                                v-if="product.image"
+                                :src="`/storage/${product.image}`"
+                                alt="Product Image"
+                                class="w-full h-full object-cover"
+                            />
+                            <div v-else class="text-gray-400 dark:text-gray-500 flex items-center justify-center">
+                                <ImageIcon class="w-8 h-8" />
+                            </div>
                         </div>
-                        <h3 class="font-semibold text-gray-900 dark:text-gray-100 text-base leading-tight mb-1">{{ product.name }}</h3>
-                        <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">{{ product.category?.name || 'Uncategorized' }}</p>
-                        <p class="text-lg font-bold text-blue-600 dark:text-blue-400">{{ formatCurrency(product.price) }}</p>
-                        <p :class="['text-xs font-medium', product.stock <= 5 && product.stock > 0 ? 'text-orange-500' : product.stock === 0 ? 'text-red-500' : 'text-gray-500 dark:text-gray-400']">
+                        <h3 class="font-semibold text-gray-900 dark:text-gray-100 text-sm leading-tight mb-1 line-clamp-2">{{ product.name }}</h3>
+                        <p class="text-xs text-gray-600 dark:text-gray-400 mb-1">{{ product.category?.name || 'Uncategorized' }}</p>
+                        <p class="text-base font-bold text-blue-600 dark:text-blue-400">{{ formatCurrency(product.price) }}</p>
+                        <p :class="['text-xs font-medium mt-auto pt-1', product.stock <= 5 && product.stock > 0 ? 'text-orange-500' : product.stock === 0 ? 'text-red-500' : 'text-gray-500 dark:text-gray-400']">
                             Stok: {{ product.stock }} {{ product.unit || 'pcs' }}
                         </p>
                         <div v-if="product.stock === 0" class="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center rounded-lg">
-                            <span class="text-white font-bold text-lg">SOLD OUT</span>
+                            <span class="text-white font-bold text-sm">SOLD OUT</span>
                         </div>
                     </div>
                 </div>
             </div>
 
             <!-- Cart and Payment Section (Right/Bottom) -->
-            <div class="w-full lg:w-[400px] bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 flex flex-col max-h-[calc(100vh-120px)]">
-                <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
-                    <ShoppingCart class="h-6 w-6" /> Keranjang Belanja
+            <div class="w-full lg:w-96 xl:w-[420px] bg-white dark:bg-gray-800 rounded-xl shadow p-4 md:p-6 flex flex-col">
+                <h2 class="text-xl md:text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+                    <ShoppingCart class="h-5 w-5 md:h-6 md:w-6" /> Keranjang Belanja
                 </h2>
 
-                <div class="flex-1 overflow-y-auto pr-2 mb-4">
-                    <div v-if="cartItems.length === 0" class="text-center text-gray-500 dark:text-gray-400 py-10">
+                <div class="flex-1 overflow-y-auto pr-1 mb-4 border-b border-gray-200 dark:border-gray-700 pb-4">
+                    <div v-if="cartItems.length === 0" class="text-center text-gray-500 dark:text-gray-400 py-6">
                         Keranjang kosong. Tambahkan produk!
                     </div>
                     <div v-else class="space-y-3">
-                        <div v-for="item in cartItems" :key="item.product_id" class="flex items-center justify-between border-b pb-2 last:border-b-0">
-                            <div>
-                                <p class="font-medium text-gray-900 dark:text-gray-100">{{ item.name }}</p>
-                                <p class="text-sm text-gray-600 dark:text-gray-400">
+                        <div v-for="item in cartItems" :key="item.product_id" class="flex items-center justify-between p-2 rounded-lg bg-gray-50 dark:bg-gray-700">
+                            <div class="flex-1 min-w-0">
+                                <p class="font-medium text-gray-900 dark:text-gray-100 text-sm truncate">{{ item.name }}</p>
+                                <p class="text-xs text-gray-600 dark:text-gray-400">
                                     {{ formatCurrency(item.price) }} x {{ item.quantity }} {{ item.unit || 'pcs' }}
                                 </p>
                             </div>
-                            <div class="flex items-center gap-2">
-                                <Button variant="ghost" size="icon" @click="updateCartQuantity(item, -1)">
-                                    <MinusCircle class="h-4 w-4" />
+                            <div class="flex items-center gap-1 ml-2">
+                                <Button variant="ghost" size="icon" @click="updateCartQuantity(item, -1)" class="h-8 w-8">
+                                    <MinusCircle class="h-3.5 w-3.5" />
                                 </Button>
-                                <span class="font-semibold w-8 text-center">{{ item.quantity }}</span>
-                                <Button variant="ghost" size="icon" @click="updateCartQuantity(item, 1)">
-                                    <PlusCircle class="h-4 w-4" />
+                                <span class="font-semibold text-sm w-6 text-center">{{ item.quantity }}</span>
+                                <Button variant="ghost" size="icon" @click="updateCartQuantity(item, 1)" class="h-8 w-8">
+                                    <PlusCircle class="h-3.5 w-3.5" />
                                 </Button>
-                                <Button variant="ghost" size="icon" @click="removeFromCart(item.product_id)" class="text-red-500">
-                                    <XCircle class="h-4 w-4" />
+                                <Button variant="ghost" size="icon" @click="removeFromCart(item.product_id)" class="h-8 w-8 text-red-500">
+                                    <XCircle class="h-3.5 w-3.5" />
                                 </Button>
                             </div>
                         </div>
@@ -638,73 +758,86 @@ watch(totalAmount, (newTotal) => {
                 </div>
 
                 <!-- Summary Section -->
-
-                <div class="border-t pt-4 mt-auto">
+                <div class="space-y-4 mt-auto">
                     <!-- Subtotal -->
-                    <div class="flex justify-between items-center text-gray-700 dark:text-gray-300 mb-2">
+                    <div class="flex justify-between items-center text-gray-700 dark:text-gray-300">
                         <span>Subtotal:</span>
                         <span class="font-semibold">{{ formatCurrency(overallSubtotal) }}</span>
                     </div>
 
                     <!-- Voucher & Promo Section -->
-                    <div class="mb-4">
-                        <Label for="voucher" class="text-gray-700 dark:text-gray-300 flex items-center gap-1">
+                    <div class="bg-gray-50 dark:bg-gray-700 p-3 rounded-lg">
+                        <Label for="voucher" class="text-gray-700 dark:text-gray-300 flex items-center gap-1 text-sm font-medium mb-1">
                             <ReceiptText class="h-4 w-4" /> Voucher:
                         </Label>
-                        <div class="flex gap-2 mt-1">
+                        <div class="flex gap-2">
                             <Input
                                 id="voucher_code"
                                 type="text"
                                 v-model="voucherInputCode"
                                 placeholder="Masukkan kode voucher"
-                                class="flex-1"
+                                class="flex-1 text-sm"
                             />
-                            <Button @click="handleVoucherInput" type="button">Cek Voucher</Button>
+                            <Button @click="handleVoucherInput" type="button" size="sm" class="whitespace-nowrap">Cek</Button>
                         </div>
-                        <div v-if="voucherError" class="text-red-500 text-sm mt-1">{{ voucherError }}</div>
+                        <div v-if="voucherError" class="text-red-500 text-xs mt-1">{{ voucherError }}</div>
                         <div v-if="selectedVouchers.length > 0" class="mt-2 space-y-2">
-                            <div v-for="voucher in selectedVouchers" :key="voucher?.code" class="p-2 rounded bg-blue-50 dark:bg-blue-900 text-blue-700 dark:text-blue-200 flex items-center gap-2">
-                                <ReceiptText class="h-4 w-4" />
-                                <span v-if="voucher" class="font-semibold">{{ voucher.name }}</span>
-                                <span v-if="voucher" class="text-xs">({{ voucher.type }})</span>
-                                <span v-if="voucher" class="text-xs text-gray-400 ml-auto">Exp: {{ voucher.expiry_date }}</span>
-                                <Button v-if="voucher" size="sm" variant="ghost" class="text-red-500 ml-2" @click="selectedVoucherCodes = selectedVoucherCodes.filter(c => c !== voucher.code)">Hapus</Button>
+                            <div v-for="voucher in selectedVouchers" :key="voucher?.code" class="p-2 rounded bg-blue-50 dark:bg-blue-900 text-blue-700 dark:text-blue-200 flex items-center gap-2 text-sm">
+                                <ReceiptText class="h-3.5 w-3.5 flex-shrink-0" />
+                                <div class="flex-1 min-w-0">
+                                    <div class="font-semibold truncate">{{ voucher.name }}</div>
+                                    <div class="text-xs opacity-80 flex items-center gap-1 mt-0.5">
+                                        <span>{{ voucher.type }}</span>
+                                        <span class="text-xs">• Exp: {{ voucher.expiry_date }}</span>
+                                    </div>
+                                </div>
+                                <Button size="sm" variant="ghost" class="text-red-500 h-7 w-7 p-0" @click="selectedVoucherCodes = selectedVoucherCodes.filter(c => c !== voucher.code)">
+                                    <XCircle class="h-3.5 w-3.5" />
+                                </Button>
                             </div>
                         </div>
-                        <div v-if="voucherDiscount > 0" class="text-green-600 dark:text-green-400 text-sm mt-1">Diskon voucher: -{{ formatCurrency(voucherDiscount) }}</div>
+                        <div v-if="voucherDiscount > 0" class="text-green-600 dark:text-green-400 text-xs mt-2 font-medium">
+                            Diskon voucher: -{{ formatCurrency(voucherDiscount) }}
+                        </div>
                     </div>
-                    <div class="mb-4">
-                        <Label for="promo" class="text-gray-700 dark:text-gray-300 flex items-center gap-1">
+
+                    <div class="bg-gray-50 dark:bg-gray-700 p-3 rounded-lg">
+                        <Label for="promo" class="text-gray-700 dark:text-gray-300 flex items-center gap-1 text-sm font-medium mb-1">
                             <Percent class="h-4 w-4" /> Promo:
                         </Label>
-                        <Select v-model="selectedPromoCode">
-                            <SelectTrigger class="w-full mt-1">
+                        <Select v-model="selectedPromoCodes" multiple>
+                            <SelectTrigger class="w-full text-sm">
                                 <SelectValue placeholder="Pilih Promo" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem :value="null">Tidak Pakai Promo</SelectItem>
-                                <SelectItem v-for="promo in availablePromos" :key="promo.code" :value="promo.code">
-                                    <div class="flex flex-col">
+                                <SelectItem v-for="promo in availablePromos" :key="promo.code" :value="promo.code" class="text-sm">
+                                    <div class="flex flex-col py-1">
                                         <span class="font-semibold">{{ promo.name }}</span>
-                                        <span class="text-xs text-gray-500">{{ promo.typeLabel }}</span>
-                                        <span class="text-xs text-gray-400">Exp: {{ promo.expiryDate }}</span>
+                                        <span class="text-xs text-gray-500">{{ promo.type }}</span>
+                                        <span class="text-xs text-gray-400">Exp: {{ promo.expiry_date }}</span>
                                     </div>
                                 </SelectItem>
                             </SelectContent>
                         </Select>
-                        <div v-if="selectedPromo" class="mt-2 p-2 rounded bg-green-50 dark:bg-green-900 text-green-700 dark:text-green-200">
-                            <div class="flex items-center gap-2">
-                                <Percent class="h-4 w-4" />
-                                <span class="font-semibold">{{ selectedPromo.name }}</span>
-                                <span class="text-xs">({{ selectedPromo.typeLabel }})</span>
-                                <span class="text-xs text-gray-400 ml-auto">Exp: {{ selectedPromo.expiryDate }}</span>
+                        <div v-if="selectedPromos.length > 0" class="mt-2 space-y-2">
+                            <div v-for="promo in selectedPromos" :key="promo.code" class="p-2 rounded bg-green-50 dark:bg-green-900 text-green-700 dark:text-green-200 text-sm">
+                                <div class="flex items-center gap-2">
+                                    <Percent class="h-3.5 w-3.5 flex-shrink-0" />
+                                    <div class="flex-1 min-w-0">
+                                        <div class="font-semibold truncate">{{ promo.name }}</div>
+                                        <div class="text-xs opacity-80 flex items-center gap-1 mt-0.5">
+                                            <span>{{ promo.type }}</span>
+                                            <span>• Exp: {{ promo.expiry_date }}</span>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
 
                     <!-- Discount -->
-                    <div class="flex justify-between items-center mb-2">
-                        <Label for="discount" class="text-gray-700 dark:text-gray-300 flex items-center gap-1">
+                    <div class="flex justify-between items-center">
+                        <Label for="discount" class="text-gray-700 dark:text-gray-300 flex items-center gap-1 text-sm">
                             <DollarSign class="h-4 w-4" /> Diskon:
                         </Label>
                         <Input
@@ -712,15 +845,15 @@ watch(totalAmount, (newTotal) => {
                             type="number"
                             step="0.01"
                             v-model.number="form.discount_amount"
-                            class="w-32 text-right"
+                            class="w-28 text-right text-sm"
                             min="0"
                             :max="overallSubtotal"
                         />
                     </div>
 
                     <!-- Tax -->
-                    <div class="flex justify-between items-center mb-2">
-                        <Label for="tax_rate" class="text-gray-700 dark:text-gray-300 flex items-center gap-1">
+                    <div class="flex justify-between items-center">
+                        <Label for="tax_rate" class="text-gray-700 dark:text-gray-300 flex items-center gap-1 text-sm">
                             <Percent class="h-4 w-4" /> Pajak (%):
                         </Label>
                         <Input
@@ -728,64 +861,65 @@ watch(totalAmount, (newTotal) => {
                             type="number"
                             step="0.01"
                             v-model.number="form.tax_rate"
-                            class="w-32 text-right"
+                            class="w-28 text-right text-sm"
                             min="0"
                             max="100"
                         />
                     </div>
 
                     <!-- Total & Payment -->
-                    <div class="flex justify-between font-bold text-2xl text-gray-900 dark:text-gray-100 border-t pt-3 mt-3 mb-2">
+                    <div class="flex justify-between font-bold text-lg text-gray-900 dark:text-gray-100 border-t border-gray-200 dark:border-gray-700 pt-3 mt-1">
                         <span>TOTAL:</span>
                         <span>{{ formatCurrency(totalAmount) }}</span>
                     </div>
-                    <div class="flex justify-between items-center mb-2">
-                        <Label for="payment_method" class="text-gray-700 dark:text-gray-300">Metode Pembayaran:</Label>
-                        <Select v-model="form.payment_method">
-                            <SelectTrigger class="w-[150px]">
+                    
+                    <div class="flex justify-between items-center">
+                        <Label for="payment_method" class="text-gray-700 dark:text-gray-300 text-sm">Metode Pembayaran:</Label>
+                        <Select v-model="form.payment_method" class="w-40">
+                            <SelectTrigger class="w-full text-sm">
                                 <SelectValue placeholder="Pilih Metode" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="cash">Tunai</SelectItem>
-                                <SelectItem value="ipaymu" :disabled="!ipaymuConfigured">
+                                <SelectItem value="cash" class="text-sm">Tunai</SelectItem>
+                                <SelectItem value="ipaymu" :disabled="!ipaymuConfigured" class="text-sm">
                                     iPaymu
-                                    <span v-if="!ipaymuConfigured" class="text-xs text-red-500 ml-2">(Belum dikonfigurasi)</span>
+                                    <span v-if="!ipaymuConfigured" class="text-xs text-red-500 ml-1">(×)</span>
                                 </SelectItem>
-                                <SelectItem value="midtrans" :disabled="!midtransConfigured">
+                                <SelectItem value="midtrans" :disabled="!midtransConfigured" class="text-sm">
                                     Midtrans
-                                    <span v-if="!midtransConfigured" class="text-xs text-red-500 ml-2">(Belum dikonfigurasi)</span>
+                                    <span v-if="!midtransConfigured" class="text-xs text-red-500 ml-1">(×)</span>
                                 </SelectItem>
                             </SelectContent>
                         </Select>
                     </div>
 
                     <!-- Paid Amount & Change (Cash only) -->
-                    <div v-if="form.payment_method === 'cash'" class="flex justify-between items-center mb-2">
-                        <Label for="paid_amount" class="text-gray-700 dark:text-gray-300">Jumlah Dibayar:</Label>
+                    <div v-if="form.payment_method === 'cash'" class="flex justify-between items-center">
+                        <Label for="paid_amount" class="text-gray-700 dark:text-gray-300 text-sm">Jumlah Dibayar:</Label>
                         <Input
                             id="paid_amount"
                             type="number"
                             step="0.01"
                             v-model.number="form.paid_amount"
-                            class="w-32 text-right"
+                            class="w-32 text-right text-sm"
                             :min="totalAmount"
                         />
                     </div>
-                    <div v-if="form.payment_method === 'cash'" class="flex justify-between font-bold text-xl text-green-600 dark:text-green-400 mb-2">
+                    <div v-if="form.payment_method === 'cash'" class="flex justify-between font-semibold text-green-600 dark:text-green-400">
                         <span>Kembalian:</span>
                         <span>{{ formatCurrency(changeAmount) }}</span>
                     </div>
 
                     <!-- Customer (Optional) -->
-                    <div class="flex justify-between items-center mb-2">
-                        <Label for="customer" class="text-gray-700 dark:text-gray-300">Pelanggan (Opsional)</Label>
-                        <Select v-model="selectedCustomer">
-                            <SelectTrigger class="w-[200px]">
+                    <div class="flex justify-between items-center">
+                        <Label for="customer" class="text-gray-700 dark:text-gray-300 text-sm">Pelanggan (Opsional)</Label>
+                        <Select v-model="selectedCustomer" class="w-44">
+                            <SelectTrigger class="w-full text-sm">
                                 <SelectValue placeholder="Pilih Pelanggan" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem :value="null">Umum</SelectItem>
-                                <SelectItem v-for="customer in customers" :key="customer.id" :value="customer.id">
+                                <SelectItem :value="null" class="text-sm">Umum</SelectItem>
+                                <SelectItem v-for="customer in customers" :key="customer.id" :value="customer.id" class="text-sm">
                                     {{ customer.name }}
                                 </SelectItem>
                             </SelectContent>
@@ -793,18 +927,80 @@ watch(totalAmount, (newTotal) => {
                     </div>
 
                     <!-- Notes (Optional) -->
-                    <div class="mb-4">
-                        <Label for="notes" class="text-gray-700 dark:text-gray-300">Catatan (Opsional):</Label>
-                        <Textarea id="notes" v-model="form.notes" rows="2" class="mt-1" />
+                    <div>
+                        <Label for="notes" class="text-gray-700 dark:text-gray-300 text-sm">Catatan (Opsional):</Label>
+                        <Textarea id="notes" v-model="form.notes" rows="2" class="mt-1 text-sm" />
                     </div>
 
                     <!-- Process Button -->
-                    <Button @click="submitSale" :disabled="form.processing || cartItems.length === 0 || (form.payment_method === 'cash' && form.paid_amount < totalAmount)" class="w-full py-3 text-lg">
-                        <LoaderCircle v-if="form.processing" class="h-5 w-5 animate-spin mr-2" />
-                        Proses Pesanan
+                    <Button 
+                        @click="submitSale" 
+                        :disabled="form.processing || cartItems.length === 0 || (form.payment_method === 'cash' && form.paid_amount < totalAmount)" 
+                        class="w-full py-2.5 text-base font-semibold mt-2"
+                        :class="{'bg-gray-400 cursor-not-allowed': form.processing || cartItems.length === 0}"
+                    >
+                        <LoaderCircle v-if="form.processing" class="h-4 w-4 animate-spin mr-2" />
+                        {{ form.processing ? 'Memproses...' : 'Proses Pesanan' }}
                     </Button>
                 </div>
             </div>
         </div>
     </AppLayout>
 </template>
+
+<style scoped>
+.line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.animate-fadeIn {
+    animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-enter-active, .fade-leave-active {
+    transition: opacity 0.3s ease;
+}
+
+.fade-enter-from, .fade-leave-to {
+    opacity: 0;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+    width: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #c5c5c5;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+.dark ::-webkit-scrollbar-track {
+    background: #374151;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+    background: #6b7280;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+    background: #9ca3af;
+}
+</style>

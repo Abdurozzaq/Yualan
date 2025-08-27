@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('promos', function (Blueprint $table) {
             $table->id();
+                $table->uuid('tenant_id');
             $table->string('code')->unique();
             $table->string('name');
             $table->enum('type', ['buyxgetx', 'buyxgetanother']);
@@ -23,6 +24,7 @@ return new class extends Migration
             $table->date('expiry_date');
             $table->boolean('is_active')->default(true);
             $table->timestamps();
+                $table->foreign('tenant_id')->references('id')->on('tenants')->onDelete('cascade');
         });
     }
 

@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Promo;
 use App\Models\Tenant;
 use Inertia\Inertia;
+use App\Models\Product;
 
 
 class PromoController extends Controller
@@ -18,9 +19,8 @@ class PromoController extends Controller
         $sortDirection = $request->input('sortDirection', 'desc');
         $search = $request->input('search');
 
-        $query = Promo::query();
-        // If you want to scope by tenant, add tenant_id to promos table and filter here
-        // $query->where('tenant_id', $tenant->id);
+    $query = Promo::query();
+    $query->where('tenant_id', $tenant->id);
         if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'LIKE', "%$search%")
@@ -29,6 +29,7 @@ class PromoController extends Controller
         }
         $query->orderBy($sortBy, $sortDirection);
         $promos = $query->paginate($perPage)->withQueryString();
+        $products = Product::where('tenant_id', $tenant->id)->get(['id', 'name']);
         return Inertia::render('Promos/Index', [
             'promos' => $promos,
             'filters' => [
@@ -39,40 +40,73 @@ class PromoController extends Controller
             ],
             'tenantSlug' => $tenantSlug,
             'tenantName' => $tenant->name,
+            'products' => $products,
         ]);
     }
 
     public function store(Request $request, $tenantSlug)
     {
         $request->validate([
+            'code' => 'required|string|max:50',
             'name' => 'required|string|max:255',
-            'type' => 'required|string|max:50',
-            'value' => 'required|numeric|min:0',
+            'type' => 'required|string|in:buyxgetx,buyxgetanother',
+            'buy_qty' => 'required|integer|min:1',
+            'get_qty' => 'required|integer|min:1',
+            'product_id' => 'nullable|string|exists:products,id',
+            'another_product_id' => 'nullable|string|exists:products,id',
             'expiry_date' => 'required|date',
             'is_active' => 'required|boolean',
         ]);
-        Promo::create($request->only(['name','type','value','expiry_date','is_active']));
-        return redirect()->route('promos.index', ['tenantSlug' => $tenantSlug])->with('success', 'Promo berhasil ditambahkan.');
+        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+        Promo::create([
+            'tenant_id' => $tenant->id,
+            'code' => $request->code,
+            'name' => $request->name,
+            'type' => $request->type,
+            'buy_qty' => $request->buy_qty,
+            'get_qty' => $request->get_qty,
+            'product_id' => $request->product_id,
+            'another_product_id' => $request->another_product_id,
+            'expiry_date' => $request->expiry_date,
+            'is_active' => $request->is_active,
+        ]);
+    return redirect()->route('promos.index', ['tenantSlug' => $tenantSlug])->with('success', 'Promo berhasil ditambahkan.');
     }
 
     public function update(Request $request, $tenantSlug, $id)
     {
-        $promo = Promo::findOrFail($id);
+    $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+    $promo = Promo::where('id', $id)->where('tenant_id', $tenant->id)->firstOrFail();
         $request->validate([
+            'code' => 'required|string|max:50',
             'name' => 'required|string|max:255',
-            'type' => 'required|string|max:50',
-            'value' => 'required|numeric|min:0',
+            'type' => 'required|string|in:buyxgetx,buyxgetanother',
+            'buy_qty' => 'required|integer|min:1',
+            'get_qty' => 'required|integer|min:1',
+            'product_id' => 'nullable|string|exists:products,id',
+            'another_product_id' => 'nullable|string|exists:products,id',
             'expiry_date' => 'required|date',
             'is_active' => 'required|boolean',
         ]);
-        $promo->update($request->only(['name','type','value','expiry_date','is_active']));
-        return redirect()->route('promos.index', ['tenantSlug' => $tenantSlug])->with('success', 'Promo berhasil diupdate.');
+        $promo->update([
+            'code' => $request->code,
+            'name' => $request->name,
+            'type' => $request->type,
+            'buy_qty' => $request->buy_qty,
+            'get_qty' => $request->get_qty,
+            'product_id' => $request->product_id,
+            'another_product_id' => $request->another_product_id,
+            'expiry_date' => $request->expiry_date,
+            'is_active' => $request->is_active,
+        ]);
+    return redirect()->route('promos.index', ['tenantSlug' => $tenantSlug])->with('success', 'Promo berhasil diupdate.');
     }
 
     public function destroy($tenantSlug, $id)
     {
-        $promo = Promo::findOrFail($id);
+    $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+    $promo = Promo::where('id', $id)->where('tenant_id', $tenant->id)->firstOrFail();
         $promo->delete();
-        return redirect()->route('promos.index', ['tenantSlug' => $tenantSlug])->with('success', 'Promo berhasil dihapus.');
+    return redirect()->route('promos.index', ['tenantSlug' => $tenantSlug])->with('success', 'Promo berhasil dihapus.');
     }
 }

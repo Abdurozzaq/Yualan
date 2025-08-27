@@ -114,6 +114,7 @@ class FullTenantSeeder extends Seeder
 
         // Promo
         Promo::create([
+            'tenant_id' => $tenant->id,
             'code' => 'PROMO1',
             'name' => 'Beli 2 Gratis 1',
             'type' => 'buyxgetx',
