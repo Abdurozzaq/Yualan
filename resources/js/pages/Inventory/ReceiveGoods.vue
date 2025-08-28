@@ -11,6 +11,7 @@ import { LoaderCircle } from 'lucide-vue-next';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { formatCurrency } from '@/utils/formatters';
 import { useForm } from '@inertiajs/vue3';
+import { computed, watch } from 'vue';
 
 interface Product {
     id: string;
@@ -79,16 +80,6 @@ const submitReceiveGoods = () => {
         },
     });
 };
-
-
-function computed(arg0: () => any) {
-    throw new Error('Function not implemented.');
-}
-
-
-function watch(selectedProduct: void, arg1: (newProduct: any) => void) {
-    throw new Error('Function not implemented.');
-}
 </script>
 
 <template>
