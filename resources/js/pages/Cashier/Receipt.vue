@@ -52,7 +52,7 @@ const retryMidtransPayment = () => {
 };
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
-import { Head, usePage, Link, router } from '@inertiajs/vue3'; // Import router
+import { Head, Link, router } from '@inertiajs/vue3'; // Import router
 import { computed } from 'vue';
 import { Button } from '@/components/ui/button';
 import { Printer, CheckCircle, XCircle, Clock, Wallet } from 'lucide-vue-next'; // Import Wallet icon

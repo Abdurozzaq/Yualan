@@ -8,7 +8,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import InputError from '@/components/InputError.vue';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { LoaderCircle, PlusCircle, Edit, Trash2, ChevronUp, ChevronDown, Search } from 'lucide-vue-next';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -337,7 +336,6 @@ const applySearch = () => {
                         :disabled="!link.url"
                         :variant="link.active ? 'default' : 'outline'"
                         class="px-3 py-1 rounded-md text-sm"
-                        v-html="link.label"
                     />
                 </div>
             </div>

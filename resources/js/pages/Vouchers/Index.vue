@@ -1,15 +1,14 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
-import { Head, usePage, useForm, Link, router } from '@inertiajs/vue3';
-import { computed, ref, watch } from 'vue';
+import { Head, useForm, Link, router } from '@inertiajs/vue3';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import InputError from '@/components/InputError.vue';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { LoaderCircle, PlusCircle, Edit, Trash2, ChevronUp, ChevronDown, Search, XCircle, Printer } from 'lucide-vue-next';
+import { LoaderCircle, PlusCircle, Edit, Trash2 } from 'lucide-vue-next';
 
 interface Voucher {
     id: number;
@@ -35,14 +34,12 @@ const breadcrumbs = computed<BreadcrumbItem[]>(() => [
     { label: 'Master Voucher', href: '#' },
 ]);
 
-const page = usePage();
 const currentPerPage = ref(props.filters.perPage || 10);
 const currentSortBy = ref(props.filters.sortBy || 'created_at');
 const currentSortDirection = ref(props.filters.sortDirection || 'desc');
 const currentSearch = ref(props.filters.search || '');
 
 const form = useForm({
-    id: null as number | null,
     code: '',
     name: '',
     type: 'percentage' as 'percentage' | 'percentage_max' | 'nominal',
@@ -274,34 +271,6 @@ function printVoucher() {
     printWindow?.document.close();
 }
 
-// Helper function untuk menentukan kelas status
-function getStatusClass(status: string | undefined): string {
-    if (!status) return 'unused';
-    status = status.toLowerCase();
-    if (status.includes('aktif')) return 'aktif';
-    if (status.includes('non') || status.includes('tidak')) return 'nonaktif';
-    if (status.includes('digunakan') || status.includes('used')) return 'used';
-    return 'unused';
-}
-
-const openFormDialog = (voucher: Voucher | null = null) => {
-    form.reset();
-    form.clearErrors();
-    if (voucher) {
-        form.id = voucher.id;
-        form.code = voucher.code;
-        form.name = voucher.name;
-        form.type = voucher.type;
-        form.value = voucher.value;
-        form.max_nominal = voucher.max_nominal || null;
-        form.expiry_date = voucher.expiry_date;
-    // removed is_active
-        form._method = 'put';
-    } else {
-        form._method = 'post';
-    }
-    isFormDialogOpen.value = true;
-};
 
 const submitForm = () => {
     if (form.id) {
@@ -334,15 +303,6 @@ const deleteVoucher = () => {
             voucherToDelete.value = null;
         },
     });
-};
-
-const handleSort = (field: string) => {
-    if (currentSortBy.value === field) {
-        currentSortDirection.value = currentSortDirection.value === 'asc' ? 'desc' : 'asc';
-    } else {
-        currentSortBy.value = field;
-        currentSortDirection.value = 'asc';
-    }
 };
 
 watch([currentPerPage, currentSortBy, currentSortDirection, currentSearch], () => {

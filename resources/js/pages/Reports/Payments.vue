@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
-import { Head, usePage } from '@inertiajs/vue3';
+import { Head } from '@inertiajs/vue3';
 import { ref, computed, watch } from 'vue';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { formatCurrency } from '@/utils/formatters';
@@ -88,8 +88,8 @@ const filteredPayments = computed(() => {
     }
     // Sorting
     rows = [...rows].sort((a, b) => {
-        let valA = a[sortBy.value as keyof PaymentReportRow];
-        let valB = b[sortBy.value as keyof PaymentReportRow];
+        const valA = a[sortBy.value as keyof PaymentReportRow];
+        const valB = b[sortBy.value as keyof PaymentReportRow];
         if (typeof valA === 'string' && typeof valB === 'string') {
             return sortDirection.value === 'asc'
                 ? valA.localeCompare(valB)

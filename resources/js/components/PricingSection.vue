@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { Head, Link } from '@inertiajs/vue3';
+import { Link } from '@inertiajs/vue3';
 import { Check, Crown, Star } from 'lucide-vue-next';
 import { formatCurrency } from '@/utils/formatters';
 

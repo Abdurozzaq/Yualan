@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import { ref as vueRef } from 'vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
-import { Head, usePage, useForm, Link, router } from '@inertiajs/vue3';
+import { Head, useForm, Link, router } from '@inertiajs/vue3';
 import { computed, ref, watch } from 'vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,7 +10,7 @@ import InputError from '@/components/InputError.vue';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
-import { LoaderCircle, PlusCircle, Edit, Trash2, ChevronUp, ChevronDown, Search, XCircle } from 'lucide-vue-next';
+import { LoaderCircle, PlusCircle, Edit, Trash2, Search } from 'lucide-vue-next';
 
 interface Promo {
     id: number;
@@ -152,15 +151,6 @@ const deletePromo = () => {
     });
 };
 
-const handleSort = (field: string) => {
-    if (currentSortBy.value === field) {
-        currentSortDirection.value = currentSortDirection.value === 'asc' ? 'desc' : 'asc';
-    } else {
-        currentSortBy.value = field;
-        currentSortDirection.value = 'asc';
-    }
-};
-
 watch([currentPerPage, currentSortBy, currentSortDirection, currentSearch], () => {
     router.get(route('promos.index'), {
         perPage: currentPerPage.value,
@@ -278,16 +268,19 @@ const applySearch = () => {
                     Menampilkan {{ props.promos.from }} hingga {{ props.promos.to }} dari {{ props.promos.total }} promo
                 </div>
                 <div class="flex items-center gap-2">
-                    <Button
-                        v-for="(link, index) in props.promos.links"
-                        :key="index"
-                        :as="Link"
-                        :href="link.url || '#'"
-                        :disabled="!link.url"
-                        :variant="link.active ? 'default' : 'outline'"
-                        class="px-3 py-1 rounded-md text-sm"
-                        v-html="link.label"
-                    />
+                    <div v-for="(link, index) in props.promos.links" 
+                            :key="index">
+                        <Button
+                            
+                            :as="Link"
+                            :href="link.url || '#'"
+                            :disabled="!link.url"
+                            :variant="link.active ? 'default' : 'outline'"
+                            class="px-3 py-1 rounded-md text-sm">
+                        
+                            {{  link.label }}
+                        </Button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -302,9 +295,9 @@ const applySearch = () => {
                 <form @submit.prevent="submitForm" class="grid gap-4 py-4">
                     <!-- notification removed -->
                     <div class="grid grid-cols-4 items-center gap-4">
-                        <Label for="code" class="text-right">Kode</Label>
-                        <Input id="code" v-model="form.code" required class="col-span-3" />
-                        <InputError :message="form.errors.code" class="col-span-4 col-start-2" />
+                            <Label for="code" class="text-right">Kode</Label>
+                            <Input id="code" v-model="form.code" required class="col-span-3" />
+                            <InputError :message="form.errors.code" class="col-span-4 col-start-2" />
                     </div>
                     <div class="grid grid-cols-4 items-center gap-4">
                         <Label for="name" class="text-right">Nama</Label>

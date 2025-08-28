@@ -1,8 +1,8 @@
 
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
-import { Head, usePage, router, Link } from '@inertiajs/vue3';
-import { ref, watch, computed } from 'vue';
+
+import { ref, watch } from 'vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -232,8 +232,9 @@ function formatCurrency(amount: number) {
             :disabled="!link.url"
             :variant="link.active ? 'default' : 'outline'"
             class="px-3 py-1 rounded-md text-sm"
-            v-html="link.label"
-          />
+          >
+            <span v-html="link.label"></span>
+          </Button>
         </div>
       </div>
     </div>

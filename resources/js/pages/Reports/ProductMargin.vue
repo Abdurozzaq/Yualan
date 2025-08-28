@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
-import { Head, usePage, router } from '@inertiajs/vue3';
+import { Head, router } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { formatCurrency, formatPercent } from '@/utils/formatters';
-import { Package, TrendingUp } from 'lucide-vue-next';
+import { TrendingUp } from 'lucide-vue-next';
 import * as XLSX from 'xlsx';
 
 interface ProductMargin {

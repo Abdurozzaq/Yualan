@@ -1,45 +1,10 @@
 <script setup lang="ts">
 import SuperadminLayout from '@/layouts/app/SuperadminLayout.vue';
 import { type BreadcrumbItem } from '@/types';
-import { Head, Link, usePage } from '@inertiajs/vue3'; // Import Link and usePage
+import { Link } from '@inertiajs/vue3'; // Import Link
 import { Card } from '@/components/ui/card'; // Import Card component
-import { DollarSign, Package, Users, Store, CheckCircle, XCircle, Clock, TrendingUp, BarChart } from 'lucide-vue-next'; // Import icons
+import { DollarSign, Package, Users, Store, Clock, TrendingUp, BarChart } from 'lucide-vue-next'; // Import icons
 import { formatCurrency } from '@/utils/formatters'; // Import formatCurrency
-
-// Define props to receive data from the controller
-interface SuperadminStats {
-    totalTenants: number;
-    activeTenants: number;
-    inactiveTenants: number;
-    totalUsers: number;
-    superadmins: number;
-    admins: number;
-    cashiers: number;
-    totalProducts: number;
-    totalProductStock: number;
-    totalSalesAmount: number;
-    totalCompletedSales: number;
-    totalPendingSales: number;
-    // New global analysis stats
-    totalSalesLast7Days: number;
-    newTenantsLast30Days: number;
-    topProductCategoriesByProductCount: Array<{ category_name: string; product_count: number }>;
-}
-
-interface RecentTenant {
-    id: string;
-    name: string;
-    slug: string;
-    is_active: boolean;
-    created_at: string;
-}
-
-interface TopTenantBySales {
-    tenant_name: string;
-    tenant_slug: string;
-    total_sales_amount: number;
-}
-
 
 const page = usePage(); // To access auth.user for welcome message
 

@@ -2,19 +2,10 @@
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, usePage, Link } from '@inertiajs/vue3';
-import { computed, ref, onMounted, watch } from 'vue';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { DollarSign, Package, Users, ReceiptText, Zap, Award, ShoppingCart, Tag, Image as ImageIcon, CheckCircle } from 'lucide-vue-next';
+import { DollarSign, Package, Users, ReceiptText, Zap, Award, ShoppingCart, Tag, Image as ImageIcon } from 'lucide-vue-next';
 import { formatCurrency } from '@/utils/formatters';
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogHeader,
-    DialogTitle,
-    DialogFooter,
-} from '@/components/ui/dialog';
 
 // Define props to receive data from the controller
 interface Sale {

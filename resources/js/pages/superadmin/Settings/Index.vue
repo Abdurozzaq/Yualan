@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, useForm } from '@inertiajs/vue3';
-import { defineProps, ref, computed } from 'vue';
+import { defineProps, ref } from 'vue';
 import Modal from '@/components/Modal.vue';
 import SettingInput from '@/components/SettingInput.vue'; // Import the new component
 import { CheckCircleIcon, XCircleIcon } from '@heroicons/vue/24/solid';

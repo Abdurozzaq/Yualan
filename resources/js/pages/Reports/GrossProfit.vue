@@ -1,13 +1,12 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
-import { Head, usePage, router } from '@inertiajs/vue3';
+import { Head, router } from '@inertiajs/vue3';
 import { ref, watch } from 'vue';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { formatCurrency } from '@/utils/formatters';
 import { CalendarIcon } from 'lucide-vue-next';
-import { cn } from '@/lib/utils';
 
 interface Filters {
     start_date: string;

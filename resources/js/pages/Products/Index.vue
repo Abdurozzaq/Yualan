@@ -2,13 +2,13 @@
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, usePage, useForm, Link, router } from '@inertiajs/vue3';
-import { computed, ref, watch, nextTick } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import InputError from '@/components/InputError.vue';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { LoaderCircle, PlusCircle, Edit, Trash2, ChevronUp, ChevronDown, Search, Image as ImageIcon, XCircle, UploadCloud } from 'lucide-vue-next';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -294,7 +294,8 @@ const submitImport = async () => {
         } else {
             importErrorMessage.value = result.message || 'Gagal mengimport file.';
         }
-    } catch (err) {
+    } catch (error) {
+        console.error('Import error:', error);
         importErrorMessage.value = 'Terjadi kesalahan saat import.';
     } finally {
         importProcessing.value = false;
@@ -338,7 +339,8 @@ const submitErrorRowsImport = async () => {
         } else {
             importErrorMessage.value = result.message || 'Gagal mengimport baris error.';
         }
-    } catch (err) {
+    } catch (error) {
+        console.error('Import error:', error);
         importErrorMessage.value = 'Terjadi kesalahan saat import.';
     } finally {
         importProcessing.value = false;
@@ -408,13 +410,7 @@ watch(() => form.image, (newImage, oldImage) => {
 });
 
 // Download template URL
-const downloadTemplateUrl = computed(() => {
-    // If you use Ziggy or window.route, use that. Otherwise, fallback to hardcoded path.
-    if (typeof route === 'function') {
-        return route('products.import.sample');
-    }
-    return '/products/import/sample';
-});
+// Removed unused downloadTemplateUrl variable
 
 // Drag and drop area for file import
 const isDragOver = ref(false);
@@ -617,16 +613,16 @@ const handleDropAreaDrop = (event: DragEvent) => {
                     Menampilkan {{ props.products.from }} hingga {{ props.products.to }} dari {{ props.products.total }} produk
                 </div>
                 <div class="flex items-center gap-2">
-                    <Button
-                        v-for="(link, index) in props.products.links"
-                        :key="index"
-                        :as="Link"
-                        :href="link.url || '#'"
-                        :disabled="!link.url"
-                        :variant="link.active ? 'default' : 'outline'"
-                        class="px-3 py-1 rounded-md text-sm"
-                        v-html="link.label"
-                    />
+                    <div v-for="(link, index) in props.products.links" :key="index">
+                        <Button
+                            :as="Link"
+                            :href="link.url || '#'"
+                            :disabled="!link.url"
+                            :variant="link.active ? 'default' : 'outline'"
+                            class="px-3 py-1 rounded-md text-sm">
+                            {{  link.label  }}
+                        </Button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -648,9 +644,9 @@ const handleDropAreaDrop = (event: DragEvent) => {
                     </div>
 
                     <div class="grid grid-cols-4 items-center gap-4">
-                        <Label for="category_id" class="text-right">Kategori</Label>
-                        <Select v-model="form.category_id">
-                            <SelectTrigger class="col-span-3">
+                            <Label for="category_id" class="text-right">Kategori</Label>
+                            <Select v-model="form.category_id">
+                                <SelectTrigger class="col-span-3">
                                 <SelectValue placeholder="Pilih Kategori (Opsional)" />
                             </SelectTrigger>
                             <SelectContent>
