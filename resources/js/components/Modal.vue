@@ -24,7 +24,7 @@ watch(
         if (props.show) {
             document.body.style.overflow = 'hidden';
         } else {
-            document.body.style.overflow = null;
+            document.body.style.overflow = '';
         }
     }
 );
@@ -35,7 +35,7 @@ const close = () => {
     }
 };
 
-const closeOnEscape = (e) => {
+const closeOnEscape = (e: KeyboardEvent) => {
     if (e.key === 'Escape' && props.show) {
         close();
     }

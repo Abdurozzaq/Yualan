@@ -469,8 +469,9 @@ const applySearch = () => {
                         :disabled="!link.url"
                         :variant="link.active ? 'default' : 'outline'"
                         class="px-3 py-1 rounded-md text-sm"
-                        v-html="link.label"
-                    />
+                    >
+                        <span v-html="link.label"></span>
+                    </Button>
                 </div>
             </div>
         </div>

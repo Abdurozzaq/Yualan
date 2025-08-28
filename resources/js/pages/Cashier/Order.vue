@@ -19,7 +19,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { usePage } from '@inertiajs/vue3';
 import OrderForm from './OrderForm.vue'; // Ganti sesuai komponen form order Anda
 

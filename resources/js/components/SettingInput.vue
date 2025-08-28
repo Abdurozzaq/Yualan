@@ -10,8 +10,8 @@ defineProps({
 
 const emit = defineEmits(['update:modelValue']);
 
-const updateValue = (event) => {
-    emit('update:modelValue', event.target.value);
+const updateValue = (event: Event) => {
+    emit('update:modelValue', (event.target as HTMLInputElement).value);
 };
 </script>
 

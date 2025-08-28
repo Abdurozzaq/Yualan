@@ -11,7 +11,7 @@ const form = useForm({
     plan_id: null,
 });
 
-const subscribe = (planId) => {
+const subscribe = (planId: number) => {
     form.plan_id = planId;
     form.post(route('subscription.subscribe'), {
         onFinish: () => {
@@ -20,10 +20,10 @@ const subscribe = (planId) => {
     });
 };
 
-const formatCurrency = (value) => {
+const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(value);
 };
-const getDiscountedPrice = (plan) => {
+const getDiscountedPrice = (plan: { price: number; discount_percentage?: number }) => {
     if (plan.discount_percentage && plan.discount_percentage > 0) {
         return plan.price - (plan.price * plan.discount_percentage / 100);
     }

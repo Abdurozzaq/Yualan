@@ -3,9 +3,7 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, Link } from '@inertiajs/vue3';
 import { defineProps } from 'vue';
 
-const props = defineProps({
-    role: String
-});
+const props = defineProps<{ role: string }>();
 
 </script>
 

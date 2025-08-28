@@ -11,7 +11,7 @@ const props = defineProps({
 });
 
 // Create a form data object from the settings array
-const formData = props.settings.reduce((acc, setting) => {
+const formData = props.settings.reduce((acc: Record<string, string>, setting: { key: string; value?: string }) => {
     acc[setting.key] = setting.value || '';
     return acc;
 }, {});
@@ -32,7 +32,7 @@ const submit = () => {
             modalMessage.value = 'Your settings have been saved successfully.';
             showModal.value = true;
         },
-        onError: (errors) => {
+        onError: (_errors: any) => {
             isError.value = true;
             modalTitle.value = 'Error!';
             modalMessage.value = 'There was an error saving your settings. Please check the form and try again.';

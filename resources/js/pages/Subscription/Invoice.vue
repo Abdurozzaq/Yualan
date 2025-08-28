@@ -75,12 +75,12 @@ function goToHistory() {
   router.visit(route('invoices.history', { tenantSlug: tenantSlug.value }));
 }
 
-function formatDate(date) {
+function formatDate(date: string | number | Date) {
   if (!date) return '-';
   return new Date(date).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' });
 }
 
-function formatCurrency(amount) {
+function formatCurrency(amount: number | string) {
   if (!amount) return '0';
   return Number(amount).toLocaleString('id-ID');
 }
