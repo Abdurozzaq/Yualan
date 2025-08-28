@@ -46,9 +46,6 @@ const form = useForm({
     reason: '',
 });
 
-const selectedProduct = computed(() => {
-    return props.products.find(p => p.id === form.product_id);
-});
 
 const submitAdjustStock = () => {
     form.post(route('inventory.adjust', { tenantSlug: props.tenantSlug }), {

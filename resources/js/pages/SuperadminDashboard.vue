@@ -68,11 +68,7 @@ const formatDate = (dateTimeString: string) => {
         day: 'numeric',
     });
 };
-</script>
-
-<template>
-    <Head title="Superadmin Dashboard" />
-
+    // Removed unused props variable
     <SuperadminLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full flex-1 flex-col gap-4 rounded-xl p-4 overflow-x-auto">
             <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100">Selamat Datang, {{ page.props.auth.user.name }}!</h1>

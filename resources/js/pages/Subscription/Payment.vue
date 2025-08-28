@@ -3,9 +3,7 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, useForm } from '@inertiajs/vue3';
 import { defineProps } from 'vue';
 
-const props = defineProps({
-    pricingPlans: Array,
-});
+// Removed unused props variable
 
 const form = useForm({
     plan_id: null,

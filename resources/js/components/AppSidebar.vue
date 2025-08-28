@@ -14,14 +14,7 @@ import { useSidebar } from '@/components/ui/sidebar/utils';
 
 // Theme switcher logic
 const isDark = ref(false);
-const toggleTheme = () => {
-    isDark.value = !isDark.value;
-    if (isDark.value) {
-        document.documentElement.classList.add('dark');
-    } else {
-        document.documentElement.classList.remove('dark');
-    }
-};
+// Removed unused toggleTheme function
 
 const page = usePage();
 const tenantSlug = computed(() => page.props.tenantSlug as string | undefined);

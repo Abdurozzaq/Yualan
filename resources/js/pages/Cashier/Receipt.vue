@@ -28,13 +28,13 @@ const retryMidtransPayment = () => {
                 // Call Snap.js
                 if (window.snap) {
                     window.snap.pay(data.snapToken, {
-                        onSuccess: function(result: any) {
+                        onSuccess: function() {
                             window.location.reload();
                         },
-                        onPending: function(result: any) {
+                        onPending: function() {
                             window.location.reload();
                         },
-                        onError: function(result: any) {
+                        onError: function() {
                             window.location.reload();
                         },
                         onClose: function() {}

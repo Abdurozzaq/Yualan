@@ -52,7 +52,6 @@ const props = defineProps<{
 }>();
 
 // Inertia page props
-const page = usePage();
 
 const breadcrumbs: BreadcrumbItem[] = [
     {

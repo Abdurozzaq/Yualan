@@ -120,7 +120,7 @@ const submitForm = () => {
         onError: (errors) => {
             console.error('Form error:', errors);
         },
-        onFinish: (visit) => {
+            onFinish: () => {
             // Jika terjadi redirect tanpa pesan
         }
     };

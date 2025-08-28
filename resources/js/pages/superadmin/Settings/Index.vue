@@ -32,7 +32,7 @@ const submit = () => {
             modalMessage.value = 'Your settings have been saved successfully.';
             showModal.value = true;
         },
-        onError: (_errors: any) => {
+    onError: () => {
             isError.value = true;
             modalTitle.value = 'Error!';
             modalMessage.value = 'There was an error saving your settings. Please check the form and try again.';
