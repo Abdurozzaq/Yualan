@@ -73,12 +73,22 @@ const submitReceiveGoods = () => {
             form.reset();
             alert('Penerimaan barang berhasil dicatat!');
         },
-        onError: (errors) => {
+        onError: (errors: any) => {
             console.error("Submission errors:", errors);
             alert('Terjadi kesalahan saat mencatat penerimaan barang. Silakan periksa input Anda.');
         },
     });
 };
+
+
+function computed(arg0: () => any) {
+    throw new Error('Function not implemented.');
+}
+
+
+function watch(selectedProduct: void, arg1: (newProduct: any) => void) {
+    throw new Error('Function not implemented.');
+}
 </script>
 
 <template>
