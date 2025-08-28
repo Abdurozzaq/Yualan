@@ -40,11 +40,6 @@ interface TopTenantBySales {
     total_sales_amount: number;
 }
 
-const props = defineProps<{
-    stats: SuperadminStats;
-    recentTenants: RecentTenant[];
-    topTenantsBySales: TopTenantBySales[];
-}>();
 
 const page = usePage(); // To access auth.user for welcome message
 

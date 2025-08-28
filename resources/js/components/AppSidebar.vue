@@ -13,7 +13,6 @@ import { computed, onMounted, ref, watch } from 'vue';
 import { useSidebar } from '@/components/ui/sidebar/utils';
 
 // Theme switcher logic
-const isDark = ref(false);
 // Removed unused toggleTheme function
 
 const page = usePage();
