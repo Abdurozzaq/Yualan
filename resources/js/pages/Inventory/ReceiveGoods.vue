@@ -10,6 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { LoaderCircle } from 'lucide-vue-next';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { formatCurrency } from '@/utils/formatters';
+import { useForm } from '@inertiajs/vue3';
 
 interface Product {
     id: string;
