@@ -140,16 +140,16 @@ const mainNavItems = computed<NavItem[]>(() => {
 });
 
 const footerNavItems: NavItem[] = [
-    {
-        title: 'Github Repo',
-        href: 'https://github.com/Abdurozzaq/Yualan',
-        icon: Folder,
-    },
-    {
-        title: 'Documentation',
-        href: 'https://yualan.web.id',
-        icon: BookOpen,
-    },
+    // {
+    //     title: 'Github Repo',
+    //     href: 'https://github.com/Abdurozzaq/Yualan',
+    //     icon: Folder,
+    // },
+    // {
+    //     title: 'Documentation',
+    //     href: 'https://yualan.web.id',
+    //     icon: BookOpen,
+    // },
 ];
 
 const isSubscriptionExpired = computed(() => {

@@ -32,7 +32,7 @@ const props = defineProps<{
 
 const breadcrumbs = computed<BreadcrumbItem[]>(() => [
     { title: 'Dashboard', href: route('tenant.dashboard', { tenantSlug: props.tenantSlug }) },
-    { label: 'Master Voucher', href: '#' },
+    { title: 'Master Voucher', href: '#' },
 ]);
 
 const currentPerPage = ref(props.filters.perPage || 10);
@@ -41,6 +41,7 @@ const currentSortDirection = ref(props.filters.sortDirection || 'desc');
 const currentSearch = ref(props.filters.search || '');
 
 const form = useForm({
+    id: null as number | null,
     code: '',
     name: '',
     type: 'percentage' as 'percentage' | 'percentage_max' | 'nominal',
@@ -55,6 +56,23 @@ const isFormDialogOpen = ref(false);
 const isConfirmDeleteDialogOpen = ref(false);
 const voucherToDelete = ref<Voucher | null>(null);
 const formTitle = computed(() => (form.id ? 'Edit Voucher' : 'Tambah Voucher Baru'));
+
+function openFormDialog(voucher?: Voucher) {
+    if (voucher) {
+        form.id = voucher.id;
+        form.code = voucher.code;
+        form.name = voucher.name;
+        form.type = voucher.type;
+        form.value = voucher.value;
+        form.max_nominal = voucher.max_nominal;
+        form.expiry_date = voucher.expiry_date;
+        form._method = 'put';
+    } else {
+        form.reset();
+        form._method = 'post';
+    }
+    isFormDialogOpen.value = true;
+}
 
 // Print dialog state & functions
 const isPrintDialogOpen = ref(false);
