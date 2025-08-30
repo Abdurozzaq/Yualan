@@ -4,6 +4,59 @@ import { type BreadcrumbItem } from '@/types';
 import { Head, usePage, useForm } from '@inertiajs/vue3';
 import { computed, ref, watch, onMounted } from 'vue';
 // Modal error dialog state
+// Pagination state & fetch
+const currentPage = ref(1);
+const perPage = ref(10);
+const totalPages = ref(1);
+const paginatedProducts = ref<Product[]>([]);
+const isLoadingProducts = ref(false);
+
+// Sorting state
+const sortField = ref<'name' | 'price'>('name');
+const sortDirection = ref<'asc' | 'desc'>('asc');
+
+// Declare selectedCategory before usage
+const selectedCategory = ref<string | null>(null);
+const searchTerm = ref('');
+
+const fetchProducts = async () => {
+    isLoadingProducts.value = true;
+    try {
+        const params = new URLSearchParams({
+            page: currentPage.value.toString(),
+            per_page: perPage.value.toString(),
+            category_id: selectedCategory.value || '',
+            search: searchTerm.value || '',
+            sort_field: sortField.value,
+            sort_direction: sortDirection.value,
+        });
+        const res = await fetch(route('sales.paginatedProducts', { tenantSlug: props.tenantSlug }) + '?' + params.toString(), {
+            method: 'GET',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            credentials: 'same-origin',
+        });
+        const data = await res.json();
+    paginatedProducts.value = data.products;
+    totalPages.value = data.total_pages || 1;
+    } catch (e) {
+        console.error('Gagal fetch produk:', e);
+    } finally {
+        isLoadingProducts.value = false;
+    }
+};
+
+watch([currentPage, selectedCategory, searchTerm], () => {
+    fetchProducts();
+});
+
+watch([sortField, sortDirection], () => {
+    fetchProducts();
+});
+
+onMounted(() => {
+    fetchProducts();
+});
+
 const errorDialog = ref<{ show: boolean, message: string, info?: string } | null>(null);
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,13 +68,18 @@ import { formatCurrency } from '@/utils/formatters'; // Make sure this utility e
 
 interface Product {
     id: string;
+    tenant_id?: string;
+    category_id: string | null;
     name: string;
+    sku?: string | null;
+    description?: string | null;
     price: number;
     stock: number;
     unit: string | null;
-    category_id: string | null;
+    image?: string | null;
     category?: { id: string; name: string };
-    image?: string | null; // Add image property
+    is_food_item?: boolean;
+    ingredients?: string | null;
 }
 
 interface Customer {
@@ -77,8 +135,6 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-const selectedCategory = ref<string | null>(null);
-const searchTerm = ref('');
 const cartItems = ref<SaleItemFormData[]>([]);
 const selectedCustomer = ref<string | null>(null);
 
@@ -628,7 +684,7 @@ watch(totalAmount, (newTotal) => {
     <AppLayout :breadcrumbs="breadcrumbs">
         <!-- Alert bar fullwidth untuk possible promo -->
         <transition name="fade">
-            <div v-if="possiblePromos.length > 0 && showPossiblePromoAlert" class="w-full mb-4 px-4 py-3 bg-orange-100 dark:bg-orange-900 text-orange-800 dark:text-orange-200 rounded-lg border border-orange-300 dark:border-orange-700 flex flex-col gap-2 relative">
+            <div v-if="possiblePromos.length > 0 && showPossiblePromoAlert" class="mb-4 mx-4 px-4 py-3 bg-orange-100 dark:bg-orange-900 text-orange-800 dark:text-orange-200 rounded-lg border border-orange-300 dark:border-orange-700 flex flex-col gap-2 relative">
                 <button @click="showPossiblePromoAlert = false" class="absolute top-2 right-3 text-orange-700 dark:text-orange-200 hover:text-red-500 text-xl font-bold">&times;</button>
                 <div class="flex items-center gap-2 mb-1">
                     <Percent class="h-5 w-5 text-orange-600" />
@@ -672,29 +728,63 @@ watch(totalAmount, (newTotal) => {
             <div class="flex-1 bg-white dark:bg-gray-800 rounded-xl shadow p-4 md:p-6 overflow-hidden flex flex-col">
                 <h2 class="text-xl md:text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">Daftar Produk</h2>
 
-                <div class="mb-4 flex flex-col sm:flex-row gap-3">
-                    <Input
-                        type="text"
-                        v-model="searchTerm"
-                        placeholder="Cari produk..."
-                        class="flex-1"
-                    />
-                    <Select v-model="selectedCategory">
-                        <SelectTrigger class="w-full sm:w-[180px]">
-                            <SelectValue placeholder="Filter Kategori" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem :value="null">Semua Kategori</SelectItem>
-                            <SelectItem v-for="category in categories" :key="category.id" :value="category.id">
-                                {{ category.name }}
-                            </SelectItem>
-                        </SelectContent>
-                    </Select>
+                <div class="mb-4 flex flex-col sm:flex-row gap-3 items-end">
+                    <div class="flex flex-col flex-1 min-w-[120px]">
+                        <Label for="searchTerm" class="text-gray-700 dark:text-gray-300 text-sm mb-1">Cari Produk</Label>
+                        <Input
+                            id="searchTerm"
+                            type="text"
+                            v-model="searchTerm"
+                            placeholder="Ketik nama, unit, atau SKU..."
+                            class="w-full flex-1"
+                        />
+                    </div>
+                    <div class="flex flex-col sm:w-[160px]">
+                        <Label for="categorySelect" class="text-gray-700 dark:text-gray-300 text-sm mb-1">Filter Kategori</Label>
+                        <Select v-model="selectedCategory">
+                            <SelectTrigger id="categorySelect" class="w-full">
+                                <SelectValue placeholder="Filter Kategori" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem :value="null">Semua Kategori</SelectItem>
+                                <SelectItem v-for="category in categories" :key="category.id" :value="category.id">
+                                    {{ category.name }}
+                                </SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    <div class="flex flex-col w-[150px]">
+                        <Label for="sortField" class="text-gray-700 dark:text-gray-300 text-sm mb-1">Urutkan Berdasarkan</Label>
+                        <Select v-model="sortField">
+                            <SelectTrigger id="sortField" class="w-full">
+                                <SelectValue placeholder="Sort By" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="name">Nama</SelectItem>
+                                <SelectItem value="price">Harga</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    <div class="flex flex-col w-[120px]">
+                        <Label for="sortDirection" class="text-gray-700 dark:text-gray-300 text-sm mb-1">Arah</Label>
+                        <Select v-model="sortDirection">
+                            <SelectTrigger id="sortDirection" class="w-full">
+                                <SelectValue placeholder="Arah" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="asc">Naik</SelectItem>
+                                <SelectItem value="desc">Turun</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
                 </div>
 
                 <div class="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3 overflow-y-auto flex-1 pb-2">
+                    <div v-if="isLoadingProducts" class="col-span-full text-center py-8 text-gray-500 dark:text-gray-400">
+                        Memuat produk...
+                    </div>
                     <div
-                        v-for="product in filteredProducts"
+                        v-for="product in paginatedProducts"
                         :key="product.id"
                         @click="addToCart(product)"
                         :class="[
@@ -715,14 +805,36 @@ watch(totalAmount, (newTotal) => {
                         </div>
                         <h3 class="font-semibold text-gray-900 dark:text-gray-100 text-sm leading-tight mb-1 line-clamp-2">{{ product.name }}</h3>
                         <p class="text-xs text-gray-600 dark:text-gray-400 mb-1">{{ product.category?.name || 'Uncategorized' }}</p>
+                        <p v-if="product.sku" class="text-xs text-gray-500 dark:text-gray-400 mb-1">SKU: <span class="font-mono">{{ product.sku }}</span></p>
+                        <p v-if="product.description" class="text-xs text-gray-700 dark:text-gray-300 mb-1 line-clamp-2">{{ product.description.length > 60 ? product.description.slice(0, 60) + '...' : product.description }}</p>
+                        <p v-if="product.unit" class="text-xs text-gray-500 dark:text-gray-400 mb-1">Satuan: {{ product.unit }}</p>
                         <p class="text-base font-bold text-blue-600 dark:text-blue-400">{{ formatCurrency(product.price) }}</p>
                         <p :class="['text-xs font-medium mt-auto pt-1', product.stock <= 5 && product.stock > 0 ? 'text-orange-500' : product.stock === 0 ? 'text-red-500' : 'text-gray-500 dark:text-gray-400']">
                             Stok: {{ product.stock }} {{ product.unit || 'pcs' }}
                         </p>
+                        <p v-if="product.is_food_item && product.ingredients" class="text-xs text-green-700 dark:text-green-300 mb-1 line-clamp-2">Bahan: {{ product.ingredients.length > 60 ? product.ingredients.slice(0, 60) + '...' : product.ingredients }}</p>
                         <div v-if="product.stock === 0" class="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center rounded-lg">
                             <span class="text-white font-bold text-sm">SOLD OUT</span>
                         </div>
                     </div>
+                </div>
+                <!-- Pagination Navigation -->
+                <div v-if="totalPages > 1" class="flex justify-center items-center gap-2 mt-4">
+                    <button
+                        class="px-3 py-1 rounded border bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 disabled:opacity-50"
+                        :disabled="currentPage === 1 || isLoadingProducts"
+                        @click="currentPage--"
+                    >
+                        &laquo; Prev
+                    </button>
+                    <span class="font-semibold text-sm">Halaman {{ currentPage }} / {{ totalPages }}</span>
+                    <button
+                        class="px-3 py-1 rounded border bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 disabled:opacity-50"
+                        :disabled="currentPage === totalPages || isLoadingProducts"
+                        @click="currentPage++"
+                    >
+                        Next &raquo;
+                    </button>
                 </div>
             </div>
 

@@ -213,6 +213,7 @@ Route::middleware('auth')->group(function () {
 
     // Rute untuk Sales/Pemesanan dan Riwayat
     Route::prefix('{tenantSlug}')->middleware(['tenant.access', 'check.subscription'])->group(function () {
+        Route::get('sales/paginated-products', [SaleController::class, 'paginatedProducts'])->name('sales.paginatedProducts');
         Route::get('sales/order', [SaleController::class, 'order'])->name('sales.order');
         Route::post('sales/store', [SaleController::class, 'store'])->name('sales.store');
         Route::get('sales/receipt/{sale}', [SaleController::class, 'receipt'])->name('sales.receipt');

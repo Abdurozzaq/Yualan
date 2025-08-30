@@ -21,6 +21,47 @@ use Illuminate\Support\Str; // Import Str for UUID in Sale model creation
 
 class SaleController extends Controller {
     /**
+     * Endpoint untuk produk paginasi (untuk kasir)
+     */
+    public function paginatedProducts(Request $request, $tenantSlug)
+    {
+        $tenant = \App\Models\Tenant::where('slug', $tenantSlug)->firstOrFail();
+        $perPage = (int) $request->get('per_page', 20);
+        $page = (int) $request->get('page', 1);
+        $categoryId = $request->get('category_id');
+        $search = $request->get('search');
+        $sortField = $request->get('sort_field', 'name');
+        $sortDirection = $request->get('sort_direction', 'asc');
+
+        $allowedFields = ['name', 'price', 'stock', 'sku'];
+        if (!in_array($sortField, $allowedFields)) {
+            $sortField = 'name';
+        }
+        if (!in_array(strtolower($sortDirection), ['asc', 'desc'])) {
+            $sortDirection = 'asc';
+        }
+
+        $query = \App\Models\Product::where('tenant_id', $tenant->id);
+        if ($categoryId) {
+            $query->where('category_id', $categoryId);
+        }
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', '%' . $search . '%')
+                  ->orWhere('unit', 'like', '%' . $search . '%')
+                  ->orWhere('sku', 'like', '%' . $search . '%');
+            });
+        }
+        $products = $query->with('category')->orderBy($sortField, $sortDirection)->paginate($perPage, ['*'], 'page', $page);
+
+        return response()->json([
+            'products' => $products->items(),
+            'total_pages' => $products->lastPage(),
+            'current_page' => $products->currentPage(),
+            'total' => $products->total(),
+        ]);
+    }
+    /**
      * Get voucher by code (for validation in frontend)
      */
     public function getVoucherByCode(Request $request, $tenantSlug, $code)
