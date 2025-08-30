@@ -283,24 +283,6 @@ const form = useForm({
     notes: '',
 });
 
-// Computed property for filtered products based on category and search
-const filteredProducts = computed(() => {
-    let products = props.products;
-
-    if (selectedCategory.value) {
-        products = products.filter(product => product.category_id === selectedCategory.value);
-    }
-
-    if (searchTerm.value) {
-        const lowerCaseSearch = searchTerm.value.toLowerCase();
-        products = products.filter(product =>
-            product.name.toLowerCase().includes(lowerCaseSearch) ||
-            product.unit?.toLowerCase().includes(lowerCaseSearch)
-        );
-    }
-    return products;
-});
-
 // Add product to cart
 const addToCart = (product: Product) => {
     // Cari item berbayar (price > 0) di cart
