@@ -165,7 +165,7 @@ function handleSort(column: string) {
             <!-- Filter Section -->
             <div class="flex items-center gap-4 mb-4">
                 <label class="font-semibold">Periode:</label>
-                <select v-model="filterType" class="border rounded px-2 py-1">
+                <select v-model="filterType" class="border rounded px-2 py-1 bg-white text-gray-900 dark:bg-gray-900 dark:text-gray-100">
                     <option value="day">Hari</option>
                     <option value="week">Minggu</option>
                     <option value="month">Bulan</option>
