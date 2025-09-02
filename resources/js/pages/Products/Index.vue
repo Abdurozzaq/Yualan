@@ -85,7 +85,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 // Reactive state for filters and sorting
-const currentPerPage = ref(props.filters.perPage);
+const currentPerPage = ref(props.filters.perPage || 50);
 const currentSortBy = ref(props.filters.sortBy);
 const currentSortDirection = ref(props.filters.sortDirection);
 const currentSearch = ref(props.filters.search || '');
@@ -397,7 +397,7 @@ const imagePreviewUrl = computed(() => {
     if (form.image) {
         return URL.createObjectURL(form.image);
     } else if (currentProductImage.value) {
-        return `/storage/${currentProductImage.value}`;
+        return appDomain + '/file/' + currentProductImage.value;
     }
     return null;
 });
@@ -430,6 +430,9 @@ const handleDropAreaDrop = (event: DragEvent) => {
         importFile.value = event.dataTransfer.files[0];
     }
 };
+
+
+const appDomain = import.meta.env.VITE_API_DOMAIN || 'http://localhost:8000';
 </script>
 
 <template>
@@ -577,7 +580,7 @@ const handleDropAreaDrop = (event: DragEvent) => {
                             <TableCell>
                                 <img
                                     v-if="product.image"
-                                    :src="`/storage/${product.image}`"
+                                    :src="appDomain + '/file/' + product.image"
                                     alt="Product Image"
                                     class="w-12 h-12 object-cover rounded-md"
                                 />
@@ -701,7 +704,7 @@ const handleDropAreaDrop = (event: DragEvent) => {
                             <Input id="image" type="file" @change="handleImageChange" accept="image/*" class="col-span-3" />
                             <InputError :message="form.errors.image" />
                             <div v-if="imagePreviewUrl" class="relative w-32 h-32 border rounded-md overflow-hidden bg-gray-100 dark:bg-gray-700">
-                                <img :src="imagePreviewUrl" alt="Image Preview" class="w-full h-full object-cover" />
+                                <img v-if="imagePreviewUrl" :src="imagePreviewUrl" alt="Image Preview" class="w-full h-full object-cover" />
                                 <Button
                                     type="button"
                                     variant="destructive"

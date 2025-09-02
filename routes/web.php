@@ -30,6 +30,7 @@ use App\Models\PricingPlan;
 use App\Models\SaasSetting;
 use App\Http\Controllers\EmployeeController;
 use App\Models\Tenant;
+use App\Http\Controllers\FileController;
 
 Route::get('/', function () {
     $plans = PricingPlan::query()
@@ -45,6 +46,8 @@ Route::get('/', function () {
         'trialDays' => $trialDays,
     ]);
 })->name('home');
+
+Route::get('/file/products/{folder}/{filename}', [FileController::class, 'showProductFile']);
 
 // Midtrans Payment
 Route::post('/{tenantSlug}/midtrans/pay', [MidtransController::class, 'pay'])->name('midtrans.pay');
@@ -240,6 +243,8 @@ Route::middleware('auth')->group(function () {
 
         // Inventory Management Routes
         Route::prefix('inventory')->group(function () { // Removed leading '/'
+            // Autocomplete product search API
+            Route::get('search-products', [InventoryController::class, 'searchProducts'])->name('inventory.searchProducts');
             Route::get('overview', [InventoryController::class, 'index'])->name('inventory.overview'); // Removed leading '/'
             Route::get('movements', [InventoryController::class, 'movements'])->name('inventory.movements'); // Removed leading '/'
             Route::get('receive', [InventoryController::class, 'receiveGoodsForm'])->name('inventory.receive.form'); // Removed leading '/'

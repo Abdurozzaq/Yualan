@@ -658,6 +658,9 @@ watch(totalAmount, (newTotal) => {
     }
 });
 
+
+const appDomain = import.meta.env.VITE_API_DOMAIN || 'http://localhost:8000';
+
 </script>
 
 <template>
@@ -777,9 +780,9 @@ watch(totalAmount, (newTotal) => {
                         <div class="w-full h-28 xs:h-24 sm:h-28 md:h-24 lg:h-28 xl:h-24 bg-gray-100 dark:bg-gray-600 rounded-md mb-2 overflow-hidden flex items-center justify-center">
                             <img
                                 v-if="product.image"
-                                :src="`/storage/${product.image}`"
+                                :src="appDomain + '/file/' + product.image"
                                 alt="Product Image"
-                                class="w-full h-full object-cover"
+                                class="w-full h-full object-cover rounded-md"
                             />
                             <div v-else class="text-gray-400 dark:text-gray-500 flex items-center justify-center">
                                 <ImageIcon class="w-8 h-8" />
@@ -807,7 +810,7 @@ watch(totalAmount, (newTotal) => {
                         :disabled="currentPage === 1 || isLoadingProducts"
                         @click="currentPage--"
                     >
-                        &laquo; Prev
+                        Prev
                     </button>
                     <span class="font-semibold text-sm">Halaman {{ currentPage }} / {{ totalPages }}</span>
                     <button
@@ -815,7 +818,7 @@ watch(totalAmount, (newTotal) => {
                         :disabled="currentPage === totalPages || isLoadingProducts"
                         @click="currentPage++"
                     >
-                        Next &raquo;
+                        Next
                     </button>
                 </div>
             </div>

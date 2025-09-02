@@ -11,7 +11,7 @@ import { LoaderCircle } from 'lucide-vue-next';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { formatCurrency } from '@/utils/formatters';
 import { useForm } from '@inertiajs/vue3';
-import { computed, watch } from 'vue';
+import { computed, watch, ref } from 'vue';
 
 interface Product {
     id: string;
@@ -53,6 +53,40 @@ const form = useForm({
     cost_per_unit: 0.00,
     supplier_id: null as string | null, // New field for supplier
     reason: '',
+});
+
+// Autocomplete product search
+const productSearch = ref('');
+const productResults = ref<Product[]>([]);
+const searchingProduct = ref(false);
+const showProductDropdown = ref(false);
+
+const fetchProducts = async (query: string) => {
+    searchingProduct.value = true;
+    try {
+        const res = await fetch(`/${props.tenantSlug}/inventory/search-products?q=${encodeURIComponent(query)}`);
+        if (res.ok) {
+            const data = await res.json();
+            productResults.value = data.products;
+            showProductDropdown.value = true;
+        } else {
+            productResults.value = [];
+            showProductDropdown.value = false;
+        }
+    } catch (e) {
+        productResults.value = [];
+        showProductDropdown.value = false;
+    }
+    searchingProduct.value = false;
+};
+
+watch(productSearch, (val) => {
+    if (val.length >= 2) {
+        fetchProducts(val);
+    } else {
+        productResults.value = [];
+        showProductDropdown.value = false;
+    }
 });
 
 const selectedProduct = computed(() => {
@@ -97,16 +131,28 @@ const submitReceiveGoods = () => {
                 <form @submit.prevent="submitReceiveGoods" class="grid gap-6">
                     <div class="grid gap-2">
                         <Label for="product_id">Produk</Label>
-                        <Select v-model="form.product_id" required>
-                            <SelectTrigger>
-                                <SelectValue placeholder="Pilih Produk" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem v-for="product in products" :key="product.id" :value="product.id">
-                                    {{ product.name }} (Stok: {{ product.stock }}, HPP: {{ formatCurrency(product.cost_price) }})
-                                </SelectItem>
-                            </SelectContent>
-                        </Select>
+                        <div class="relative">
+                            <Input
+                                id="product_search"
+                                v-model="productSearch"
+                                placeholder="Cari produk..."
+                                autocomplete="off"
+                            />
+                            <div v-if="productSearch.length >= 2 && showProductDropdown" class="absolute z-10 bg-white border rounded w-full mt-1 shadow-lg max-h-60 overflow-auto">
+                                <div v-if="searchingProduct" class="p-2 text-sm text-gray-500">Mencari...</div>
+                                <template v-else>
+                                    <div v-if="productResults.length === 0" class="p-2 text-sm text-gray-500">Produk tidak ditemukan</div>
+                                    <div
+                                        v-for="product in productResults"
+                                        :key="product.id"
+                                        @click="form.product_id = product.id; productSearch = product.name; showProductDropdown = false"
+                                        class="p-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+                                    >
+                                        {{ product.name }} (Stok: {{ product.stock }}, HPP: {{ formatCurrency(product.cost_price) }})
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
                         <InputError :message="form.errors.product_id" />
                     </div>
 

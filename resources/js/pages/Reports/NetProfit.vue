@@ -2,35 +2,61 @@
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/vue3';
-import { ref, watch } from 'vue';
+import { ref } from 'vue';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { formatCurrency } from '@/utils/formatters';
 import { CalendarIcon } from 'lucide-vue-next';
 
-interface Filters {
-    start_date: string;
-    end_date: string;
-}
-
+import { watch } from 'vue';
 const props = defineProps<{
     totalRevenue: number;
     totalCogs: number;
     grossProfit: number;
     netProfit: number;
-    sales: Array<{
-        invoice_number: string;
-        customer_name: string;
-        total_amount: number;
-        total_cogs: number;
-        net_profit: number;
-        created_at: string;
-    }>;
-    filters: Filters;
+    sales: {
+        data: Array<{
+            invoice_number: string;
+            customer_name: string;
+            total_amount: number;
+            total_cogs: number;
+            net_profit: number;
+            created_at: string;
+        }>;
+        current_page?: number;
+        last_page?: number;
+        per_page?: number;
+        total?: number;
+        from?: number;
+        to?: number;
+        links?: Array<{ url: string | null; label: string; active: boolean }>;
+    };
     tenantSlug: string;
     tenantName: string;
+    filters: {
+        start_date: string;
+        end_date: string;
+        sort_by: string;
+        sort_order: string;
+    };
 }>();
 
+const sortableFields = [
+    { label: 'Tanggal', value: 'created_at' },
+    { label: 'Invoice', value: 'invoice_number' },
+    { label: 'Customer', value: 'customer_name' },
+    { label: 'Total', value: 'total_amount' },
+    { label: 'HPP', value: 'total_cogs' },
+    { label: 'Laba Bersih', value: 'net_profit' },
+];
+
+// Set initial date range to today from backend props.filters
+const startDate = ref<string>(props.filters?.start_date || new Date().toISOString().slice(0, 10));
+const endDate = ref<string>(props.filters?.end_date || new Date().toISOString().slice(0, 10));
+const sortBy = ref<string>(props.filters?.sort_by || 'created_at');
+const sortOrder = ref<'asc' | 'desc'>(props.filters?.sort_order === 'asc' ? 'asc' : 'desc');
+
+const sortedSales = ref([...props.sales.data]);
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Dashboard',
@@ -46,69 +72,72 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-const startDate = ref<Date | undefined>(props.filters.start_date ? new Date(props.filters.start_date) : undefined);
-const endDate = ref<Date | undefined>(props.filters.end_date ? new Date(props.filters.end_date) : undefined);
+function handleSort(field: string) {
+    if (sortBy.value === field) {
+        sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc';
+    } else {
+        sortBy.value = field;
+        sortOrder.value = 'asc';
+    }
+    fetchData();
+    sortSales();
+}
 
-// Fungsi format tanggal ke format Indonesia
-const formatDate = (date: Date | undefined) => {
-    if (!date) return 'Pilih tanggal';
-    
-    const options: Intl.DateTimeFormatOptions = {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric'
-    };
-    
-    return date.toLocaleDateString('id-ID', options);
-};
-
-// Fungsi format ke YYYY-MM-DD untuk request API
-const formatDateForApi = (date: Date | undefined) => {
-    if (!date) return undefined;
-    
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    
-    return `${year}-${month}-${day}`;
-};
-
-watch([startDate, endDate], () => {
+function fetchData() {
     router.get(
         route('reports.netProfit', { tenantSlug: props.tenantSlug }),
         {
-            start_date: formatDateForApi(startDate.value),
-            end_date: formatDateForApi(endDate.value),
+            start_date: startDate.value,
+            end_date: endDate.value,
+            sort_by: sortBy.value,
+            sort_order: sortOrder.value,
         },
         {
             preserveState: true,
             preserveScroll: true,
-            only: ['totalRevenue', 'totalCogs', 'grossProfit', 'netProfit', 'sales', 'filters'],
+            only: ['totalRevenue', 'totalCogs', 'grossProfit', 'netProfit', 'sales'],
         }
     );
-});
+}
 
-const resetDates = () => {
-    startDate.value = undefined;
-    endDate.value = undefined;
-};
+function sortSales() {
+    sortedSales.value = [...props.sales.data].sort((a, b) => {
+        const field = sortBy.value as keyof typeof a;
+        let valA = a[field];
+        let valB = b[field];
+        // Numeric sort for amount fields
+        if (["total_amount", "total_cogs", "net_profit"].includes(field)) {
+            valA = Number(valA);
+            valB = Number(valB);
+        }
+        if (valA < valB) return sortOrder.value === 'asc' ? -1 : 1;
+        if (valA > valB) return sortOrder.value === 'asc' ? 1 : -1;
+        return 0;
+    });
+}
 
-// Fungsi untuk menangani input date manual
-const handleDateInput = (e: Event, type: 'start' | 'end') => {
-    const input = e.target as HTMLInputElement;
-    const date = input.value ? new Date(input.value) : undefined;
+watch(() => props.sales.data, () => {
+    sortSales();
+}, { immediate: true });
     
+
+
+function handleDateChange(e: Event, type: 'start' | 'end') {
+    const val = (e.target as HTMLInputElement).value;
     if (type === 'start') {
-        startDate.value = date;
+        startDate.value = val;
     } else {
-        endDate.value = date;
+        endDate.value = val;
     }
-};
+}
+
+function handleSubmitFilter() {
+    fetchData();
+}
 </script>
 
 <template>
     <Head title="Laporan Laba Bersih" />
-
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full flex-1 flex-col gap-4 rounded-xl p-4 overflow-x-auto">
             <div class="flex items-center justify-between mb-4">
@@ -116,45 +145,39 @@ const handleDateInput = (e: Event, type: 'start' | 'end') => {
                     Laporan Laba Bersih {{ tenantName ? `(${tenantName})` : '' }}
                 </h1>
             </div>
-
-            <!-- Date Filter Section - Menggunakan input date native -->
-            <div class="flex flex-col sm:flex-row items-center gap-4 mb-6 p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm">
-                <div class="flex items-center gap-2 w-full sm:w-auto">
-                    <Label for="start_date">Dari Tanggal:</Label>
-                    <div class="relative">
-                        <input
-                            type="date"
-                            id="start_date"
-                            :value="startDate ? startDate.toISOString().split('T')[0] : ''"
-                            @change="(e) => handleDateInput(e, 'start')"
-                            class="w-[240px] px-3 py-2 border rounded-md bg-background text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
-                        />
-                        <CalendarIcon class="absolute right-3 top-2.5 h-4 w-4 text-muted-foreground pointer-events-none" />
-                    </div>
+            <!-- Filter Date Range & Sorting -->
+            <div class="flex flex-col md:flex-row items-center justify-between gap-4 mb-4">
+                <div class="flex gap-2 items-center">
+                    <CalendarIcon class="h-5 w-5 text-blue-500 dark:text-blue-400" />
+                    <Label for="start_date">Dari:</Label>
+                    <input
+                        type="date"
+                        id="start_date"
+                        :value="startDate"
+                        @change="(e) => handleDateChange(e, 'start')"
+                        class="px-2 py-1 border rounded-md bg-background text-sm"
+                    />
+                    <Label for="end_date">Sampai:</Label>
+                    <input
+                        type="date"
+                        id="end_date"
+                        :value="endDate"
+                        @change="(e) => handleDateChange(e, 'end')"
+                        class="px-2 py-1 border rounded-md bg-background text-sm"
+                    />
+                    <Button @click="handleSubmitFilter" variant="outline" size="sm" class="ml-2">Terapkan</Button>
                 </div>
-                <div class="flex items-center gap-2 w-full sm:w-auto">
-                    <Label for="end_date">Sampai Tanggal:</Label>
-                    <div class="relative">
-                        <input
-                            type="date"
-                            id="end_date"
-                            :value="endDate ? endDate.toISOString().split('T')[0] : ''"
-                            @change="(e) => handleDateInput(e, 'end')"
-                            class="w-[240px] px-3 py-2 border rounded-md bg-background text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
-                        />
-                        <CalendarIcon class="absolute right-3 top-2.5 h-4 w-4 text-muted-foreground pointer-events-none" />
-                    </div>
+                <div class="flex gap-2 items-center">
+                    <Label for="sortBy">Urutkan:</Label>
+                    <select id="sortBy" v-model="sortBy" @change="handleSort(sortBy)" class="px-2 py-1 border rounded-md bg-background text-sm">
+                        <option v-for="field in sortableFields" :key="field.value" :value="field.value">{{ field.label }}</option>
+                    </select>
+                    <Button @click="sortOrder = sortOrder === 'asc' ? 'desc' : 'asc'; handleSort(sortBy)" variant="outline" size="sm">
+                        <span v-if="sortOrder === 'asc'">⬆️ Asc</span>
+                        <span v-else>⬇️ Desc</span>
+                    </Button>
                 </div>
-                <Button @click="resetDates" variant="outline" class="w-full sm:w-auto mt-2 sm:mt-0">Reset Tanggal</Button>
             </div>
-
-            <!-- Tampilkan tanggal yang dipilih dalam format Indonesia -->
-            <div v-if="startDate || endDate" class="flex gap-2 text-sm text-gray-600 dark:text-gray-400 mb-4">
-                <span v-if="startDate">Dari: {{ formatDate(startDate) }}</span>
-                <span v-if="endDate">Sampai: {{ formatDate(endDate) }}</span>
-            </div>
-
-            <!-- Report Summary Cards -->
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
                 <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 border border-gray-200 dark:border-gray-700">
                     <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">Total Pendapatan</h3>
@@ -177,7 +200,6 @@ const handleDateInput = (e: Event, type: 'start' | 'end') => {
                     </p>
                 </div>
             </div>
-
             <!-- Table Sales Data -->
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 border border-gray-200 dark:border-gray-700 mb-6">
                 <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-4">Detail Penjualan</h3>
@@ -185,16 +207,20 @@ const handleDateInput = (e: Event, type: 'start' | 'end') => {
                     <table class="min-w-full text-sm">
                         <thead>
                             <tr class="bg-gray-100 dark:bg-gray-700">
-                                <th class="px-4 py-2 text-left">Tanggal</th>
-                                <th class="px-4 py-2 text-left">Invoice</th>
-                                <th class="px-4 py-2 text-left">Customer</th>
-                                <th class="px-4 py-2 text-right">Total</th>
-                                <th class="px-4 py-2 text-right">HPP</th>
-                                <th class="px-4 py-2 text-right">Laba Bersih</th>
+                                <th v-for="field in sortableFields" :key="field.value"
+                                    :class="['px-4 py-2', field.value === 'total_amount' || field.value === 'total_cogs' || field.value === 'net_profit' ? 'text-right' : 'text-left', 'cursor-pointer']"
+                                    @click="handleSort(field.value)"
+                                >
+                                    {{ field.label }}
+                                    <span v-if="sortBy === field.value">
+                                        <svg v-if="sortOrder === 'asc'" xmlns="http://www.w3.org/2000/svg" class="inline h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" /></svg>
+                                        <svg v-else xmlns="http://www.w3.org/2000/svg" class="inline h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                                    </span>
+                                </th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="sale in sales" :key="sale.invoice_number" class="border-b">
+                            <tr v-for="sale in sortedSales" :key="sale.invoice_number" class="border-b">
                                 <td class="px-4 py-2">{{ sale.created_at }}</td>
                                 <td class="px-4 py-2">{{ sale.invoice_number }}</td>
                                 <td class="px-4 py-2">{{ sale.customer_name }}</td>
@@ -202,14 +228,29 @@ const handleDateInput = (e: Event, type: 'start' | 'end') => {
                                 <td class="px-4 py-2 text-right">{{ formatCurrency(sale.total_cogs) }}</td>
                                 <td class="px-4 py-2 text-right">{{ formatCurrency(sale.net_profit) }}</td>
                             </tr>
-                            <tr v-if="sales.length === 0">
+                            <tr v-if="sortedSales.length === 0">
                                 <td colspan="6" class="px-4 py-2 text-center text-gray-500">Tidak ada data penjualan.</td>
+                            </tr>
+                            <tr v-if="sortedSales.length > 0" class="bg-gray-50 dark:bg-gray-700 font-semibold">
+                                <td colspan="3" class="px-4 py-2 text-right">Total</td>
+                                <td class="px-4 py-2 text-right">
+                                    {{ formatCurrency(sortedSales.reduce((sum, s) => sum + s.total_amount, 0)) }}
+                                </td>
+                                <td class="px-4 py-2 text-right">
+                                    {{ formatCurrency(sortedSales.reduce((sum, s) => sum + s.total_cogs, 0)) }}
+                                </td>
+                                <td class="px-4 py-2 text-right">
+                                    {{ formatCurrency(sortedSales.reduce((sum, s) => sum + s.net_profit, 0)) }}
+                                </td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
+                <div class="flex flex-col md:flex-row gap-2 mt-2 text-sm text-gray-600 dark:text-gray-400">
+                    <span>Menampilkan <b>{{ sortedSales.length }}</b> data hasil filter.</span>
+                    <span v-if="typeof sales.total === 'number'">Total data penjualan tenant: <b>{{ sales.total }}</b></span>
+                </div>
             </div>
-
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 border border-gray-200 dark:border-gray-700">
                 <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-4">Analisis Laba Bersih</h3>
                 <p class="text-gray-600 dark:text-gray-400">

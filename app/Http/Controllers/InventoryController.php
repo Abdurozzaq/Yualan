@@ -58,6 +58,32 @@ class InventoryController extends Controller
         ]);
     }
 
+        /**
+     * API endpoint for product search (autocomplete).
+     */
+    public function searchProducts(Request $request, string $tenantSlug)
+    {
+        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+
+        if (Auth::user()->tenant_id !== $tenant->id) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        $q = $request->input('q');
+        $limit = (int) $request->input('limit', 10);
+
+        $productsQuery = Product::where('tenant_id', $tenant->id);
+        if ($q) {
+            $productsQuery->where(function ($query) use ($q) {
+                $query->where('name', 'ILIKE', "%" . $q . "%")
+                      ->orWhere('sku', 'ILIKE', "%" . $q . "%");
+            });
+        }
+        $products = $productsQuery->orderBy('name')->limit($limit)->get(['id', 'name', 'stock', 'cost_price']);
+
+        return response()->json(['products' => $products]);
+    }
+
     /**
      * Display a listing of inventory movements.
      */
