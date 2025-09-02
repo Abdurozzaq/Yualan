@@ -85,40 +85,41 @@
 }
 
 :root {
-    --background: hsl(0 0% 100%);
-    --foreground: hsl(0 0% 3.9%);
-    --card: hsl(0 0% 100%);
-    --card-foreground: hsl(0 0% 3.9%);
-    --popover: hsl(0 0% 100%);
-    --popover-foreground: hsl(0 0% 3.9%);
-    --primary: hsl(0 0% 9%);
-    --primary-foreground: hsl(0 0% 98%);
-    --secondary: hsl(0 0% 92.1%);
-    --secondary-foreground: hsl(0 0% 9%);
-    --muted: hsl(0 0% 96.1%);
-    --muted-foreground: hsl(0 0% 45.1%);
-    --accent: hsl(0 0% 96.1%);
-    --accent-foreground: hsl(0 0% 9%);
-    --destructive: hsl(0 84.2% 60.2%);
-    --destructive-foreground: hsl(0 0% 98%);
-    --border: hsl(0 0% 92.8%);
-    --input: hsl(0 0% 89.8%);
-    --ring: hsl(0 0% 3.9%);
-    --chart-1: hsl(12 76% 61%);
-    --chart-2: hsl(173 58% 39%);
-    --chart-3: hsl(197 37% 24%);
-    --chart-4: hsl(43 74% 66%);
-    --chart-5: hsl(27 87% 67%);
+    /* Professional blue theme untuk consulting/corporate services */
+    --background: #f8fafc;
+    --foreground: #0f172a;
+    --card: #ffffff;
+    --card-foreground: #0f172a;
+    --popover: #ffffff;
+    --popover-foreground: #0f172a;
+    --primary: #0ea5e9;
+    --primary-foreground: #ffffff;
+    --secondary: #e0f2fe;
+    --secondary-foreground: #0c4a6e;
+    --muted: #f1f5f9;
+    --muted-foreground: #475569;
+    --accent: #0284c7;
+    --accent-foreground: #ffffff;
+    --destructive: #dc2626;
+    --destructive-foreground: #ffffff;
+    --border: #cbd5e1;
+    --input: #f1f5f9;
+    --ring: #0ea5e9;
+    --chart-1: #0ea5e9;
+    --chart-2: #0284c7;
+    --chart-3: #0369a1;
+    --chart-4: #075985;
+    --chart-5: #0c4a6e;
     --radius: 0.5rem;
-    --sidebar-background: hsl(0 0% 98%);
-    --sidebar-foreground: hsl(240 5.3% 26.1%);
-    --sidebar-primary: hsl(0 0% 10%);
-    --sidebar-primary-foreground: hsl(0 0% 98%);
-    --sidebar-accent: hsl(0 0% 94%);
-    --sidebar-accent-foreground: hsl(0 0% 30%);
-    --sidebar-border: hsl(0 0% 91%);
-    --sidebar-ring: hsl(217.2 91.2% 59.8%);
-    --sidebar: hsl(0 0% 98%);
+    --sidebar-background: #f1f5f9;
+    --sidebar-foreground: #0f172a;
+    --sidebar-primary: #0ea5e9;
+    --sidebar-primary-foreground: #ffffff;
+    --sidebar-accent: #e0f2fe;
+    --sidebar-accent-foreground: #0c4a6e;
+    --sidebar-border: #cbd5e1;
+    --sidebar-ring: #0ea5e9;
+    --sidebar: #ffffff;
 }
 
 .dark {
@@ -157,6 +158,201 @@
     --sidebar: hsl(240 5.9% 10%);
 }
 
+.orange-theme {
+/* Light theme dengan perpaduan orange dan merah, tetap clean dan readable */
+--background: #fff7f0;
+--foreground: #3a1a00;
+--card: #fff3e0;
+--card-foreground: #3a1a00;
+--popover: #fff3e0;
+--popover-foreground: #3a1a00;
+--primary: #ff7043;
+--primary-foreground: #fff7f0;
+--secondary: #ffd180;
+--secondary-foreground: #3a1a00;
+--muted: #ffe0b2;
+--muted-foreground: #a65c00;
+--accent: #ffab91;
+--accent-foreground: #3a1a00;
+--destructive: #e53935;
+--destructive-foreground: #fff7f0;
+--border: #ffd180;
+--input: #ffe0b2;
+--ring: #ff7043;
+--chart-1: #ff7043;
+--chart-2: #e53935;
+--chart-3: #ffd180;
+--chart-4: #ffab91;
+--chart-5: #a65c00;
+--radius: 0.75rem;
+--sidebar-background: #fff3e0;
+--sidebar-foreground: #3a1a00;
+--sidebar-primary: #ff7043;
+--sidebar-primary-foreground: #fff7f0;
+--sidebar-accent: #ffd180;
+--sidebar-accent-foreground: #3a1a00;
+--sidebar-border: #ffd180;
+--sidebar-ring: #ff7043;
+--sidebar: #fff7f0;
+}
+
+/* ===============================================
+     CUSTOM BLUE, GREEN, PURPLE THEMES
+     =============================================== */
+
+.blue-theme {
+    /* Light blue theme, clean and professional */
+    --background: #f0f7ff;
+    --foreground: #002b4d;
+    --card: #e3f2fd;
+    --card-foreground: #002b4d;
+    --popover: #e3f2fd;
+    --popover-foreground: #002b4d;
+    --primary: #2196f3;
+    --primary-foreground: #f0f7ff;
+    --secondary: #90caf9;
+    --secondary-foreground: #002b4d;
+    --muted: #bbdefb;
+    --muted-foreground: #1565c0;
+    --accent: #64b5f6;
+    --accent-foreground: #002b4d;
+    --destructive: #e53935;
+    --destructive-foreground: #f0f7ff;
+    --border: #90caf9;
+    --input: #bbdefb;
+    --ring: #2196f3;
+    --chart-1: #2196f3;
+    --chart-2: #1565c0;
+    --chart-3: #90caf9;
+    --chart-4: #64b5f6;
+    --chart-5: #002b4d;
+    --radius: 0.75rem;
+    --sidebar-background: #e3f2fd;
+    --sidebar-foreground: #002b4d;
+    --sidebar-primary: #2196f3;
+    --sidebar-primary-foreground: #f0f7ff;
+    --sidebar-accent: #90caf9;
+    --sidebar-accent-foreground: #002b4d;
+    --sidebar-border: #90caf9;
+    --sidebar-ring: #2196f3;
+    --sidebar: #f0f7ff;
+}
+
+.green-theme {
+    /* Light green theme, fresh and eco-friendly */
+    --background: #f6fff7;
+    --foreground: #1b5e20;
+    --card: #e8f5e9;
+    --card-foreground: #1b5e20;
+    --popover: #e8f5e9;
+    --popover-foreground: #1b5e20;
+    --primary: #43a047;
+    --primary-foreground: #f6fff7;
+    --secondary: #a5d6a7;
+    --secondary-foreground: #1b5e20;
+    --muted: #c8e6c9;
+    --muted-foreground: #388e3c;
+    --accent: #66bb6a;
+    --accent-foreground: #1b5e20;
+    --destructive: #e53935;
+    --destructive-foreground: #f6fff7;
+    --border: #a5d6a7;
+    --input: #c8e6c9;
+    --ring: #43a047;
+    --chart-1: #43a047;
+    --chart-2: #388e3c;
+    --chart-3: #a5d6a7;
+    --chart-4: #66bb6a;
+    --chart-5: #1b5e20;
+    --radius: 0.75rem;
+    --sidebar-background: #e8f5e9;
+    --sidebar-foreground: #1b5e20;
+    --sidebar-primary: #43a047;
+    --sidebar-primary-foreground: #f6fff7;
+    --sidebar-accent: #a5d6a7;
+    --sidebar-accent-foreground: #1b5e20;
+    --sidebar-border: #a5d6a7;
+    --sidebar-ring: #43a047;
+    --sidebar: #f6fff7;
+}
+
+.purple-theme {
+    /* Light purple theme, creative and elegant */
+    --background: #f8f6ff;
+    --foreground: #3a1a5d;
+    --card: #ede7f6;
+    --card-foreground: #3a1a5d;
+    --popover: #ede7f6;
+    --popover-foreground: #3a1a5d;
+    --primary: #8e24aa;
+    --primary-foreground: #f8f6ff;
+    --secondary: #b39ddb;
+    --secondary-foreground: #3a1a5d;
+    --muted: #d1c4e9;
+    --muted-foreground: #5e35b1;
+    --accent: #7e57c2;
+    --accent-foreground: #3a1a5d;
+    --destructive: #e53935;
+    --destructive-foreground: #f8f6ff;
+    --border: #b39ddb;
+    --input: #d1c4e9;
+    --ring: #8e24aa;
+    --chart-1: #8e24aa;
+    --chart-2: #5e35b1;
+    --chart-3: #b39ddb;
+    --chart-4: #7e57c2;
+    --chart-5: #3a1a5d;
+    --radius: 0.75rem;
+    --sidebar-background: #ede7f6;
+    --sidebar-foreground: #3a1a5d;
+    --sidebar-primary: #8e24aa;
+    --sidebar-primary-foreground: #f8f6ff;
+    --sidebar-accent: #b39ddb;
+    --sidebar-accent-foreground: #3a1a5d;
+    --sidebar-border: #b39ddb;
+    --sidebar-ring: #8e24aa;
+    --sidebar: #f8f6ff;
+}
+
+.ocean-depth-theme {
+    /* Professional blue theme untuk consulting/corporate services */
+    --background: #f8fafc;
+    --foreground: #0f172a;
+    --card: #ffffff;
+    --card-foreground: #0f172a;
+    --popover: #ffffff;
+    --popover-foreground: #0f172a;
+    --primary: #0ea5e9;
+    --primary-foreground: #ffffff;
+    --secondary: #e0f2fe;
+    --secondary-foreground: #0c4a6e;
+    --muted: #f1f5f9;
+    --muted-foreground: #475569;
+    --accent: #0284c7;
+    --accent-foreground: #ffffff;
+    --destructive: #dc2626;
+    --destructive-foreground: #ffffff;
+    --border: #cbd5e1;
+    --input: #f1f5f9;
+    --ring: #0ea5e9;
+    --chart-1: #0ea5e9;
+    --chart-2: #0284c7;
+    --chart-3: #0369a1;
+    --chart-4: #075985;
+    --chart-5: #0c4a6e;
+    --radius: 0.5rem;
+    --sidebar-background: #f1f5f9;
+    --sidebar-foreground: #0f172a;
+    --sidebar-primary: #0ea5e9;
+    --sidebar-primary-foreground: #ffffff;
+    --sidebar-accent: #e0f2fe;
+    --sidebar-accent-foreground: #0c4a6e;
+    --sidebar-border: #cbd5e1;
+    --sidebar-ring: #0ea5e9;
+    --sidebar: #ffffff;
+}
+
+            
 @layer base {
     * {
         @apply border-border outline-ring/50;
