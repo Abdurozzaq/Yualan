@@ -6,7 +6,7 @@ import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, Sid
 import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/vue3';
 // Pastikan semua ikon yang digunakan diimpor
-import { BookOpen, Folder, LayoutGrid, Tag, Users, ShoppingBag, History, Warehouse, BarChart } from 'lucide-vue-next'; // Tambahkan Warehouse dan BarChart
+import { Folder, LayoutGrid, Tag, Users, ShoppingBag, History, Warehouse, BarChart } from 'lucide-vue-next'; // Tambahkan Warehouse dan BarChart
 
 import AppLogo from './AppLogo.vue';
 import { computed, onMounted, ref, watch } from 'vue';

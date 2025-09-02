@@ -66,6 +66,7 @@ const fetchProducts = async (query: string) => {
             showProductDropdown.value = false;
         }
     } catch (e) {
+        console.log(e);
         productResults.value = [];
         showProductDropdown.value = false;
     }
