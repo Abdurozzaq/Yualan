@@ -2,7 +2,7 @@
 import { Head, Link, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import PricingSection from '@/components/PricingSection.vue';
-import { DollarSign, Package, Users, BarChart, CreditCard, Cloud, ShieldCheck } from 'lucide-vue-next'; // Import icons
+import { DollarSign, Package, Users, BarChart, CreditCard, Cloud, ShieldCheck, Check, ShoppingCart, Boxes } from 'lucide-vue-next'; // Import icons
 
 // Mengakses props dari Inertia, termasuk informasi autentikasi pengguna
 const page = usePage();
@@ -38,39 +38,39 @@ const dashboardLink = computed(() => {
 // Fitur-fitur utama Yualan POS
 const features = [
     {
-        icon: DollarSign,
-        title: 'Manajemen Penjualan Intuitif',
-        description: 'Catat transaksi dengan cepat, kelola diskon, dan berikan kembalian dengan mudah. Mendukung berbagai metode pembayaran.',
-    },
-    {
-        icon: Package,
-        title: 'Kontrol Inventaris Akurat',
-        description: 'Lacak stok produk secara real-time, kelola penerimaan barang, dan lakukan penyesuaian stok dengan efisien.',
-    },
-    {
-        icon: Users,
-        title: 'Manajemen Pelanggan Terpadu',
-        description: 'Simpan data pelanggan, pantau riwayat pembelian, dan bangun loyalitas pelanggan dengan mudah.',
-    },
-    {
-        icon: BarChart,
-        title: 'Laporan Bisnis Mendalam',
-        description: 'Dapatkan wawasan berharga tentang penjualan, laba kotor, dan kinerja stok melalui laporan yang komprehensif.',
+        icon: Check,
+        title: 'Tema Dinamis & Modern',
+        description: 'Dukungan tema Light, Dark, Blue, Orange, Green, dan Purple untuk pengalaman visual yang fresh dan personal.',
     },
     {
         icon: CreditCard,
-        title: 'Integrasi Pembayaran Digital',
-        description: 'Terhubung langsung dengan iPaymu untuk menerima pembayaran online, memperluas pilihan pembayaran bagi pelanggan Anda.',
+        title: 'Pembayaran Otomatis & Aman',
+        description: 'Integrasi langsung dengan iPaymu & Midtrans, mendukung pembayaran tunai, QRIS, E-Wallet, dan kartu.',
     },
     {
-        icon: Cloud,
-        title: 'Akses Cloud Kapan Saja',
-        description: 'Kelola bisnis Anda dari mana saja, kapan saja, dengan akses berbasis cloud yang aman dan andal.',
+        icon: Users,
+        title: 'Akses Berbasis Peran',
+        description: 'Admin mengelola bisnis, kasir fokus transaksi, semua user login karyawan mudah diatur.',
     },
     {
-        icon: ShieldCheck,
-        title: 'Keamanan Data Terjamin',
-        description: 'Data bisnis Anda dilindungi dengan standar keamanan tinggi, memastikan informasi sensitif tetap aman.',
+        icon: Package,
+        title: 'Data Master Lengkap',
+        description: 'Kelola produk, kategori, pelanggan, promo, voucher, dan user karyawan dalam satu sistem terintegrasi.',
+    },
+    {
+        icon: ShoppingCart,
+        title: 'Alur Transaksi Super Efisien',
+        description: 'Pembuatan pesanan cepat, kwitansi otomatis, riwayat pemesanan lengkap, dan filter transaksi canggih.',
+    },
+    {
+        icon: Boxes,
+        title: 'Inventaris Cerdas (NEW!)',
+        description: 'Kelola supplier, stok real-time, riwayat pergerakan barang, penerimaan, dan penyesuaian stok dengan mudah.',
+    },
+    {
+        icon: BarChart,
+        title: 'Laporan Bisnis Komprehensif',
+        description: 'Analisa laba kotor & bersih, nilai stok, produk terlaris, margin, penjualan detail, dan piutang secara instan.',
     },
 ];
 </script>

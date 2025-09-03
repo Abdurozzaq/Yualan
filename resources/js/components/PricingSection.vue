@@ -107,8 +107,10 @@ function discountedPrice(plan: { price: number; discount_percentage?: number }) 
             </div>
 
             <ul class="space-y-2 text-sm text-gray-700 dark:text-gray-300">
+              <!-- Theme support -->
+              <li class="flex items-start gap-2"><Check class="h-4 w-4 text-green-600 mt-0.5" /> Dukungan tema: Light, Dark, Blue, Orange, Green, Purple</li>
               <!-- Pembayaran -->
-              <li class="flex items-start gap-2"><Check class="h-4 w-4 text-green-600 mt-0.5" /> Integrasi pembayaran otomatis dengan iPaymu</li>
+              <li class="flex items-start gap-2"><Check class="h-4 w-4 text-green-600 mt-0.5" /> Integrasi pembayaran otomatis dengan iPaymu & Midtrans</li>
 
               <!-- Akses berbasis peran -->
               <li class="mt-3 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Akses Berbasis Peran</li>
@@ -120,6 +122,9 @@ function discountedPrice(plan: { price: number; discount_percentage?: number }) 
               <li class="flex items-start gap-2"><Check class="h-4 w-4 text-green-600 mt-0.5" /> Produk: SKU, kategori, harga, dan stok</li>
               <li class="flex items-start gap-2"><Check class="h-4 w-4 text-green-600 mt-0.5" /> Pelanggan: Data kontak & histori transaksi</li>
               <li class="flex items-start gap-2"><Check class="h-4 w-4 text-green-600 mt-0.5" /> Kategori Produk: Kelompokkan item dengan mudah</li>
+              <li class="flex items-start gap-2"><Check class="h-4 w-4 text-green-600 mt-0.5" /> User Karyawan: Manage Data User Login Karyawan Dengan Mudah</li>
+              <li class="flex items-start gap-2"><Check class="h-4 w-4 text-green-600 mt-0.5" /> Promo: Atur promo otomatis seperti Buy X Get X, Buy X Get Another X, diskon nominal/percentage, dan promo TIF (Tingkatkan Intensitas Frekuensi) untuk mendorong pembelian berulang.</li>
+              <li class="flex items-start gap-2"><Check class="h-4 w-4 text-green-600 mt-0.5" /> Voucher/Coupon: Tawarkan diskon percentage, nominal, dan percentage dengan max nominal</li>
 
               <!-- Alur transaksi -->
               <li class="mt-3 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Alur Transaksi Efisien</li>
@@ -138,8 +143,14 @@ function discountedPrice(plan: { price: number; discount_percentage?: number }) 
 
               <!-- Laporan bisnis -->
               <li class="mt-3 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Laporan Bisnis</li>
-              <li class="flex items-start gap-2"><Check class="h-4 w-4 text-green-600 mt-0.5" /> Laba kotor (Gross Profit)</li>
-              <li class="flex items-start gap-2"><Check class="h-4 w-4 text-green-600 mt-0.5" /> Nilai Stok: Total nilai barang di gudang</li>
+              <li class="flex items-start gap-2"><Check class="h-4 w-4 text-green-600 mt-0.5" /> Laba Kotor</li>
+              <li class="flex items-start gap-2"><Check class="h-4 w-4 text-green-600 mt-0.5" /> Laba Bersih</li>
+              <li class="flex items-start gap-2"><Check class="h-4 w-4 text-green-600 mt-0.5" /> Nilai Stok</li>
+              <li class="flex items-start gap-2"><Check class="h-4 w-4 text-green-600 mt-0.5" /> Produk Terlaris & Margin</li>
+              <li class="flex items-start gap-2"><Check class="h-4 w-4 text-green-600 mt-0.5" /> Penjualan Detail</li>
+              <li class="flex items-start gap-2"><Check class="h-4 w-4 text-green-600 mt-0.5" /> Pembayaran & Piutang</li>
+
+
             </ul>
 
             <div class="pt-2">
