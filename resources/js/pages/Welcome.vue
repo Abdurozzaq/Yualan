@@ -64,13 +64,23 @@ const features = [
     },
     {
         icon: Boxes,
-        title: 'Inventaris Cerdas (NEW!)',
+        title: 'Inventaris Cerdas',
         description: 'Kelola supplier, stok real-time, riwayat pergerakan barang, penerimaan, dan penyesuaian stok dengan mudah.',
     },
     {
         icon: BarChart,
         title: 'Laporan Bisnis Komprehensif',
         description: 'Analisa laba kotor & bersih, nilai stok, produk terlaris, margin, penjualan detail, dan piutang secara instan.',
+    },
+    {
+        icon: ShieldCheck,
+        title: 'Dukungan & Bantuan Cepat',
+        description: 'Tim support responsif siap membantu Anda melalui chat, email, dan dokumentasi lengkap.',
+    },
+    {
+        icon: Cloud,
+        title: 'Akses Cloud & Multi-Device',
+        description: 'Buka dan kelola bisnis dari mana saja, kapan saja, melalui berbagai perangkat dengan sinkronisasi cloud.',
     },
 ];
 </script>

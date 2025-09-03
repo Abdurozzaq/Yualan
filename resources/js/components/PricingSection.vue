@@ -123,7 +123,7 @@ function discountedPrice(plan: { price: number; discount_percentage?: number }) 
               <li class="flex items-start gap-2"><Check class="h-4 w-4 text-green-600 mt-0.5" /> Pelanggan: Data kontak & histori transaksi</li>
               <li class="flex items-start gap-2"><Check class="h-4 w-4 text-green-600 mt-0.5" /> Kategori Produk: Kelompokkan item dengan mudah</li>
               <li class="flex items-start gap-2"><Check class="h-4 w-4 text-green-600 mt-0.5" /> User Karyawan: Manage Data User Login Karyawan Dengan Mudah</li>
-              <li class="flex items-start gap-2"><Check class="h-4 w-4 text-green-600 mt-0.5" /> Promo: Atur promo otomatis seperti Buy X Get X, Buy X Get Another X, diskon nominal/percentage, dan promo TIF (Tingkatkan Intensitas Frekuensi) untuk mendorong pembelian berulang.</li>
+              <li class="flex items-start gap-2"><Check class="h-4 w-4 text-green-600 mt-0.5" /> Promo: Atur promo seperti Buy X Get X, Buy X Get Another X, dan diskon untuk pembelian berulang.</li>
               <li class="flex items-start gap-2"><Check class="h-4 w-4 text-green-600 mt-0.5" /> Voucher/Coupon: Tawarkan diskon percentage, nominal, dan percentage dengan max nominal</li>
 
               <!-- Alur transaksi -->
@@ -134,7 +134,7 @@ function discountedPrice(plan: { price: number; discount_percentage?: number }) 
               <li class="flex items-start gap-2"><Check class="h-4 w-4 text-green-600 mt-0.5" /> Riwayat pemesanan lengkap & dapat difilter</li>
 
               <!-- Inventaris (NEW) -->
-              <li class="mt-3 text-xs font-semibold uppercase tracking-wide text-emerald-600 dark:text-emerald-300">Fitur Inventaris Terbaru (NEW!)</li>
+              <li class="mt-3 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Fitur Inventaris Terbaru</li>
               <li class="flex items-start gap-2"><Check class="h-4 w-4 text-green-600 mt-0.5" /> Supplier: Kelola informasi pemasok</li>
               <li class="flex items-start gap-2"><Check class="h-4 w-4 text-green-600 mt-0.5" /> Inventaris & ringkasan: Stok per produk real-time</li>
               <li class="flex items-start gap-2"><Check class="h-4 w-4 text-green-600 mt-0.5" /> Riwayat pergerakan: Telusuri keluar/masuk barang</li>
