@@ -1,61 +1,9 @@
 <script setup lang="ts">
+import axios from 'axios';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, usePage, useForm } from '@inertiajs/vue3';
 import { computed, ref, watch, onMounted } from 'vue';
-// Modal error dialog state
-// Pagination state & fetch
-const currentPage = ref(1);
-const perPage = ref(10);
-const totalPages = ref(1);
-const paginatedProducts = ref<Product[]>([]);
-const isLoadingProducts = ref(false);
-
-// Sorting state
-const sortField = ref<'name' | 'price'>('name');
-const sortDirection = ref<'asc' | 'desc'>('asc');
-
-// Declare selectedCategory before usage
-const selectedCategory = ref<string | null>(null);
-const searchTerm = ref('');
-
-const fetchProducts = async () => {
-    isLoadingProducts.value = true;
-    try {
-        const params = new URLSearchParams({
-            page: currentPage.value.toString(),
-            per_page: perPage.value.toString(),
-            category_id: selectedCategory.value || '',
-            search: searchTerm.value || '',
-            sort_field: sortField.value,
-            sort_direction: sortDirection.value,
-        });
-        const res = await fetch(route('sales.paginatedProducts', { tenantSlug: props.tenantSlug }) + '?' + params.toString(), {
-            method: 'GET',
-            headers: { 'X-Requested-With': 'XMLHttpRequest' },
-            credentials: 'same-origin',
-        });
-        const data = await res.json();
-    paginatedProducts.value = data.products;
-    totalPages.value = data.total_pages || 1;
-    } catch (e) {
-        console.error('Gagal fetch produk:', e);
-    } finally {
-        isLoadingProducts.value = false;
-    }
-};
-
-watch([currentPage, selectedCategory, searchTerm], () => {
-    fetchProducts();
-});
-
-watch([sortField, sortDirection], () => {
-    fetchProducts();
-});
-
-onMounted(() => {
-    fetchProducts();
-});
 
 const errorDialog = ref<{ show: boolean, message: string, info?: string } | null>(null);
 import { Button } from '@/components/ui/button';
@@ -116,6 +64,7 @@ const props = defineProps<{
     vouchers: Voucher[];
     promos: Promo[];
 }>();
+
 
 // TypeScript: declare window.snap for Snap.js
 declare global {
@@ -436,16 +385,13 @@ watch(() => form.payment_method, (newMethod) => {
 });
 
 
-// Submit sale
 
 // Load Snap.js script for Midtrans
 onMounted(() => {
     if (props.midtransConfigured) {
         if (!document.getElementById('midtrans-snapjs')) {
-            // Ambil client key dari props jika ada, jika tidak fetch dari backend
             let clientKey = props.midtransClientKey || '';
             if (!clientKey) {
-                // Fetch client key dari backend via AJAX
                 fetch(route('tenant.midtransClientKey', { tenantSlug: props.tenantSlug }))
                     .then(res => res.json())
                     .then(data => {
@@ -471,13 +417,11 @@ onMounted(() => {
 
 const handleMidtransPay = (snapToken: any) => {
     if (window.snap && snapToken) {
-        // Fungsi untuk redirect ke receipt dengan sales.id
         const redirectToReceiptByOrderId = (orderId: string) => {
             if (!orderId) {
                 alert('Order ID tidak ditemukan di response Midtrans.');
                 return;
             }
-            // Fetch sale_id dari backend
             fetch(route('sales.getSaleIdByOrderId', { tenantSlug: props.tenantSlug, orderId }), {
                 method: 'GET',
                 headers: { 'X-Requested-With': 'XMLHttpRequest' },
@@ -524,115 +468,365 @@ const handleMidtransPay = (snapToken: any) => {
     }
 };
 
-const submitSale = async () => {
+// Edit mode state: get order id from Inertia page props if present
+const page = usePage();
+const orderEditId = ref<string | null>((page.props.orderId as string) || null);
+
+// Modal error dialog state
+// Pagination state & fetch
+const currentPage = ref(1);
+const perPage = ref(10);
+const totalPages = ref(1);
+const paginatedProducts = ref<Product[]>([]);
+const isLoadingProducts = ref(false);
+
+// Sorting state
+const sortField = ref<'name' | 'price'>('name');
+const sortDirection = ref<'asc' | 'desc'>('asc');
+
+// Declare selectedCategory before usage
+const selectedCategory = ref<string | null>(null);
+const searchTerm = ref('');
+
+const fetchProducts = async () => {
+    isLoadingProducts.value = true;
+    try {
+        const params = new URLSearchParams({
+            page: currentPage.value.toString(),
+            per_page: perPage.value.toString(),
+            category_id: selectedCategory.value || '',
+            search: searchTerm.value || '',
+            sort_field: sortField.value,
+            sort_direction: sortDirection.value,
+        });
+        const res = await fetch(route('sales.paginatedProducts', { tenantSlug: props.tenantSlug }) + '?' + params.toString(), {
+            method: 'GET',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            credentials: 'same-origin',
+        });
+        const data = await res.json();
+    paginatedProducts.value = data.products;
+    totalPages.value = data.total_pages || 1;
+    } catch (e) {
+        console.error('Gagal fetch produk:', e);
+    } finally {
+        isLoadingProducts.value = false;
+    }
+};
+
+watch([currentPage, selectedCategory, searchTerm], () => {
+    fetchProducts();
+});
+
+watch([sortField, sortDirection], () => {
+    fetchProducts();
+});
+
+onMounted(() => {
+    fetchProducts();
+
+    // If editing an order (orderEditId exists), fetch order data and populate form/cart
+    if (orderEditId.value) {
+        // Fetch order detail by ID
+        fetch(route('sales.show', { tenantSlug: props.tenantSlug, sale: orderEditId.value }), {
+            method: 'GET',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            credentials: 'same-origin',
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (!data || !data.sale) return;
+                const sale = data.sale;
+                // Populate cart items
+                if (Array.isArray(sale.items)) {
+                    cartItems.value = sale.items.map((item: any) => ({
+                        product_id: item.product_id,
+                        quantity: item.quantity,
+                        price: item.price,
+                        name: item.product_name || '',
+                        unit: item.unit || null,
+                        stock: item.stock ?? 9999, // fallback if not provided
+                    }));
+                }
+                // Discount
+                form.discount_amount = sale.discount_amount || 0;
+                // Tax
+                form.tax_rate = sale.tax_rate || 0;
+                // Payment method
+                form.payment_method = sale.payment_method || 'cash';
+                // Paid amount
+                form.paid_amount = sale.paid_amount || 0;
+                // Customer
+                selectedCustomer.value = sale.customer_id || null;
+                // Notes
+                form.notes = sale.notes || '';
+                // Vouchers
+                if (Array.isArray(sale.voucher_codes)) {
+                    selectedVoucherCodes.value = sale.voucher_codes;
+                } else if (sale.voucher_code) {
+                    selectedVoucherCodes.value = [sale.voucher_code];
+                }
+                // Promos
+                if (Array.isArray(sale.promo_codes)) {
+                    selectedPromoCodes.value = sale.promo_codes;
+                } else if (sale.promo_code) {
+                    selectedPromoCodes.value = [sale.promo_code];
+                }
+            })
+            .catch(e => {
+                console.error('Gagal mengambil data order:', e);
+            });
+    }
+});
+
+// State for processing save order pending
+const isProcessingSaveOrder = ref(false);
+// Save order as pending (cash flow)
+const saveOrderPending = async () => {
+    if (cartItems.value.length === 0) {
+        alert('Keranjang belanja kosong. Tambahkan produk terlebih dahulu.');
+        return;
+    }
+    isProcessingSaveOrder.value = true;
+    const formData: Record<string, any> = {
+        items: cartItems.value.map(({ product_id, quantity }) => ({ product_id, quantity })),
+        customer_id: selectedCustomer.value,
+        discount_amount: form.discount_amount,
+        tax_rate: form.tax_rate,
+        payment_method: form.payment_method,
+        notes: form.notes,
+        voucher_codes: selectedVoucherCodes.value,
+        status: 'pending',
+        promo_codes: selectedPromoCodes.value
+    };
+    // Remove paid_amount if present (not needed for pending)
+    delete formData.paid_amount;
+    try {
+        let response;
+        if (orderEditId.value) {
+            // Update existing order
+            response = await axios.put(route('sales.update', { tenantSlug: props.tenantSlug, sale: orderEditId.value }), formData, {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            });
+        } else {
+            // Create new order
+            response = await axios.post(route('sales.store', { tenantSlug: props.tenantSlug }), formData, {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            });
+            console.log('Create response:', response.data);
+            // Redirect to edit mode (with id in URL) using Inertia
+            if (response.data && response.data.saleId) {
+                orderEditId.value = response.data.saleId;
+                window.location.href = route('sales.order', { tenantSlug: props.tenantSlug, orderId: response.data.saleId });
+            }
+        }
+        alert(orderEditId.value ? 'Order berhasil diperbarui!' : 'Order berhasil disimpan sebagai pending!');
+    } catch (error: any) {
+        let errorMessage = 'Terjadi kesalahan saat menyimpan order.';
+        if (error.response && error.response.data && error.response.data.errors) {
+            const errors = error.response.data.errors;
+            if (errors.items) errorMessage += '\n' + errors.items;
+        }
+        alert(errorMessage);
+    } finally {
+        isProcessingSaveOrder.value = false;
+        delete (form as any).status;
+        delete (form as any).promo_codes;
+    }
+};
+
+
+// State for cash payment modal
+const showCashModal = ref(false);
+const cashInputAmount = ref(0);
+const cashInputError = ref('');
+
+const payOrder = async () => {
     if (cartItems.value.length === 0) {
         alert('Keranjang belanja kosong. Tambahkan produk terlebih dahulu.');
         return;
     }
 
-    // Prepare items for submission
+    // Selalu simpan/update order dulu sebelum bayar (non-cash)
+    let currentOrderId = orderEditId.value;
+    let saveError = '';
+    const saveData: Record<string, any> = {
+        items: cartItems.value.map(({ product_id, quantity }) => ({ product_id, quantity })),
+        customer_id: selectedCustomer.value,
+        discount_amount: form.discount_amount,
+        tax_rate: form.tax_rate,
+        payment_method: form.payment_method,
+        notes: form.notes,
+        voucher_codes: selectedVoucherCodes.value,
+        status: 'paid',
+        promo_codes: selectedPromoCodes.value
+    };
+    // paid_amount hanya untuk proses pembayaran
+    saveData.paid_amount = form.payment_method === 'cash' ? undefined : totalAmount.value;
+
+    try {
+        let response;
+        if (currentOrderId) {
+            // Update existing order
+            response = await axios.put(route('sales.update', { tenantSlug: props.tenantSlug, sale: currentOrderId }), saveData, {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            });
+        } else {
+            // Create new order
+            response = await axios.post(route('sales.store', { tenantSlug: props.tenantSlug }), saveData, {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            });
+            if (response.data && response.data.saleId) {
+                currentOrderId = response.data.saleId;
+                orderEditId.value = response.data.saleId;
+                // Update URL jika perlu
+                window.history.replaceState({}, '', route('sales.order', { tenantSlug: props.tenantSlug, orderId: response.data.saleId }));
+            }
+        }
+    } catch (error: any) {
+        saveError = 'Gagal menyimpan order sebelum pembayaran.';
+        if (error.response && error.response.data && error.response.data.errors) {
+            const errors = error.response.data.errors;
+            if (errors.items) saveError += '\n' + errors.items;
+        }
+        alert(saveError);
+        return;
+    }
+
+    // Setelah order pasti tersimpan, lanjut proses pembayaran
+    if (form.payment_method === 'cash') {
+        cashInputAmount.value = totalAmount.value;
+        cashInputError.value = '';
+        showCashModal.value = true;
+        return;
+    }
+
+    // Non-cash: proses pembayaran sesuai metode
     form.items = cartItems.value.map(item => ({
         product_id: item.product_id,
         quantity: item.quantity,
     }));
     form.customer_id = selectedCustomer.value;
-
-    // Add voucher discount to discount_amount automatically
-    if (selectedVouchers.value.length > 0) {
-        form.discount_amount = (form.discount_amount || 0) + voucherDiscount.value;
-    }
-
-    // If vouchers are selected, validate again and mark as used
-    for (const voucher of selectedVouchers.value) {
-        if (!voucher) continue;
-        try {
-            const res = await fetch(route('sales.useVoucher', { tenantSlug: props.tenantSlug, code: voucher.code }), {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
-                },
-                credentials: 'same-origin',
-                body: JSON.stringify({ code: voucher.code }),
-            });
-            const data = await res.json();
-            if (!data.success) {
-                alert(data.message || 'Voucher gagal dipakai.');
-                return;
-            }
-        } catch (e) {
-          
-            console.log(e);
-            alert('Gagal memproses voucher.');
-            return;
-        }
-    }
-
-    // Adjust paid_amount for iPaymu before submission
+    (form as any).voucher_codes = selectedVoucherCodes.value;
+    (form as any).status = 'paid';
+    (form as any).promo_codes = selectedPromoCodes.value;
+    const id = currentOrderId;
     if (form.payment_method === 'ipaymu') {
         form.paid_amount = totalAmount.value;
-        fetch(route('sales.store', { tenantSlug: props.tenantSlug }), {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
-            },
-            credentials: 'same-origin',
-            body: JSON.stringify({ ...form.data(), promo_codes: selectedPromoCodes.value }),
-        })
-        .then(async res => {
-            let data;
-            try {
-                data = await res.json();
-            } catch (e) {
-                console.log(e);
-                errorDialog.value = { show: true, message: 'Gagal parsing response dari server.' };
-                return;
-            }
-            if (data.success && data.payment_url) {
-                window.location.href = data.payment_url;
+        // Kirim request pembayaran iPaymu pakai axios
+        try {
+            const response = await axios.post(route('sales.store', { tenantSlug: props.tenantSlug, id }), {
+                ...form,
+            }, {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            });
+            if (response.data && response.data.payment_url) {
+                window.location.href = response.data.payment_url;
             } else {
                 errorDialog.value = {
                     show: true,
-                    message: data.error || 'Gagal mendapatkan URL pembayaran iPaymu.',
-                    info: data.info || ''
+                    message: 'Gagal mendapatkan URL pembayaran iPaymu.',
+                    info: ''
                 };
             }
-        })
-        .catch((err) => {
-            console.log(err);
-            errorDialog.value = { show: true, message: 'Terjadi kesalahan saat menginisiasi pembayaran iPaymu.' };
+        } catch (error: any) {
+            let errorMessage = 'Terjadi kesalahan saat membayar order (iPaymu).';
+            if (error.response && error.response.data && error.response.data.errors) {
+                const errors = error.response.data.errors;
+                if (errors.items) errorMessage += '\n' + errors.items;
+                if (errors.paid_amount) errorMessage += '\n' + errors.paid_amount;
+            }
+            alert(errorMessage);
+        } finally {
+            delete (form as any).status;
+            delete (form as any).promo_codes;
+        }
+        return;
+    }
+    if (form.payment_method === 'midtrans') {
+        form.post(route('sales.store', { tenantSlug: props.tenantSlug, id }), {
+            onSuccess: (page: any) => {
+                if (page.props && page.props.snapToken) {
+                    handleMidtransPay(page.props.snapToken);
+                } else {
+                    errorDialog.value = {
+                        show: true,
+                        message: 'Gagal mendapatkan Snap Token Midtrans.',
+                        info: ''
+                    };
+                }
+            },
+            onError: (errors: any) => {
+                let errorMessage = 'Terjadi kesalahan saat membayar order (Midtrans).';
+                if (errors.items) errorMessage += '\n' + errors.items;
+                if (errors.paid_amount) errorMessage += '\n' + errors.paid_amount;
+                alert(errorMessage);
+            },
+            onFinish: () => {
+                delete (form as any).status;
+                delete (form as any).promo_codes;
+            }
         });
         return;
     }
+};
 
-    // Untuk cash dan midtrans tetap pakai form.post
-    // Add voucher_codes to form data for backend
+// Proses cash setelah input modal
+const confirmCashPayment = async () => {
+    cashInputError.value = '';
+    // Cek apakah orderId sudah ada di URL (orderEditId)
+    if (!orderEditId.value) {
+        cashInputError.value = 'Silakan simpan order terlebih dahulu sebelum melakukan pembayaran.';
+        return;
+    }
+    if (cashInputAmount.value < totalAmount.value) {
+        cashInputError.value = 'Jumlah yang dibayar kurang dari total.';
+        return;
+    }
+    form.items = cartItems.value.map(item => ({
+        product_id: item.product_id,
+        quantity: item.quantity,
+    }));
+    form.customer_id = selectedCustomer.value;
     (form as any).voucher_codes = selectedVoucherCodes.value;
-    form.post(route('sales.store', { tenantSlug: props.tenantSlug }), {
-        onSuccess: (page) => {
-            if (form.payment_method === 'midtrans' && page.props.snapToken) {
-                handleMidtransPay(page.props.snapToken);
-            } else if (form.payment_method === 'cash') {
-                cartItems.value = [];
-                form.reset();
-                selectedCustomer.value = null;
-                selectedVoucherCodes.value = [];
-                voucherInputCode.value = '';
-                alert('Pesanan berhasil dibuat!');
+    (form as any).status = 'paid';
+    (form as any).promo_codes = selectedPromoCodes.value;
+    form.paid_amount = cashInputAmount.value;
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const id = urlParams.get('orderId');
+    // Pass the orderId as a parameter in the route
+    form.post(route('sales.store', { tenantSlug: props.tenantSlug, id }), {
+        onSuccess: (page: any) => {
+            cartItems.value = [];
+            form.reset();
+            selectedCustomer.value = null;
+            selectedVoucherCodes.value = [];
+            voucherInputCode.value = '';
+            showCashModal.value = false;
+            // Get orderId from URL query param
+            const urlParams = new URLSearchParams(window.location.search);
+            const orderId = urlParams.get('orderId');
+            if (orderId) {
+                window.location.href = route('sales.receipt', { tenantSlug: props.tenantSlug, sale: orderId });
+            } else {
+                // fallback: try from page.props or show error
+                if (page.props && page.props.saleId) {
+                    window.location.href = route('sales.receipt', { tenantSlug: props.tenantSlug, sale: page.props.saleId });
+                } else {
+                    alert('Gagal mendapatkan ID order dari URL.');
+                }
             }
         },
-        onError: (errors) => {
-            console.error('Submission errors:', errors);
-            let errorMessage = 'Terjadi kesalahan saat memproses pesanan.';
+        onError: (errors: any) => {
+            let errorMessage = 'Terjadi kesalahan saat membayar order.';
             if (errors.items) errorMessage += '\n' + errors.items;
             if (errors.paid_amount) errorMessage += '\n' + errors.paid_amount;
-            alert(errorMessage);
+            cashInputError.value = errorMessage;
         },
         onFinish: () => {
-            // Any final actions after success or error
+            delete (form as any).status;
+            delete (form as any).promo_codes;
         }
     });
 };
@@ -640,6 +834,8 @@ const submitSale = async () => {
 // Set initial paid_amount to total_amount when component mounts or totalAmount changes
 onMounted(() => {
     form.paid_amount = totalAmount.value;
+
+    // Optionally, fetch order data and populate cart/form here if orderEditId exists
 
     // Check for flash messages on mount
     const pageProps = usePage().props;
@@ -993,22 +1189,30 @@ const appDomain = import.meta.env.VITE_API_DOMAIN || 'http://localhost:8000';
                         </Select>
                     </div>
 
-                    <!-- Paid Amount & Change (Cash only) -->
-                    <div v-if="form.payment_method === 'cash'" class="flex justify-between items-center">
-                        <Label for="paid_amount" class="text-gray-700 dark:text-gray-300 text-sm">Jumlah Dibayar:</Label>
-                        <Input
-                            id="paid_amount"
-                            type="number"
-                            step="0.01"
-                            v-model.number="form.paid_amount"
-                            class="w-32 text-right text-sm"
-                            :min="totalAmount"
-                        />
-                    </div>
-                    <div v-if="form.payment_method === 'cash'" class="flex justify-between font-semibold text-green-600 dark:text-green-400">
-                        <span>Kembalian:</span>
-                        <span>{{ formatCurrency(changeAmount) }}</span>
-                    </div>
+                    <!-- Modal for cash payment -->
+                    <transition name="fade">
+                        <div v-if="showCashModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
+                            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-6 max-w-xs w-full mx-4 text-center relative animate-fadeIn">
+                                <button @click="showCashModal = false" class="absolute top-3 right-3 text-gray-400 hover:text-red-500 text-2xl font-bold">&times;</button>
+                                <h3 class="text-lg font-bold mb-2 text-gray-900 dark:text-gray-100">Pembayaran Tunai</h3>
+                                <div class="mb-3">
+                                    <Label for="cashInputAmount" class="text-gray-700 dark:text-gray-300 text-sm">Jumlah Dibayar:</Label>
+                                    <Input
+                                        id="cashInputAmount"
+                                        type="number"
+                                        step="0.01"
+                                        v-model.number="cashInputAmount"
+                                        class="w-full text-right text-lg font-bold mt-1"
+                                        :min="totalAmount"
+                                    />
+                                    <div class="text-xs text-gray-500 mt-1">Total: <span class="font-semibold">{{ formatCurrency(totalAmount) }}</span></div>
+                                    <div v-if="cashInputAmount > 0" class="text-xs text-green-600 dark:text-green-400 mt-1">Kembalian: <span class="font-semibold">{{ formatCurrency(cashInputAmount - totalAmount) }}</span></div>
+                                    <div v-if="cashInputError" class="text-xs text-red-500 mt-1">{{ cashInputError }}</div>
+                                </div>
+                                <Button @click="confirmCashPayment" class="w-full py-2 mt-2 font-semibold">Bayar</Button>
+                            </div>
+                        </div>
+                    </transition>
 
                     <!-- Customer (Optional) -->
                     <div class="flex justify-between items-center">
@@ -1032,16 +1236,27 @@ const appDomain = import.meta.env.VITE_API_DOMAIN || 'http://localhost:8000';
                         <Textarea id="notes" v-model="form.notes" rows="2" class="mt-1 text-sm" />
                     </div>
 
-                    <!-- Process Button -->
-                    <Button 
-                        @click="submitSale" 
-                        :disabled="form.processing || cartItems.length === 0 || (form.payment_method === 'cash' && form.paid_amount < totalAmount)" 
-                        class="w-full py-2.5 text-base font-semibold mt-2"
-                        :class="{'bg-gray-400 cursor-not-allowed': form.processing || cartItems.length === 0}"
-                    >
-                        <LoaderCircle v-if="form.processing" class="h-4 w-4 animate-spin mr-2" />
-                        {{ form.processing ? 'Memproses...' : 'Proses Pesanan' }}
-                    </Button>
+                    <!-- Save Order & Pay Buttons (Cash flow) -->
+                    <div class="flex gap-2 mt-2">
+                        <Button 
+                            @click="saveOrderPending" 
+                            :disabled="isProcessingSaveOrder || cartItems.length === 0"
+                            class="w-1/2 py-2.5 text-base font-semibold"
+                            :class="{'bg-gray-400 cursor-not-allowed': isProcessingSaveOrder || cartItems.length === 0}"
+                        >
+                            <LoaderCircle v-if="isProcessingSaveOrder" class="h-4 w-4 animate-spin mr-2" />
+                            Simpan Order
+                        </Button>
+                        <Button 
+                            @click="payOrder" 
+                            :disabled="form.processing || cartItems.length === 0 || (form.payment_method === 'cash' && form.paid_amount < totalAmount)"
+                            class="w-1/2 py-2.5 text-base font-semibold"
+                            :class="{'bg-gray-400 cursor-not-allowed': form.processing || cartItems.length === 0}"
+                        >
+                            <LoaderCircle v-if="form.processing" class="h-4 w-4 animate-spin mr-2" />
+                            Bayar
+                        </Button>
+                    </div>
                 </div>
             </div>
         </div>

@@ -21,6 +21,154 @@ use Illuminate\Support\Str; // Import Str for UUID in Sale model creation
 
 class SaleController extends Controller {
     /**
+     * API: Get detail sale/order for edit (kasir)
+     */
+    public function show(Request $request, string $tenantSlug, string $saleId)
+    {
+        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+        $sale = Sale::with(['saleItems.product', 'customer'])
+            ->where('id', $saleId)
+            ->where('tenant_id', $tenant->id)
+            ->firstOrFail();
+
+        // Format items for frontend
+        $items = collect($sale->saleItems)->map(function($item) {
+            return [
+                'product_id' => $item->product_id,
+                'quantity' => $item->quantity,
+                'price' => $item->price,
+                'name' => $item->product ? $item->product->name : ($item->product_name ?? ''),
+                'unit' => $item->product ? $item->product->unit : null,
+                'stock' => $item->product ? $item->product->stock : 9999,
+            ];
+        })->toArray();
+
+        // Support voucher_codes and promo_codes as array or string
+        $voucherCodes = [];
+        if (!empty($sale->voucher_codes)) {
+            $voucherCodes = is_array($sale->voucher_codes) ? $sale->voucher_codes : [$sale->voucher_codes];
+        } elseif (!empty($sale->voucher_code)) {
+            $voucherCodes = [$sale->voucher_code];
+        }
+        $promoCodes = [];
+        if (!empty($sale->promo_codes)) {
+            $promoCodes = is_array($sale->promo_codes) ? $sale->promo_codes : [$sale->promo_codes];
+        } elseif (!empty($sale->promo_code)) {
+            $promoCodes = [$sale->promo_code];
+        }
+
+        return response()->json([
+            'sale' => [
+                'id' => $sale->id,
+                'items' => $items,
+                'discount_amount' => $sale->discount_amount,
+                'tax_rate' => $sale->tax_rate ?? 0,
+                'payment_method' => $sale->payment_method,
+                'paid_amount' => $sale->paid_amount,
+                'customer_id' => $sale->customer_id,
+                'notes' => $sale->notes,
+                'voucher_codes' => $voucherCodes,
+                'promo_codes' => $promoCodes,
+            ]
+        ]);
+    }
+
+    /**
+     * Update an existing sale (edit mode from cashier)
+     */
+    public function update(Request $request, string $tenantSlug, string $saleId)
+    {
+        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+        $sale = Sale::where('id', $saleId)->where('tenant_id', $tenant->id)->firstOrFail();
+
+        // Only allow update if status is pending
+        if ($sale->status !== 'pending') {
+            return response()->json(['error' => 'Order tidak bisa diedit karena sudah diproses.'], 400);
+        }
+
+        $request->validate([
+            'items' => ['required', 'array', 'min:1'],
+            'items.*.product_id' => ['required', 'string', 'exists:products,id'],
+            'items.*.quantity' => ['required', 'integer', 'min:1'],
+            'customer_id' => ['nullable', 'string', 'exists:customers,id'],
+            'discount_amount' => ['required', 'numeric', 'min:0'],
+            'tax_rate' => ['required', 'numeric', 'min:0', 'max:100'],
+            'payment_method' => ['required', 'string', 'in:cash,ipaymu,midtrans'],
+            'notes' => ['nullable', 'string', 'max:500'],
+            'voucher_codes' => ['nullable', 'array'],
+            'promo_codes' => ['nullable', 'array'],
+        ]);
+
+        // Restore stock for previous items
+        foreach ($sale->saleItems as $item) {
+            $product = Product::find($item->product_id);
+            if ($product) {
+                $product->stock += $item->quantity;
+                $product->save();
+            }
+            // Optionally: delete inventory log for this sale item
+            \App\Models\Inventory::where('related_sale_item_id', $item->id)->delete();
+        }
+        $sale->saleItems()->delete();
+
+        // Recalculate items, subtotal, etc
+        $subtotal = 0;
+        $saleItemsData = [];
+        foreach ($request->items as $item) {
+            $product = Product::findOrFail($item['product_id']);
+            $itemSubtotal = $product->price * $item['quantity'];
+            $subtotal += $itemSubtotal;
+            if ($product->stock < $item['quantity']) {
+                return response()->json(['error' => 'Stok ' . $product->name . ' tidak mencukupi.'], 400);
+            }
+            $saleItemsData[] = [
+                'product_id' => $product->id,
+                'quantity' => $item['quantity'],
+                'price' => $product->price,
+                'subtotal' => $itemSubtotal,
+                'cost_price_at_sale' => (float)$product->cost_price,
+            ];
+        }
+        // TODO: handle promo & free items if needed (see store logic)
+
+        $discountAmount = $request->discount_amount;
+        $taxAmount = ($subtotal - $discountAmount) * ($request->tax_rate / 100);
+        $totalAmount = $subtotal - $discountAmount + $taxAmount;
+
+        // Update sale main fields
+        $sale->update([
+            'customer_id' => $request->customer_id,
+            'subtotal_amount' => $subtotal,
+            'discount_amount' => $discountAmount,
+            'tax_amount' => $taxAmount,
+            'total_amount' => $totalAmount,
+            'payment_method' => $request->payment_method,
+            'notes' => $request->notes,
+        ]);
+
+        // Save new sale items and reduce stock
+        foreach ($saleItemsData as $itemData) {
+            $saleItem = $sale->saleItems()->create(array_merge($itemData, ['id' => \Illuminate\Support\Str::uuid()]));
+            $product = Product::find($itemData['product_id']);
+            $product->stock -= $itemData['quantity'];
+            $product->save();
+            \App\Models\Inventory::create([
+                'id' => \Illuminate\Support\Str::uuid(),
+                'tenant_id' => $tenant->id,
+                'product_id' => $product->id,
+                'quantity_change' => -$itemData['quantity'],
+                'type' => 'out',
+                'reason' => 'Edit Order: ' . $sale->invoice_number,
+                'user_id' => \Auth::id(),
+                'cost_price_at_movement' => $product->cost_price,
+                'related_sale_item_id' => $saleItem->id,
+            ]);
+        }
+
+        return response()->json(['success' => true, 'saleId' => $sale->id]);
+    }
+
+    /**
      * Endpoint untuk produk paginasi (untuk kasir)
      */
     public function paginatedProducts(Request $request, $tenantSlug)
@@ -256,6 +404,9 @@ class SaleController extends Controller {
         // Kirim client key ke frontend agar Snap.js bisa custom UI
         $midtransClientKey = $tenant->midtrans_client_key ?? '';
 
+        // Ambil orderId dari query param jika ada
+        $orderId = request()->query('orderId');
+
         return Inertia::render('Cashier/Order', [
             'products' => $products,
             'categories' => $categories,
@@ -267,6 +418,7 @@ class SaleController extends Controller {
             'midtransClientKey' => $midtransClientKey,
             'vouchers' => $vouchers,
             'promos' => $promos,
+            'orderId' => $orderId,
         ]);
     }
 
@@ -291,219 +443,247 @@ class SaleController extends Controller {
             'discount_amount' => ['required', 'numeric', 'min:0'],
             'tax_rate' => ['required', 'numeric', 'min:0', 'max:100'],
             'payment_method' => ['required', 'string', 'in:cash,ipaymu,midtrans'],
-            'paid_amount' => ['required', 'numeric', 'min:0'],
+            // paid_amount hanya required jika status bukan pending
+            'paid_amount' => [
+                function ($attribute, $value, $fail) use ($request) {
+                    if (($request->status ?? null) !== 'pending' && (is_null($value) || $value === '')) {
+                        $fail('Jumlah dibayar wajib diisi.');
+                    }
+                    if (!is_null($value) && !is_numeric($value)) {
+                        $fail('Jumlah dibayar harus berupa angka.');
+                    }
+                    if (!is_null($value) && $value < 0) {
+                        $fail('Jumlah dibayar minimal 0.');
+                    }
+                }
+            ],
             'notes' => ['nullable', 'string', 'max:500'],
             'promo_code' => ['nullable', 'string'],
         ]);
 
-        // Calculate sale total based on submitted items
-        $subtotal = 0;
-        $saleItemsData = [];
-        $buyQtyMap = [];
-        foreach ($request->items as $item) {
-            $product = Product::findOrFail($item['product_id']);
-            $itemSubtotal = $product->price * $item['quantity'];
-            $subtotal += $itemSubtotal;
+        // Jika status pending, selalu create order baru (tanpa trigger pembayaran) untuk semua metode
+        if ($request->status === 'pending') {
+            $subtotal = 0;
+            $saleItemsData = [];
+            $buyQtyMap = [];
+            foreach ($request->items as $item) {
+                $product = Product::findOrFail($item['product_id']);
+                $itemSubtotal = $product->price * $item['quantity'];
+                $subtotal += $itemSubtotal;
 
-            // Check sufficient stock
-            if ($product->stock < $item['quantity']) {
-                return back()->withErrors(['items' => 'Stok ' . $product->name . ' tidak mencukupi.']);
-            }
+                // Check sufficient stock
+                if ($product->stock < $item['quantity']) {
+                    return back()->withErrors(['items' => 'Stok ' . $product->name . ' tidak mencukupi.']);
+                }
 
-            $saleItemsData[] = [
-                'product_id' => $product->id,
-                'quantity' => $item['quantity'],
-                'price' => $product->price, // Price at the time of sale
-                'subtotal' => $itemSubtotal,
-                'cost_price_at_sale' => (float)$product->cost_price, // Explicitly cast to float
-            ];
-
-            // Akumulasi jumlah beli untuk promo
-            $buyQtyMap[$product->id] = ($buyQtyMap[$product->id] ?? 0) + $item['quantity'];
-        }
-
-        // Ambil semua promo aktif
-        $promos = \App\Models\Promo::where('is_active', true)
-            ->where('tenant_id', $tenant->id)
-            ->whereDate('expiry_date', '>=', now())
-            ->get();
-
-        // Hitung free item dari semua promo
-        $freeItemMap = [];
-        foreach ($promos as $promo) {
-            $buy_qty = $buyQtyMap[$promo->product_id] ?? 0;
-            $multiplier = intdiv($buy_qty, $promo->buy_qty);
-            $freeProductId = $promo->type === 'buyxgetx' ? $promo->product_id : $promo->another_product_id;
-            if ($multiplier >= 1 && $freeProductId) {
-                $freeQty = $promo->get_qty * $multiplier;
-                $freeItemMap[$freeProductId] = ($freeItemMap[$freeProductId] ?? 0) + $freeQty;
-            }
-        }
-
-        // Tambahkan free item ke saleItemsData
-        foreach ($freeItemMap as $freeProductId => $qty) {
-            $freeProduct = Product::find($freeProductId);
-            if ($freeProduct && $qty > 0) {
                 $saleItemsData[] = [
-                    'product_id' => $freeProduct->id,
-                    'quantity' => $qty,
-                    'price' => 0,
-                    'subtotal' => 0,
-                    'cost_price_at_sale' => (float)$freeProduct->cost_price,
+                    'product_id' => $product->id,
+                    'quantity' => $item['quantity'],
+                    'price' => $product->price, // Price at the time of sale
+                    'subtotal' => $itemSubtotal,
+                    'cost_price_at_sale' => (float)$product->cost_price, // Explicitly cast to float
                 ];
+
+                // Akumulasi jumlah beli untuk promo
+                $buyQtyMap[$product->id] = ($buyQtyMap[$product->id] ?? 0) + $item['quantity'];
             }
-        }
 
-        $discountAmount = $request->discount_amount;
-        $taxAmount = ($subtotal - $discountAmount) * ($request->tax_rate / 100);
-        $totalAmount = $subtotal - $discountAmount + $taxAmount;
+            // Ambil semua promo aktif
+            $promos = \App\Models\Promo::where('is_active', true)
+                ->where('tenant_id', $tenant->id)
+                ->whereDate('expiry_date', '>=', now())
+                ->get();
 
-        // Validate paid_amount for cash payments
-        if ($request->payment_method === 'cash' && $request->paid_amount < $totalAmount) {
-            return back()->withErrors(['paid_amount' => 'Jumlah yang dibayar kurang dari total penjualan.']);
-        }
+            // Hitung free item dari semua promo
+            $freeItemMap = [];
+            foreach ($promos as $promo) {
+                $buy_qty = $buyQtyMap[$promo->product_id] ?? 0;
+                $multiplier = intdiv($buy_qty, $promo->buy_qty);
+                $freeProductId = $promo->type === 'buyxgetx' ? $promo->product_id : $promo->another_product_id;
+                if ($multiplier >= 1 && $freeProductId) {
+                    $freeQty = $promo->get_qty * $multiplier;
+                    $freeItemMap[$freeProductId] = ($freeItemMap[$freeProductId] ?? 0) + $freeQty;
+                }
+            }
 
-        $changeAmount = ($request->payment_method === 'cash') ? ($request->paid_amount - $totalAmount) : 0;
+            // Tambahkan free item ke saleItemsData
+            foreach ($freeItemMap as $freeProductId => $qty) {
+                $freeProduct = Product::find($freeProductId);
+                if ($freeProduct && $qty > 0) {
+                    $saleItemsData[] = [
+                        'product_id' => $freeProduct->id,
+                        'quantity' => $qty,
+                        'price' => 0,
+                        'subtotal' => 0,
+                        'cost_price_at_sale' => (float)$freeProduct->cost_price,
+                    ];
+                }
+            }
 
-        // Generate a unique invoice number (simple example)
-        $invoiceNumber = 'INV-' . date('YmdHis') . '-' . Str::random(4); // Use Str::random() for invoice number
+            $discountAmount = $request->discount_amount;
+            $taxAmount = ($subtotal - $discountAmount) * ($request->tax_rate / 100);
+            $totalAmount = $subtotal - $discountAmount + $taxAmount;
 
-        // Determine initial status based on payment method
-        $initialStatus = ($request->payment_method === 'ipaymu') ? 'pending' : 'completed';
+            // paid_amount selalu 0 untuk pending
+            $paidAmount = 0;
+            $changeAmount = 0;
 
-        // Create sale record
-        $sale = Sale::create([
-            'id' => Str::uuid(), // Generate UUID for Sale
-            'tenant_id' => $tenant->id,
-            'user_id' => Auth::id(), // Cashier who made the sale
-            'customer_id' => $request->customer_id,
-            'voucher_code' => $request->voucher_code ?? null,
-            'promo_code' => $request->promo_code ?? null,
-            'invoice_number' => $invoiceNumber,
-            'subtotal_amount' => $subtotal,
-            'discount_amount' => $discountAmount,
-            'tax_amount' => $taxAmount,
-            'total_amount' => $totalAmount,
-            'paid_amount' => $request->paid_amount,
-            'change_amount' => $changeAmount,
-            'payment_method' => $request->payment_method,
-            'status' => $initialStatus,
-            'notes' => $request->notes,
-        ]);
+            // Generate a unique invoice number (simple example)
+            $invoiceNumber = 'INV-' . date('YmdHis') . '-' . Str::random(4);
 
-        // Save sale items and reduce stock
-        foreach ($saleItemsData as $itemData) {
-            // Ensure SaleItem model exists and has 'id' in $fillable
-            $saleItem = $sale->saleItems()->create(array_merge($itemData, ['id' => Str::uuid()])); // Generate UUID for SaleItem
-            
-            // Reduce product stock
-            $product = Product::find($itemData['product_id']);
-            $product->stock -= $itemData['quantity'];
-            $product->save();
-
-            // Log inventory movement for 'out' (sale)
-            Inventory::create([
+            $sale = Sale::create([
                 'id' => Str::uuid(),
                 'tenant_id' => $tenant->id,
-                'product_id' => $product->id,
-                'quantity_change' => -$itemData['quantity'], // Use quantity_change for stock reduction
-                'type' => 'out', // Movement type for sale
-                'reason' => 'Penjualan: ' . $sale->invoice_number,
                 'user_id' => Auth::id(),
-                'cost_price_at_movement' => $product->cost_price, // Use product's current cost price
-                'related_sale_item_id' => $saleItem->id, // Link to the specific sale item
+                'customer_id' => $request->customer_id,
+                'voucher_code' => $request->voucher_code ?? null,
+                'promo_code' => $request->promo_code ?? null,
+                'invoice_number' => $invoiceNumber,
+                'subtotal_amount' => $subtotal,
+                'discount_amount' => $discountAmount,
+                'tax_amount' => $taxAmount,
+                'total_amount' => $totalAmount,
+                'paid_amount' => $paidAmount,
+                'change_amount' => $changeAmount,
+                'payment_method' => $request->payment_method,
+                'status' => 'pending',
+                'notes' => $request->notes,
+            ]);
+
+            // Save sale items and reduce stock
+            foreach ($saleItemsData as $itemData) {
+                $saleItem = $sale->saleItems()->create(array_merge($itemData, ['id' => Str::uuid()]));
+                $product = Product::find($itemData['product_id']);
+                $product->stock -= $itemData['quantity'];
+                $product->save();
+                Inventory::create([
+                    'id' => Str::uuid(),
+                    'tenant_id' => $tenant->id,
+                    'product_id' => $product->id,
+                    'quantity_change' => -$itemData['quantity'],
+                    'type' => 'out',
+                    'reason' => 'Penjualan: ' . $sale->invoice_number,
+                    'user_id' => Auth::id(),
+                    'cost_price_at_movement' => $product->cost_price,
+                    'related_sale_item_id' => $saleItem->id,
+                ]);
+            }
+
+            return response()->json([
+                'success' => true,
+                'saleId' => $sale->id,
+                'message' => 'Order berhasil disimpan sebagai pending!'
             ]);
         }
 
+        // Jika request ada id dan status paid, update sales (khusus cash payment update)
+        if ($request->has('id') && $request->status !== 'pending' && $request->payment_method === 'cash') {
+            $sale = Sale::where('id', $request->id)->where('tenant_id', $tenant->id)->firstOrFail();
+            $paidAmount = $request->paid_amount;
+            $totalAmount = $sale->total_amount;
+            if ($paidAmount < $totalAmount) {
+                return back()->withErrors(['paid_amount' => 'Jumlah yang dibayar kurang dari total penjualan.']);
+            }
+            $sale->update([
+                'paid_amount' => $paidAmount,
+                'change_amount' => $paidAmount - $totalAmount,
+                'status' => 'completed',
+            ]);
+            return back()->with('success', 'Pembayaran tunai berhasil!');
+        }
+
         // If payment method is iPaymu, initiate payment
-        if ($request->payment_method === 'ipaymu') {
+        if ($request->has('id') && $request->payment_method === 'ipaymu' && $request->status !== 'pending') {
+            $sale = Sale::where('id', $request->id)->where('tenant_id', $tenant->id)->firstOrFail();
             return $this->initiateIpaymuPayment($sale, $tenant);
         }
 
         // If payment method is midtrans, initiate payment and return snapToken for Snap.js
-        if ($request->payment_method === 'midtrans') {
-                $midtransService = new \App\Services\MidtransService($tenant);
-                // Build item details for Midtrans, including discount and tax as separate items
-                $items = $sale->saleItems->map(function($item) {
-                    return [
-                        'id' => $item->product_id,
-                        'price' => $item->price,
-                        'quantity' => $item->quantity,
-                        'name' => $item->product->name,
-                    ];
-                })->toArray();
-                // Tambahkan diskon sebagai item negatif jika ada
-                if ($sale->discount_amount > 0) {
-                    $items[] = [
-                        'id' => 'DISCOUNT',
-                        'price' => -$sale->discount_amount,
-                        'quantity' => 1,
-                        'name' => 'Diskon',
-                    ];
-                }
-                // Tambahkan pajak sebagai item positif jika ada
-                if ($sale->tax_amount > 0) {
-                    $items[] = [
-                        'id' => 'TAX',
-                        'price' => $sale->tax_amount,
-                        'quantity' => 1,
-                        'name' => 'Pajak',
-                    ];
-                }
-                $snapResponse = $midtransService->createSnapTransaction([
-                    'order_id' => $sale->invoice_number,
-                    'gross_amount' => $sale->total_amount,
-                    'items' => $items,
-                    'customer_details' => [
-                        'first_name' => $sale->customer ? $sale->customer->name : 'Guest',
-                        'email' => $sale->customer ? $sale->customer->email : 'guest@example.com',
-                        'phone' => $sale->customer ? $sale->customer->phone : '081234567890',
-                    ],
-                    'callback_url' => route('sales.midtransNotify'),
-                ]);
+        if ($request->has('id') && $request->payment_method === 'midtrans' && $request->status !== 'pending') {
+            $sale = Sale::where('id', $request->id)->where('tenant_id', $tenant->id)->firstOrFail();
+            $midtransService = new \App\Services\MidtransService($tenant);
+            // Build item details for Midtrans, including discount and tax as separate items
+            $items = $sale->saleItems->map(function($item) {
+                return [
+                    'id' => $item->product_id,
+                    'price' => $item->price,
+                    'quantity' => $item->quantity,
+                    'name' => $item->product->name,
+                ];
+            })->toArray();
+            // Tambahkan diskon sebagai item negatif jika ada
+            if ($sale->discount_amount > 0) {
+                $items[] = [
+                    'id' => 'DISCOUNT',
+                    'price' => -$sale->discount_amount,
+                    'quantity' => 1,
+                    'name' => 'Diskon',
+                ];
+            }
+            // Tambahkan pajak sebagai item positif jika ada
+            if ($sale->tax_amount > 0) {
+                $items[] = [
+                    'id' => 'TAX',
+                    'price' => $sale->tax_amount,
+                    'quantity' => 1,
+                    'name' => 'Pajak',
+                ];
+            }
+            $snapResponse = $midtransService->createSnapTransaction([
+                'order_id' => $sale->invoice_number,
+                'gross_amount' => $sale->total_amount,
+                'items' => $items,
+                'customer_details' => [
+                    'first_name' => $sale->customer ? $sale->customer->name : 'Guest',
+                    'email' => $sale->customer ? $sale->customer->email : 'guest@example.com',
+                    'phone' => $sale->customer ? $sale->customer->phone : '081234567890',
+                ],
+                'callback_url' => route('sales.midtransNotify'),
+            ]);
 
-                // Simpan data Midtrans ke sale
-                $sale->update([
-                    'order_id' => $sale->invoice_number,
-                    'midtrans_transaction_id' => $snapResponse['transaction_id'] ?? null,
-                    'midtrans_payload' => json_encode($snapResponse),
-                    'payment_status' => 'pending',
-                    'payment_type' => $snapResponse['payment_type'] ?? null,
-                    'gross_amount' => $snapResponse['gross_amount'] ?? $sale->total_amount,
-                ]);
+            // Simpan data Midtrans ke sale
+            $sale->update([
+                'order_id' => $sale->invoice_number,
+                'midtrans_transaction_id' => $snapResponse['transaction_id'] ?? null,
+                'midtrans_payload' => json_encode($snapResponse),
+                'payment_status' => 'pending',
+                'payment_type' => $snapResponse['payment_type'] ?? null,
+                'gross_amount' => $snapResponse['gross_amount'] ?? $sale->total_amount,
+            ]);
 
-                // Simpan ke payments
-                Payment::create([
-                    'id' => Str::uuid(),
-                    'tenant_id' => $tenant->id,
-                    'sale_id' => $sale->id,
-                    'payment_method' => 'midtrans',
-                    'amount' => $sale->total_amount,
-                    'currency' => 'IDR',
-                    'status' => 'pending',
-                    'transaction_id' => $snapResponse['transaction_id'] ?? null,
-                    'gateway_response' => $snapResponse,
-                    'notes' => 'Pembayaran Midtrans Snap diinisiasi',
-                ]);
+            // Simpan ke payments
+            Payment::create([
+                'id' => Str::uuid(),
+                'tenant_id' => $tenant->id,
+                'sale_id' => $sale->id,
+                'payment_method' => 'midtrans',
+                'amount' => $sale->total_amount,
+                'currency' => 'IDR',
+                'status' => 'pending',
+                'transaction_id' => $snapResponse['transaction_id'] ?? null,
+                'gateway_response' => $snapResponse,
+                'notes' => 'Pembayaran Midtrans Snap diinisiasi',
+            ]);
 
-                // Return snapToken to frontend for Snap.js
-                return Inertia::render('Cashier/Order', [
-                    'products' => Product::where('tenant_id', $tenant->id)->with('category')->get(),
-                    'categories' => Category::where('tenant_id', $tenant->id)->get(),
-                    'customers' => Customer::where('tenant_id', $tenant->id)->get(),
-                    'tenantSlug' => $tenantSlug,
-                    'tenantName' => $tenant->name,
-                    'ipaymuConfigured' => (bool)$tenant->ipaymu_api_key && (bool)$tenant->ipaymu_secret_key,
-                    'midtransConfigured' => !empty($tenant->midtrans_server_key) && !empty($tenant->midtrans_client_key) && !empty($tenant->midtrans_merchant_id),
-                    'snapToken' => $snapResponse['token'] ?? null,
-                ]);
+            // Return snapToken to frontend for Snap.js
+            return Inertia::render('Cashier/Order', [
+                'products' => Product::where('tenant_id', $tenant->id)->with('category')->get(),
+                'categories' => Category::where('tenant_id', $tenant->id)->get(),
+                'customers' => Customer::where('tenant_id', $tenant->id)->get(),
+                'tenantSlug' => $tenantSlug,
+                'tenantName' => $tenant->name,
+                'ipaymuConfigured' => (bool)$tenant->ipaymu_api_key && (bool)$tenant->ipaymu_secret_key,
+                'midtransConfigured' => !empty($tenant->midtrans_server_key) && !empty($tenant->midtrans_client_key) && !empty($tenant->midtrans_merchant_id),
+                'snapToken' => $snapResponse['token'] ?? null,
+            ]);
         }
 
         // For cash payments, redirect to receipt page
-        return redirect()->route('sales.receipt', ['tenantSlug' => $tenantSlug, 'sale' => $sale->id])
-            ->with('success', 'Penjualan berhasil diproses!');
-
-
+        if (!$request->has('id')) {
+            return back()->withErrors(['id' => 'ID penjualan tidak ditemukan.']);
+        }
+        return redirect()->route('sales.receipt', ['tenantSlug' => $tenantSlug, 'sale' => $request->id])
+            ->with('success', 'Order berhasil disimpan dan masuk mode edit!');
     }
     /**
      * Initiate Midtrans payment (Snap API).

@@ -50,7 +50,7 @@ Route::get('/', function () {
 Route::get('/file/products/{folder}/{filename}', [FileController::class, 'showProductFile']);
 
 // Midtrans Payment
-Route::post('/{tenantSlug}/midtrans/pay', [MidtransController::class, 'pay'])->name('midtrans.pay');
+// Route::post('/{tenantSlug}/midtrans/pay', [MidtransController::class, 'pay'])->name('midtrans.pay');
 Route::post('/midtrans/callback', [SaleController::class, 'midtransNotify'])->name('midtrans.callback');
 // Informational pages (FAQ, Terms, Refund)
 Route::get('faq', function () {
@@ -216,13 +216,15 @@ Route::middleware('auth')->group(function () {
 
     // Rute untuk Sales/Pemesanan dan Riwayat
     Route::prefix('{tenantSlug}')->middleware(['tenant.access', 'check.subscription'])->group(function () {
+        Route::get('sales/history', [SaleController::class, 'history'])->name('sales.history');
         Route::get('sales/paginated-products', [SaleController::class, 'paginatedProducts'])->name('sales.paginatedProducts');
         Route::get('sales/order', [SaleController::class, 'order'])->name('sales.order');
-        Route::post('sales/store', [SaleController::class, 'store'])->name('sales.store');
+        Route::put('sales/{sale}', [SaleController::class, 'update'])->name('sales.update');
+        Route::get('sales/show/{sale}', [SaleController::class, 'show'])->name('sales.show');
+        Route::post('sales/store-process', [SaleController::class, 'store'])->name('sales.store');
         Route::get('sales/receipt/{sale}', [SaleController::class, 'receipt'])->name('sales.receipt');
         Route::get('sales/receipt/{sale}/pdf', [SaleController::class, 'generateReceiptPdf'])->name('sales.receipt.pdf');
         Route::get('sales/receipt/{sale}/thermal', [SaleController::class, 'showReceiptThermalHtml'])->name('sales.receipt.thermal');
-        Route::get('sales/history', [SaleController::class, 'history'])->name('sales.history');
         Route::post('sales/{sale}/reinitiate-payment', [SaleController::class, 'reinitiatePayment'])->name('sales.reinitiatePayment');
 
         // Rute Callback iPaymu untuk return/cancel (masih dalam grup tenantSlug)

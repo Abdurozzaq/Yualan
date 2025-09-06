@@ -198,19 +198,19 @@ const showPayNowButton = computed(() => {
                     Resi Penjualan
                 </h1>
                 <div class="flex gap-2">
-                    <Button v-if="showPayNowButton" @click="reinitiateIpaymuPayment" class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white">
+                    <!-- <Button v-if="showPayNowButton" @click="reinitiateIpaymuPayment" class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white">
                         <Wallet class="h-4 w-4" /> Bayar Sekarang (iPaymu)
-                    </Button>
-                    <Button v-if="showMidtransRetryButton" @click="retryMidtransPayment" class="flex items-center gap-2 bg-orange-600 hover:bg-orange-700 text-white">
+                    </Button> -->
+                    <!-- <Button v-if="showMidtransRetryButton" @click="retryMidtransPayment" class="flex items-center gap-2 bg-orange-600 hover:bg-orange-700 text-white">
                         <Wallet class="h-4 w-4" /> Bayar Ulang (Midtrans)
-                    </Button>
-                    <Button @click="printReceiptThermal" class="flex items-center gap-2">
+                    </Button> -->
+                    <Button v-if="sale.status === 'completed'" @click="printReceiptThermal" class="flex items-center gap-2">
                         <Printer class="h-4 w-4" /> Cetak Resi (Thermal)
                     </Button>
-                    <Button @click="printReceipt" class="flex items-center gap-2">
+                    <Button v-if="sale.status === 'completed'" @click="printReceipt" class="flex items-center gap-2">
                         <Printer class="h-4 w-4" /> Cetak Resi (PDF)
                     </Button>
-                    <Link :href="route('sales.order', { tenantSlug: props.tenantSlug })">
+                    <Link v-if="sale.status !== 'completed'" :href="route('sales.order', { tenantSlug: props.tenantSlug, orderId: props.sale.id })">
                         <Button variant="outline">
                             Kembali ke Pemesanan
                         </Button>
