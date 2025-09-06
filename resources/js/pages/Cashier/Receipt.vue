@@ -5,57 +5,13 @@ declare global {
         snap?: any;
     }
 }
-// Show Midtrans retry button if payment_method is midtrans and status is pending/failed
-const showMidtransRetryButton = computed(() => {
-    return props.sale.payment_method === 'midtrans' &&
-        (props.sale.status === 'pending' || props.sale.status === 'failed');
-});
 
-// Retry Midtrans payment: fetch snapToken from backend, then call Snap.js
-const retryMidtransPayment = () => {
-    // Fetch snapToken from backend
-    fetch(route('sales.midtransRetry', { tenantSlug: props.tenantSlug, sale: props.sale.id }), {
-        method: 'POST',
-        headers: {
-            'X-Requested-With': 'XMLHttpRequest',
-            'Content-Type': 'application/json',
-        },
-        credentials: 'same-origin',
-    })
-        .then(res => res.json())
-        .then(data => {
-            if (data.snapToken) {
-                // Call Snap.js
-                if (window.snap) {
-                    window.snap.pay(data.snapToken, {
-                        onSuccess: function() {
-                            window.location.reload();
-                        },
-                        onPending: function() {
-                            window.location.reload();
-                        },
-                        onError: function() {
-                            window.location.reload();
-                        },
-                        onClose: function() {}
-                    });
-                } else {
-                    alert('Midtrans Snap.js belum dimuat. Silakan refresh halaman.');
-                }
-            } else {
-                alert('Gagal mendapatkan Snap Token dari server.');
-            }
-        })
-        .catch(() => {
-            alert('Gagal memulai pembayaran ulang Midtrans.');
-        });
-};
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router } from '@inertiajs/vue3'; // Import router
 import { computed } from 'vue';
 import { Button } from '@/components/ui/button';
-import { Printer, CheckCircle, XCircle, Clock, Wallet } from 'lucide-vue-next'; // Import Wallet icon
+import { Printer, CheckCircle, XCircle, Clock } from 'lucide-vue-next'; // Import Wallet icon
 import { formatCurrency } from '@/utils/formatters'; // Import formatCurrency helper
 
 interface SaleItem {
@@ -159,33 +115,6 @@ const printReceiptThermal = () => {
     // Redirect to the Laravel route that generates the thermal PDF
     window.open(route('sales.receipt.thermal', { tenantSlug: props.tenantSlug, sale: props.sale.id }), '_blank');
 };
-
-// New function to re-initiate iPaymu payment
-const reinitiateIpaymuPayment = () => {
-    router.post(route('sales.reinitiatePayment', { tenantSlug: props.tenantSlug, sale: props.sale.id }), {}, {
-        onSuccess: (page: any) => {
-            // Check if the backend returned a redirect URL for iPaymu
-            if (page.props.ipaymuRedirectUrl) {
-                window.location.href = page.props.ipaymuRedirectUrl;
-            } else {
-                // If no redirect URL, maybe show a success message or just refresh the page
-                // The page should already be updated by Inertia on success
-                alert('Permintaan pembayaran ulang berhasil diproses. Silakan periksa status transaksi.');
-            }
-        },
-        onError: (errors) => {
-            console.error('Error re-initiating iPaymu payment:', errors);
-            alert('Gagal memulai pembayaran ulang: ' + (errors.message || 'Terjadi kesalahan.'));
-        },
-        preserveScroll: true,
-    });
-};
-
-// Computed property to determine if the "Pay Now" button should be shown
-const showPayNowButton = computed(() => {
-    return props.sale.payment_method === 'ipaymu' &&
-           (props.sale.status === 'pending' || props.sale.status === 'failed' || props.sale.status === 'cancelled');
-});
 
 // Computed property to determine if the "Cancel Order" button should be shown
 const showCancelOrderButton = computed(() => {

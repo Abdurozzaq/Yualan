@@ -357,14 +357,6 @@ const totalAmount = computed(() => {
     return Math.max(0, taxed); // Ensure total is not negative
 });
 
-// Calculate change
-const changeAmount = computed(() => {
-    if (form.payment_method === 'cash') {
-        return form.paid_amount - totalAmount.value;
-    }
-    return 0; // No change for iPaymu
-});
-
 // Watch totalAmount to update paid_amount if iPaymu is selected
 watch(totalAmount, (newTotal) => {
     if (form.payment_method === 'ipaymu') {

@@ -2,7 +2,7 @@
 import { Head, Link, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import PricingSection from '@/components/PricingSection.vue';
-import { DollarSign, Package, Users, BarChart, CreditCard, Cloud, ShieldCheck, Check, ShoppingCart, Boxes } from 'lucide-vue-next'; // Import icons
+import { Package, Users, BarChart, CreditCard, Cloud, ShieldCheck, Check, ShoppingCart, Boxes } from 'lucide-vue-next'; // Import icons
 
 // Mengakses props dari Inertia, termasuk informasi autentikasi pengguna
 const page = usePage();
