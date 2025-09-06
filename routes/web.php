@@ -225,7 +225,8 @@ Route::middleware('auth')->group(function () {
         Route::get('sales/receipt/{sale}', [SaleController::class, 'receipt'])->name('sales.receipt');
         Route::get('sales/receipt/{sale}/pdf', [SaleController::class, 'generateReceiptPdf'])->name('sales.receipt.pdf');
         Route::get('sales/receipt/{sale}/thermal', [SaleController::class, 'showReceiptThermalHtml'])->name('sales.receipt.thermal');
-        Route::post('sales/{sale}/reinitiate-payment', [SaleController::class, 'reinitiatePayment'])->name('sales.reinitiatePayment');
+    Route::post('sales/{sale}/reinitiate-payment', [SaleController::class, 'reinitiatePayment'])->name('sales.reinitiatePayment');
+    Route::post('sales/{sale}/cancel', [SaleController::class, 'cancelPendingOrder'])->name('sales.cancel');
 
         // Rute Callback iPaymu untuk return/cancel (masih dalam grup tenantSlug)
         Route::get('sales/ipaymu/return/{sale}', [SaleController::class, 'ipaymuReturn'])->name('sales.ipaymuReturn');

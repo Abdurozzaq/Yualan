@@ -186,6 +186,26 @@ const showPayNowButton = computed(() => {
     return props.sale.payment_method === 'ipaymu' &&
            (props.sale.status === 'pending' || props.sale.status === 'failed' || props.sale.status === 'cancelled');
 });
+
+// Computed property to determine if the "Cancel Order" button should be shown
+const showCancelOrderButton = computed(() => {
+    return props.sale.status === 'pending';
+});
+
+// Function to cancel the pending order
+const cancelPendingOrder = () => {
+    if (!confirm('Apakah Anda yakin ingin membatalkan pesanan ini?')) return;
+    router.post(route('sales.cancel', { tenantSlug: props.tenantSlug, sale: props.sale.id }), {}, {
+        onSuccess: () => {
+            // The page should be updated by Inertia
+            alert('Pesanan berhasil dibatalkan.');
+        },
+        onError: (errors) => {
+            alert('Gagal membatalkan pesanan: ' + (errors.message || 'Terjadi kesalahan.'));
+        },
+        preserveScroll: true,
+    });
+};
 </script>
 
 <template>
@@ -204,6 +224,9 @@ const showPayNowButton = computed(() => {
                     <!-- <Button v-if="showMidtransRetryButton" @click="retryMidtransPayment" class="flex items-center gap-2 bg-orange-600 hover:bg-orange-700 text-white">
                         <Wallet class="h-4 w-4" /> Bayar Ulang (Midtrans)
                     </Button> -->
+                    <Button v-if="showCancelOrderButton" @click="cancelPendingOrder" class="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white">
+                        <XCircle class="h-4 w-4" /> Batalkan Pesanan
+                    </Button>
                     <Button v-if="sale.status === 'completed'" @click="printReceiptThermal" class="flex items-center gap-2">
                         <Printer class="h-4 w-4" /> Cetak Resi (Thermal)
                     </Button>

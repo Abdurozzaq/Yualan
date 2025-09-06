@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers;
 
 use App\Models\Sale;
@@ -20,6 +19,24 @@ use Illuminate\Support\Facades\Log; // Import Log Facade
 use Illuminate\Support\Str; // Import Str for UUID in Sale model creation
 
 class SaleController extends Controller {
+    /**
+     * Membatalkan order dengan status pending
+     */
+    public function cancelPendingOrder(Request $request, string $tenantSlug, Sale $sale)
+    {
+        $tenant = \App\Models\Tenant::where('slug', $tenantSlug)->firstOrFail();
+        if ($sale->tenant_id !== $tenant->id) {
+            abort(404);
+        }
+        if ($sale->status !== 'pending') {
+            return response()->json(['error' => 'Order tidak bisa dibatalkan.'], 400);
+        }
+        $sale->status = 'cancelled';
+        $sale->notes = ($sale->notes ? $sale->notes . ' ' : '') . '[dibatalkan oleh kasir pada ' . now()->format('Y-m-d H:i') . ']';
+        $sale->save();
+        return redirect()->route('sales.receipt', ['tenantSlug' => $tenantSlug, 'sale' => $sale->id])
+            ->with('success', 'Pesanan berhasil dibatalkan.');
+    }
     /**
      * API: Get detail sale/order for edit (kasir)
      */
