@@ -155,6 +155,11 @@ const printReceipt = () => {
     window.open(route('sales.receipt.pdf', { tenantSlug: props.tenantSlug, sale: props.sale.id }), '_blank');
 };
 
+const printReceiptThermal = () => {
+    // Redirect to the Laravel route that generates the thermal PDF
+    window.open(route('sales.receipt.thermal', { tenantSlug: props.tenantSlug, sale: props.sale.id }), '_blank');
+};
+
 // New function to re-initiate iPaymu payment
 const reinitiateIpaymuPayment = () => {
     router.post(route('sales.reinitiatePayment', { tenantSlug: props.tenantSlug, sale: props.sale.id }), {}, {
@@ -198,6 +203,9 @@ const showPayNowButton = computed(() => {
                     </Button>
                     <Button v-if="showMidtransRetryButton" @click="retryMidtransPayment" class="flex items-center gap-2 bg-orange-600 hover:bg-orange-700 text-white">
                         <Wallet class="h-4 w-4" /> Bayar Ulang (Midtrans)
+                    </Button>
+                    <Button @click="printReceiptThermal" class="flex items-center gap-2">
+                        <Printer class="h-4 w-4" /> Cetak Resi (Thermal)
                     </Button>
                     <Button @click="printReceipt" class="flex items-center gap-2">
                         <Printer class="h-4 w-4" /> Cetak Resi (PDF)
@@ -288,6 +296,11 @@ const showPayNowButton = computed(() => {
 </template>
 
 <style scoped>
-/* No specific @media print styles needed here anymore, as JS handles the PDF generation */
-/* You can keep them if you still want a fallback for browser's native print */
+/* Use Windows system font stack for a clean, modern look */
+#receipt-printable-area {
+    font-family: 'Segoe UI', Arial, 'Helvetica Neue', Helvetica, sans-serif;
+    font-size: 15px;
+    letter-spacing: 0.01em;
+    color: #222;
+}
 </style>

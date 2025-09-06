@@ -878,7 +878,62 @@ class SaleController extends Controller {
         ]);
 
         // Return the PDF as a download
-        return $pdf->download('resi-penjualan-' . $sale->invoice_number . '.pdf');
+        return $pdf->stream('resi-penjualan-' . $sale->invoice_number . '.pdf');
+    }
+
+    /**
+     * Show HTML receipt for direct browser print (thermal).
+     */
+    public function showReceiptThermalHtml(string $tenantSlug, Sale $sale)
+    {
+        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+
+        // Ensure the logged-in user has access to this tenant
+        if (Auth::user()->tenant_id !== $tenant->id) {
+            abort(403, 'Anda tidak memiliki akses ke tenant ini.');
+        }
+
+        // Ensure this sale belongs to the correct tenant
+        if ($sale->tenant_id !== $tenant->id) {
+            abort(404);
+        }
+
+        $sale->load(['saleItems.product', 'customer', 'user']);
+        $formattedDate = (new \DateTime($sale->created_at))->format('d F Y H:i');
+
+        // --- PASS 1: Render dan ukur tinggi konten ---
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.receipt-thermal', [
+            'sale' => $sale,
+            'tenantName' => $tenant->name,
+            'formattedDate' => $formattedDate,
+        ]);
+        $dompdf = $pdf->getDomPDF();
+        $GLOBALS['bodyHeight'] = 0;
+        $dompdf->set_callbacks([
+            'myCallbacks' => [
+                'event' => 'end_frame',
+                'f' => function ($frame) {
+                    $node = $frame->get_node();
+                    if (strtolower($node->nodeName) === "body") {
+                        $padding_box = $frame->get_padding_box();
+                        $GLOBALS['bodyHeight'] += $padding_box['h'];
+                    }
+                }
+            ]
+        ]);
+        $dompdf->setPaper([0, 0, 161.417, 2000], 'portrait'); // tinggi besar sementara
+        $dompdf->render();
+        $height = $GLOBALS['bodyHeight'] + 30; // padding bawah
+        unset($dompdf);
+
+        // --- PASS 2: Render ulang dengan tinggi sesuai konten ---
+        $pdf2 = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.receipt-thermal', [
+            'sale' => $sale,
+            'tenantName' => $tenant->name,
+            'formattedDate' => $formattedDate,
+        ]);
+        $pdf2->setPaper([0, 0, 161.417, $height], 'portrait');
+        return $pdf2->stream('resi-thermal-' . $sale->invoice_number . '.pdf');
     }
 
     /**

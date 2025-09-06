@@ -221,6 +221,7 @@ Route::middleware('auth')->group(function () {
         Route::post('sales/store', [SaleController::class, 'store'])->name('sales.store');
         Route::get('sales/receipt/{sale}', [SaleController::class, 'receipt'])->name('sales.receipt');
         Route::get('sales/receipt/{sale}/pdf', [SaleController::class, 'generateReceiptPdf'])->name('sales.receipt.pdf');
+        Route::get('sales/receipt/{sale}/thermal', [SaleController::class, 'showReceiptThermalHtml'])->name('sales.receipt.thermal');
         Route::get('sales/history', [SaleController::class, 'history'])->name('sales.history');
         Route::post('sales/{sale}/reinitiate-payment', [SaleController::class, 'reinitiatePayment'])->name('sales.reinitiatePayment');
 
