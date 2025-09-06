@@ -91,7 +91,41 @@ const currentSortDirection = ref(props.filters.sortDirection);
 const currentSearch = ref(props.filters.search || '');
 const currentFilterField = ref(props.filters.filterField || 'name'); // Default filter field
 
-// Form state for adding/editing products
+// Daftar satuan lengkap
+const unitOptions = [
+    { value: 'pcs', label: 'pcs (pieces)' },
+    { value: 'kg', label: 'kg (kilogram)' },
+    { value: 'g', label: 'g (gram)' },
+    { value: 'mg', label: 'mg (miligram)' },
+    { value: 'l', label: 'l (liter)' },
+    { value: 'ml', label: 'ml (mililiter)' },
+    { value: 'm', label: 'm (meter)' },
+    { value: 'cm', label: 'cm (centimeter)' },
+    { value: 'mm', label: 'mm (milimeter)' },
+    { value: 'box', label: 'box' },
+    { value: 'pack', label: 'pack' },
+    { value: 'dozen', label: 'dozen (lusin)' },
+    { value: 'set', label: 'set' },
+    { value: 'roll', label: 'roll' },
+    { value: 'sheet', label: 'sheet (lembar)' },
+    { value: 'bottle', label: 'bottle (botol)' },
+    { value: 'sachet', label: 'sachet' },
+    { value: 'can', label: 'can (kaleng)' },
+    { value: 'jar', label: 'jar (toples)' },
+    { value: 'pair', label: 'pair (pasang)' },
+    { value: 'rim', label: 'rim' },
+    { value: 'bunch', label: 'bunch (ikat)' },
+    { value: 'bundle', label: 'bundle' },
+    { value: 'carton', label: 'carton (karton)' },
+    { value: 'bag', label: 'bag (kantong)' },
+    { value: 'tube', label: 'tube' },
+    { value: 'bar', label: 'bar (batang)' },
+    { value: 'piece', label: 'piece' },
+    { value: 'unit', label: 'unit' },
+    { value: 'other', label: 'Lainnya' },
+];
+
+
 const form = useForm({
     id: null as string | null, // Used for editing
     category_id: null as string | null,
@@ -694,7 +728,16 @@ const appDomain = import.meta.env.VITE_API_DOMAIN || 'http://localhost:8000';
 
                     <div class="grid grid-cols-4 items-center gap-4">
                         <Label for="unit" class="text-right">Unit (Opsional)</Label>
-                        <Input id="unit" v-model="form.unit" class="col-span-3" placeholder="e.g., pcs, kg, liter" />
+                        <Select v-model="form.unit">
+                            <SelectTrigger class="col-span-3">
+                                <SelectValue placeholder="Pilih Satuan" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <template v-for="opt in unitOptions" :key="opt.value">
+                                    <SelectItem :value="opt.value">{{ opt.label }}</SelectItem>
+                                </template>
+                            </SelectContent>
+                        </Select>
                         <InputError :message="form.errors.unit" class="col-span-4 col-start-2" />
                     </div>
 
@@ -877,7 +920,16 @@ const appDomain = import.meta.env.VITE_API_DOMAIN || 'http://localhost:8000';
                                             <Input v-model.number="row.stock" type="number" size="sm" class="w-full border rounded px-2 py-1" />
                                         </td>
                                         <td class="border px-3 py-2 font-medium text-gray-900 dark:text-gray-100">
-                                            <Input v-model="row.unit" size="sm" class="w-full border rounded px-2 py-1" />
+                                            <Select v-model="row.unit">
+                                                <SelectTrigger class="w-full border rounded px-2 py-1">
+                                                    <SelectValue placeholder="Pilih Satuan" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <template v-for="opt in unitOptions" :key="opt.value">
+                                                        <SelectItem :value="opt.value">{{ opt.label }}</SelectItem>
+                                                    </template>
+                                                </SelectContent>
+                                            </Select>
                                         </td>
                                         <td class="border px-3 py-2 text-red-600 dark:text-red-400 font-semibold">{{ row.error }}</td>
                                     </tr>
