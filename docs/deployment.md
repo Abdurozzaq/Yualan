@@ -6,14 +6,6 @@ Panduan ini menjelaskan cara deploy Yualan POS ke production environment. Suppor
 
 ## Prerequisites
 
-### Server Requirements
-
-**Minimum Requirements:**
-- **RAM**: 1GB (2GB recommended)
-- **Storage**: 10GB SSD
-- **CPU**: 1 vCPU (2 vCPU recommended)
-- **Bandwidth**: 1TB/month
-
 **Software Requirements:**
 - **OS**: Ubuntu 20.04+ / CentOS 8+ / RHEL 8+
 - **PHP**: 8.2 atau lebih tinggi
