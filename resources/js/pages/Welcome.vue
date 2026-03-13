@@ -1,7 +1,11 @@
 <script setup lang="ts">
-import { Head, Link } from '@inertiajs/vue3';
+import { Head, Link, usePage } from '@inertiajs/vue3';
+import { computed } from 'vue';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Yualan POS';
+
+const page = usePage();
+const isAuthenticated = computed(() => !!page.props.auth?.user);
 </script>
 
 <template>
@@ -30,18 +34,29 @@ const appName = import.meta.env.VITE_APP_NAME || 'Yualan POS';
             </div>
 
             <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link
-                    :href="route('login')"
-                    class="px-8 py-3 rounded-full text-base font-semibold bg-blue-600 text-white hover:bg-blue-700 transition-colors duration-200 shadow-md"
-                >
-                    Login
-                </Link>
-                <Link
-                    :href="route('register')"
-                    class="px-8 py-3 rounded-full text-base font-semibold bg-white text-blue-600 border border-blue-600 hover:bg-blue-50 transition-colors duration-200 shadow-md"
-                >
-                    Register
-                </Link>
+                <template v-if="isAuthenticated">
+                    <Link
+                        :href="route('dashboard.default')"
+                        class="px-8 py-3 rounded-full text-base font-semibold bg-blue-600 text-white hover:bg-blue-700 transition-colors duration-200 shadow-md"
+                    >
+                        Masuk ke Dashboard
+                    </Link>
+                </template>
+
+                <template v-else>
+                    <Link
+                        href="/login"
+                        class="px-8 py-3 rounded-full text-base font-semibold bg-blue-600 text-white hover:bg-blue-700 transition-colors duration-200 shadow-md"
+                    >
+                        Login
+                    </Link>
+                    <Link
+                        href="/register"
+                        class="px-8 py-3 rounded-full text-base font-semibold bg-white text-blue-600 border border-blue-600 hover:bg-blue-50 transition-colors duration-200 shadow-md"
+                    >
+                        Register
+                    </Link>
+                </template>
             </div>
         </div>
     </div>
