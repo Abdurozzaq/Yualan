@@ -5,6 +5,7 @@ use Illuminate\Http\Request;
 use App\Models\User; // Use User model instead of Employee
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 
 class EmployeeController extends Controller

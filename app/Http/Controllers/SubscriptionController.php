@@ -116,7 +116,12 @@ class SubscriptionController extends Controller
         }
 
         try {
-            $subscription_ends_at = now()->addMonths($plan->duration_months ?? 1);
+            // Untuk paket lifetime, tidak ada tanggal berakhir (subscription_ends_at = null)
+            $subscription_ends_at = null;
+            if ($plan->period_type !== 'lifetime') {
+                // Default: perpanjang bulanan (atau sesuai duration_months jika ada)
+                $subscription_ends_at = now()->addMonths($plan->duration_months ?? 1);
+            }
 
             $tenant->update([
                 'pricing_plan_id' => $plan->id,

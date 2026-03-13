@@ -57,7 +57,8 @@ class PricingPlanController extends Controller
         $validated = $request->validate([
             'plan_name' => ['required', 'string', 'max:255', Rule::unique('pricing_plans', 'plan_name')],
             'plan_description' => ['nullable', 'string', 'max:1000'],
-            'period_type' => ['required', Rule::in(['monthly', 'quarterly', 'yearly'])],
+            // Tambah opsi lifetime untuk langganan seumur hidup
+            'period_type' => ['required', Rule::in(['monthly', 'quarterly', 'yearly', 'lifetime'])],
             'price' => ['required', 'numeric', 'min:0'],
             'discount_percentage' => ['nullable', 'numeric', 'min:0', 'max:100'],
         ]);
@@ -80,7 +81,8 @@ class PricingPlanController extends Controller
         $validated = $request->validate([
             'plan_name' => ['required', 'string', 'max:255', Rule::unique('pricing_plans', 'plan_name')->ignore($pricing->id)],
             'plan_description' => ['nullable', 'string', 'max:1000'],
-            'period_type' => ['required', Rule::in(['monthly', 'quarterly', 'yearly'])],
+            // Tambah opsi lifetime untuk langganan seumur hidup
+            'period_type' => ['required', Rule::in(['monthly', 'quarterly', 'yearly', 'lifetime'])],
             'price' => ['required', 'numeric', 'min:0'],
             'discount_percentage' => ['nullable', 'numeric', 'min:0', 'max:100'],
         ]);

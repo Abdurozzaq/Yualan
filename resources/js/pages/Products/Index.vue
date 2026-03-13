@@ -762,14 +762,14 @@ const appDomain = import.meta.env.VITE_API_DOMAIN || 'http://localhost:8000';
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-4 items-center gap-4">
+                    <!-- <div class="grid grid-cols-4 items-center gap-4">
                         <Label for="is_food_item" class="text-right">Item Makanan?</Label>
                         <div class="col-span-3 flex items-center">
                             <Checkbox id="is_food_item" v-model:checked="form.is_food_item" />
                             <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Ya, ini adalah item makanan.</span>
                         </div>
                         <InputError :message="form.errors.is_food_item" class="col-span-4 col-start-2" />
-                    </div>
+                    </div> -->
 
                     <div v-if="form.is_food_item" class="grid grid-cols-4 items-center gap-4">
                         <Label for="ingredients" class="text-right">Bahan-bahan (Opsional)</Label>

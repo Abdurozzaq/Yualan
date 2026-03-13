@@ -64,14 +64,6 @@ onMounted(() => {
                 <Breadcrumbs :breadcrumbs="breadcrumbs" />
             </template>
         </div>
-
-        <!-- Theme Toggle Button -->
-        <div class="flex items-center gap-2">
-            <Button variant="ghost" size="icon" @click="toggleTheme" class="rounded-full">
-                <component :is="themeIcon" class="h-5 w-5" />
-                <span class="sr-only">Toggle theme</span>
-            </Button>
-        </div>
     </header>
 </template>
 

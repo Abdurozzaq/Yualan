@@ -8,7 +8,7 @@ const form = useForm({
     plan_id: null,
 });
 
-const subscribe = (planId: number) => {
+const subscribe = (planId: string) => {
     form.plan_id = planId;
     form.post(route('subscription.subscribe'), {
         onFinish: () => {
@@ -53,13 +53,23 @@ const getDiscountedPrice = (plan: { price: number; discount_percentage?: number 
                                         <div class="flex flex-col items-start">
                                             <span class="text-xs text-gray-400 line-through">{{ formatCurrency(plan.price) }}</span>
                                             <span class="text-3xl font-bold text-green-600 leading-tight">{{ formatCurrency(getDiscountedPrice(plan)) }}</span>
-                                            <span class="text-xs text-gray-500">/{{ plan.period_type === 'monthly' ? 'bulan' : 'tahun' }}</span>
+                                            <span class="text-xs text-gray-500">
+                                                <template v-if="plan.period_type === 'monthly'">/bulan</template>
+                                                <template v-else-if="plan.period_type === 'quarterly'">/3 bulan</template>
+                                                <template v-else-if="plan.period_type === 'yearly'">/tahun</template>
+                                                <template v-else>/lifetime</template>
+                                            </span>
                                         </div>
                                     </template>
                                     <template v-else>
                                         <div class="text-3xl font-bold">
                                             {{ formatCurrency(plan.price) }}
-                                            <span class="text-lg font-normal">/{{ plan.period_type === 'monthly' ? 'bulan' : 'tahun' }}</span>
+                                            <span class="text-lg font-normal">
+                                                <template v-if="plan.period_type === 'monthly'">/bulan</template>
+                                                <template v-else-if="plan.period_type === 'quarterly'">/3 bulan</template>
+                                                <template v-else-if="plan.period_type === 'yearly'">/tahun</template>
+                                                <template v-else>/lifetime</template>
+                                            </span>
                                         </div>
                                     </template>
                                 </div>

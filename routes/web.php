@@ -305,8 +305,8 @@ Route::middleware(['auth', 'tenant.access'])->group(function () {
     Route::post('/{tenantSlug}/employees', [EmployeeController::class, 'store'])->name('employees.store');
     Route::post('/{tenantSlug}/employees/{employee}', [EmployeeController::class, 'update'])->name('employees.update');
     Route::delete('/{tenantSlug}/employees/{employee}', [EmployeeController::class, 'destroy'])->name('employees.destroy');
-    Route::put('employees/{employee}/restore', [EmployeeController::class, 'restore'])->name('employees.restore');
-    Route::put('employees/{employee}/change-password', [EmployeeController::class, 'changePassword'])->name('employees.change_password');
+    Route::put('/{tenantSlug}/employees/{employee}/restore', [EmployeeController::class, 'restore'])->name('employees.restore');
+    Route::put('/{tenantSlug}/employees/{employee}/change-password', [EmployeeController::class, 'changePassword'])->name('employees.change_password');
 });
 
 // Excel import routes

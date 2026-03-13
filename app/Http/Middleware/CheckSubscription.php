@@ -19,8 +19,13 @@ class CheckSubscription
     {
         $user = Auth::user();
 
-        // Bypass if no user is authenticated or if the user is on the subscription info/payment page
-        if (!$user || $request->routeIs('subscription.*')) {
+        // Bypass if no user is authenticated, if the user is superadmin,
+        // or if the user is on the subscription info/payment page
+        if (
+            !$user ||
+            ($user->role ?? null) === 'superadmin' ||
+            $request->routeIs('subscription.*')
+        ) {
             return $next($request);
         }
 
@@ -31,7 +36,13 @@ class CheckSubscription
             return $next($request);
         }
 
-        $subscriptionExpired = $tenant->subscription_ends_at && Carbon::now()->gt($tenant->subscription_ends_at);
+        // Jika tenant menggunakan paket lifetime, jangan cek tanggal kadaluarsa
+        $pricingPlan = $tenant->pricingPlan;
+        $isLifetime = $pricingPlan && $pricingPlan->period_type === 'lifetime';
+
+        $subscriptionExpired = !$isLifetime
+            && $tenant->subscription_ends_at
+            && Carbon::now()->gt($tenant->subscription_ends_at);
 
         if (!$tenant->is_subscribed || $subscriptionExpired) {
             // Redirect to subscription info page

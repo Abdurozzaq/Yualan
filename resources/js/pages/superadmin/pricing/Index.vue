@@ -18,7 +18,7 @@ interface PricingPlan {
   id: string;
   plan_name: string;
   plan_description: string | null;
-  period_type: 'monthly' | 'quarterly' | 'yearly';
+  period_type: 'monthly' | 'quarterly' | 'yearly' | 'lifetime';
   price: number | string;
   discount_percentage: number | string;
   created_at: string;
@@ -99,7 +99,7 @@ const form = useForm({
   id: null as string | null,
   plan_name: '',
   plan_description: '',
-  period_type: 'monthly' as 'monthly' | 'quarterly' | 'yearly',
+  period_type: 'monthly' as 'monthly' | 'quarterly' | 'yearly' | 'lifetime',
   price: 0,
   discount_percentage: 0,
 });
@@ -297,6 +297,7 @@ const deletePlan = () => {
                 <SelectItem value="monthly">Bulanan</SelectItem>
                 <SelectItem value="quarterly">Triwulan</SelectItem>
                 <SelectItem value="yearly">Tahunan</SelectItem>
+                <SelectItem value="lifetime">Lifetime (Sekali Bayar)</SelectItem>
               </SelectContent>
             </Select>
             <InputError :message="form.errors.period_type" />

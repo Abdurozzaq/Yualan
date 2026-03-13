@@ -27,6 +27,18 @@ class FullTenantSeeder extends Seeder
 {
     public function run(): void
     {
+        // Ambil atau buat pricing plan lifetime 0 rupiah (Self Hosted)
+        $lifetimePlan = PricingPlan::firstOrCreate(
+            ['plan_name' => 'Self Hosted'],
+            [
+                'id' => (string) Str::uuid(),
+                'plan_description' => 'Paket lifetime untuk self-hosted deployment (tanpa biaya bulanan).',
+                'period_type' => 'lifetime',
+                'price' => 0,
+                'discount_percentage' => 0,
+            ]
+        );
+
         // Tenant
         $tenant = Tenant::create([
             'id' => (string) Str::uuid(),
@@ -36,8 +48,10 @@ class FullTenantSeeder extends Seeder
             'email' => 'demo@tenant.com',
             'business_type' => 'retail',
             'is_active' => true,
+            // Tenant ini langsung paket lifetime 0 rupiah, bukan trial
             'is_subscribed' => true,
-            'subscription_ends_at' => '2030-12-01 07:21:45'
+            'subscription_ends_at' => null,
+            'pricing_plan_id' => $lifetimePlan->id,
         ]);
 
         // User

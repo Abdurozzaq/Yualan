@@ -1,26 +1,61 @@
 <script setup lang="ts">
 import SuperadminLayout from '@/layouts/app/SuperadminLayout.vue';
 import { type BreadcrumbItem } from '@/types';
-import { Link } from '@inertiajs/vue3'; // Import Link
-import { Card } from '@/components/ui/card'; // Import Card component
-import { DollarSign, Package, Users, Store, Clock, TrendingUp, BarChart } from 'lucide-vue-next'; // Import icons
-import { formatCurrency } from '@/utils/formatters'; // Import formatCurrency
+import { Link, usePage } from '@inertiajs/vue3';
+import { Card } from '@/components/ui/card';
+import { DollarSign, Package, Users, Store, Clock, TrendingUp, BarChart } from 'lucide-vue-next';
+import { formatCurrency } from '@/utils/formatters';
+import { computed } from 'vue';
 
-const page = usePage(); // To access auth.user for welcome message
+const page = usePage();
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Superadmin Dashboard',
-        href: route('superadmin.dashboard'), // Rute khusus superadmin
+        href: route('superadmin.dashboard'),
     },
 ];
 
-// Helper function for tenant status badge colors
+const defaultStats = {
+    totalTenants: 0,
+    activeTenants: 0,
+    inactiveTenants: 0,
+    totalUsers: 0,
+    superadmins: 0,
+    admins: 0,
+    cashiers: 0,
+    totalProducts: 0,
+    totalProductStock: 0,
+    totalSalesAmount: 0,
+    totalCompletedSales: 0,
+    totalPendingSales: 0,
+    totalSalesLast7Days: 0,
+    newTenantsLast30Days: 0,
+    topProductCategoriesByProductCount: [] as { category_name: string; product_count: number }[],
+};
+
+const stats = computed(() => {
+    const props = page.props as any;
+    return {
+        ...defaultStats,
+        ...(props?.stats ?? {}),
+    };
+});
+
+const recentTenants = computed(() => {
+    const props = page.props as any;
+    return props?.recentTenants ?? [];
+});
+
+const topTenantsBySales = computed(() => {
+    const props = page.props as any;
+    return props?.topTenantsBySales ?? [];
+});
+
 const getTenantStatusColor = (isActive: boolean) => {
     return isActive ? 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-200' : 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-200';
 };
 
-// Helper function to format date for recent tenants
 const formatDate = (dateTimeString: string) => {
     return new Date(dateTimeString).toLocaleDateString('id-ID', {
         year: 'numeric',
@@ -28,7 +63,6 @@ const formatDate = (dateTimeString: string) => {
         day: 'numeric',
     });
 };
-// ...existing script code...
 </script>
 
 <template>

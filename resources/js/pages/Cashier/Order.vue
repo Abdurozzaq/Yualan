@@ -580,8 +580,14 @@ const saveOrderPending = async () => {
         return;
     }
     isProcessingSaveOrder.value = true;
+    // Hanya kirim item berbayar ke backend; free item akan dihitung ulang oleh backend berdasarkan promo
+    const paidItems = cartItems.value.filter(item => item.price > 0);
+    const itemsMap = new Map<string, number>();
+    paidItems.forEach(item => {
+        itemsMap.set(item.product_id, (itemsMap.get(item.product_id) || 0) + item.quantity);
+    });
     const formData: Record<string, any> = {
-        items: cartItems.value.map(({ product_id, quantity }) => ({ product_id, quantity })),
+        items: Array.from(itemsMap.entries()).map(([product_id, quantity]) => ({ product_id, quantity })),
         customer_id: selectedCustomer.value,
         discount_amount: form.discount_amount,
         tax_rate: form.tax_rate,
@@ -643,7 +649,15 @@ const payOrder = async () => {
     let currentOrderId = orderEditId.value;
     let saveError = '';
     const saveData: Record<string, any> = {
-        items: cartItems.value.map(({ product_id, quantity }) => ({ product_id, quantity })),
+        // Hanya kirim item berbayar; free item akan dihitung ulang di backend
+        items: (() => {
+            const paidItems = cartItems.value.filter(item => item.price > 0);
+            const itemsMap = new Map<string, number>();
+            paidItems.forEach(item => {
+                itemsMap.set(item.product_id, (itemsMap.get(item.product_id) || 0) + item.quantity);
+            });
+            return Array.from(itemsMap.entries()).map(([product_id, quantity]) => ({ product_id, quantity }));
+        })(),
         customer_id: selectedCustomer.value,
         discount_amount: form.discount_amount,
         tax_rate: form.tax_rate,
@@ -775,9 +789,15 @@ const confirmCashPayment = async () => {
         cashInputError.value = 'Jumlah yang dibayar kurang dari total.';
         return;
     }
-    form.items = cartItems.value.map(item => ({
-        product_id: item.product_id,
-        quantity: item.quantity,
+    // Hanya kirim item berbayar ke backend
+    const paidItems = cartItems.value.filter(item => item.price > 0);
+    const itemsMap = new Map<string, number>();
+    paidItems.forEach(item => {
+        itemsMap.set(item.product_id, (itemsMap.get(item.product_id) || 0) + item.quantity);
+    });
+    form.items = Array.from(itemsMap.entries()).map(([product_id, quantity]) => ({
+        product_id,
+        quantity,
     }));
     form.customer_id = selectedCustomer.value;
     (form as any).voucher_codes = selectedVoucherCodes.value;

@@ -134,13 +134,20 @@ const mainNavItems = computed<NavItem[]>(() => {
     return items;
 });
 
-const footerNavItems: NavItem[] = [
-    {
-        title: 'Riwayat Subscription',
-        href: route('invoices.history', { tenantSlug: tenantSlug.value }),
-        icon: Tag,
+const footerNavItems = computed<NavItem[]>(() => {
+    // Hide subscription history when there is no tenantSlug (e.g. superadmin dashboard)
+    if (!tenantSlug.value) {
+        return [];
     }
-];
+
+    return [
+        {
+            title: 'Riwayat Subscription',
+            href: route('invoices.history', { tenantSlug: tenantSlug.value }),
+            icon: Tag,
+        },
+    ];
+});
 
 const isSubscriptionExpired = computed(() => {
     

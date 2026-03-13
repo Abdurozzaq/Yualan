@@ -17,6 +17,7 @@ class DatabaseSeeder extends Seeder
             'name' => 'Mr. Super Kece',
             'email' => 'sa@example.com',
             'role' => 'superadmin',
+            'tenant_id' => null
         ]);
 
         $this->call([

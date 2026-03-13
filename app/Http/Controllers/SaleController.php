@@ -128,9 +128,10 @@ class SaleController extends Controller {
         }
         $sale->saleItems()->delete();
 
-        // Recalculate items, subtotal, etc
+        // Recalculate items, subtotal, etc (hanya item berbayar dikirim dari frontend)
         $subtotal = 0;
         $saleItemsData = [];
+        $buyQtyMap = [];
         foreach ($request->items as $item) {
             $product = Product::findOrFail($item['product_id']);
             $itemSubtotal = $product->price * $item['quantity'];
@@ -145,8 +146,42 @@ class SaleController extends Controller {
                 'subtotal' => $itemSubtotal,
                 'cost_price_at_sale' => (float)$product->cost_price,
             ];
+            // Akumulasi jumlah beli untuk promo
+            $buyQtyMap[$product->id] = ($buyQtyMap[$product->id] ?? 0) + $item['quantity'];
         }
-        // TODO: handle promo & free items if needed (see store logic)
+
+        // Tambahkan free item berdasarkan promo aktif (logika sama seperti di store pending)
+        $promos = \App\Models\Promo::where('is_active', true)
+            ->where('tenant_id', $tenant->id)
+            ->whereDate('expiry_date', '>=', now())
+            ->get();
+
+        $freeItemMap = [];
+        foreach ($promos as $promo) {
+            $buy_qty = $buyQtyMap[$promo->product_id] ?? 0;
+            if ($buy_qty <= 0) {
+                continue;
+            }
+            $multiplier = intdiv($buy_qty, $promo->buy_qty);
+            $freeProductId = $promo->type === 'buyxgetx' ? $promo->product_id : $promo->another_product_id;
+            if ($multiplier >= 1 && $freeProductId) {
+                $freeQty = $promo->get_qty * $multiplier;
+                $freeItemMap[$freeProductId] = ($freeItemMap[$freeProductId] ?? 0) + $freeQty;
+            }
+        }
+
+        foreach ($freeItemMap as $freeProductId => $qty) {
+            $freeProduct = Product::find($freeProductId);
+            if ($freeProduct && $qty > 0) {
+                $saleItemsData[] = [
+                    'product_id' => $freeProduct->id,
+                    'quantity' => $qty,
+                    'price' => 0,
+                    'subtotal' => 0,
+                    'cost_price_at_sale' => (float)$freeProduct->cost_price,
+                ];
+            }
+        }
 
         $discountAmount = $request->discount_amount;
         $taxAmount = ($subtotal - $discountAmount) * ($request->tax_rate / 100);
