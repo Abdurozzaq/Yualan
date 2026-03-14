@@ -111,7 +111,8 @@ class RegisteredUserController extends Controller
                 'country' => $request->country, // Perbaikan: gunakan $request->country
                 'business_type' => $request->business_type,
                 'is_active' => true, // Perusahaan baru langsung aktif
-                'subscription_ends_at' => $subscriptionEndsAt,
+                'subscription_ends_at' => config('nativephp.default_subscription_id') != null ? null : $subscriptionEndsAt,
+                'pricing_plan_id' =>  config('nativephp.default_subscription_id') != null ? config('nativephp.default_subscription_id') : null,
                 'is_subscribed' => true, // Trial, belum berlangganan
             ]);
 

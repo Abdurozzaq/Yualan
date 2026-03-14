@@ -31,7 +31,7 @@ class FullTenantSeeder extends Seeder
         $lifetimePlan = PricingPlan::firstOrCreate(
             ['plan_name' => 'Self Hosted'],
             [
-                'id' => (string) Str::uuid(),
+                'id' => '550e8400-e29b-41d4-a716-446655440000',
                 'plan_description' => 'Paket lifetime untuk self-hosted deployment (tanpa biaya bulanan).',
                 'period_type' => 'lifetime',
                 'price' => 0,

@@ -31,10 +31,35 @@ use App\Models\SaasSetting;
 use App\Http\Controllers\EmployeeController;
 use App\Models\Tenant;
 use App\Http\Controllers\FileController;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Schema;
+use App\Models\User;
 
 Route::get('/', function () {
+
+    // auto migrate jika tabel users belum ada
+    if (!Schema::hasTable('users')) {
+        Artisan::call('migrate', [
+            '--force' => true
+        ]);
+    }
+
+    // auto seed jika users masih kosong
+    if (Schema::hasTable('users') && User::count() === 0) {
+        Artisan::call('db:seed', [
+            '--force' => true
+        ]);
+    }
+
     $plans = PricingPlan::query()
-        ->select(['id', 'plan_name', 'plan_description', 'period_type', 'price', 'discount_percentage'])
+        ->select([
+            'id',
+            'plan_name',
+            'plan_description',
+            'period_type',
+            'price',
+            'discount_percentage'
+        ])
         ->orderBy('period_type')
         ->orderBy('price')
         ->get();
@@ -45,6 +70,7 @@ Route::get('/', function () {
         'pricingPlans' => $plans,
         'trialDays' => $trialDays,
     ]);
+
 })->name('home');
 
 Route::get('/file/products/{folder}/{filename}', [FileController::class, 'showProductFile']);

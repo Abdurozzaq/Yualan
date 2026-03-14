@@ -1,9 +1,9 @@
 {
-    "name": "nativephp",
-    "version": "2.0.0",
-    "description": "A NativePHP Electron application",
+    "name": "yualan-pos-dev",
+    "version": "1.0.0",
+    "description": "An awesome app built with NativePHP",
     "main": "./out/main/index.js",
-    "author": "NativePHP",
+    "author": null,
     "homepage": "https://nativephp.com",
     "type": "module",
     "engines": {

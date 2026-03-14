@@ -361,3 +361,8 @@
         @apply bg-background text-foreground;
     }
 }
+
+/* Pastikan area yang butuh interaksi (misalnya modal dialog) tidak ikut jadi draggable di Electron/Windows */
+.native-no-drag {
+    -webkit-app-region: no-drag;
+}
