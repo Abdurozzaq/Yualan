@@ -1,10 +1,10 @@
 {
     "name": "yualan-pos-dev",
     "version": "1.0.0",
-    "description": "An awesome app built with NativePHP",
+    "description": "Point of Sales System",
     "main": "./out/main/index.js",
-    "author": null,
-    "homepage": "https://nativephp.com",
+    "author": "Abdurozzaq Nurul Hadi",
+    "homepage": "https://yualan.web.id",
     "type": "module",
     "engines": {
         "node": ">=22.0.0"
