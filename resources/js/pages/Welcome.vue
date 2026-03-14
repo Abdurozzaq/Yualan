@@ -16,14 +16,6 @@ const isAuthenticated = computed(() => !!page.props.auth?.user);
 
     <div class="min-h-screen flex items-center justify-center bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-gray-100 font-inter">
         <div class="text-center space-y-8">
-            <div class="flex justify-center">
-                <img
-                    src="/yPOS.png"
-                    alt="Logo"
-                    class="h-20 w-20 object-contain"
-                />
-            </div>
-
             <div>
                 <h1 class="text-3xl sm:text-4xl font-extrabold mb-2">
                     Selamat Datang di {{ appName }}
