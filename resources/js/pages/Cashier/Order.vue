@@ -4,12 +4,13 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, usePage, useForm } from '@inertiajs/vue3';
 import { computed, ref, watch, onMounted } from 'vue';
+import { useDebounceFn } from '@vueuse/core';
 
 const errorDialog = ref<{ show: boolean, message: string, info?: string } | null>(null);
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { PlusCircle, MinusCircle, XCircle, ShoppingCart, LoaderCircle, DollarSign, Percent, ReceiptText, Image as ImageIcon } from 'lucide-vue-next';
+import { PlusCircle, MinusCircle, XCircle, ShoppingCart, LoaderCircle, DollarSign, Percent, ReceiptText, Image as ImageIcon, ArrowLeft, Search, ScanBarcode, ChevronRight, CreditCard, Wallet, Banknote } from 'lucide-vue-next';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { formatCurrency } from '@/utils/formatters'; // Make sure this utility exists and works
@@ -465,6 +466,40 @@ const page = usePage();
 const orderEditId = ref<string | null>((page.props.orderId as string) || null);
 
 // Modal error dialog state
+const showMobileCart = ref(false);
+const showOrderSettings = ref(false);
+
+const quickCashAmounts = computed(() => {
+    const total = totalAmount.value;
+    if (total <= 0) return [];
+    
+    const amounts = new Set<number>();
+    amounts.add(total); // Uang Pas
+    
+    // Rounded up to nearest 5k, 10k, 20k, 50k, 100k
+    const roundings = [1000, 2000, 5000, 10000, 20000, 50000, 100000];
+    roundings.forEach(r => {
+        const rounded = Math.ceil(total / r) * r;
+        if (rounded > total && rounded <= total + 200000) {
+            amounts.add(rounded);
+        }
+    });
+
+    return Array.from(amounts).sort((a, b) => a - b).slice(0, 6);
+});
+
+const setQuickCash = (amount: number) => {
+    cashInputAmount.value = amount;
+};
+
+const setQuickDiscount = (percent: number) => {
+    form.discount_amount = Math.round(overallSubtotal.value * (percent / 100));
+};
+
+const setQuickTax = (percent: number) => {
+    form.tax_rate = percent;
+};
+
 // Pagination state & fetch
 const currentPage = ref(1);
 const perPage = ref(10);
@@ -506,11 +541,16 @@ const fetchProducts = async () => {
     }
 };
 
-watch([currentPage, selectedCategory, searchTerm], () => {
+const debouncedFetch = useDebounceFn(() => {
     fetchProducts();
+}, 300);
+
+watch([selectedCategory, searchTerm], () => {
+    currentPage.value = 1;
+    debouncedFetch();
 });
 
-watch([sortField, sortDirection], () => {
+watch([currentPage, sortField, sortDirection], () => {
     fetchProducts();
 });
 
@@ -916,59 +956,87 @@ const appDomain = import.meta.env.VITE_API_DOMAIN || 'http://localhost:8000';
             </div>
         </transition>
         
-        <div class="flex flex-col gap-4 p-4 lg:flex-row">
-            <!-- Product List Section (Left/Top) -->
-            <div class="flex-1 bg-white dark:bg-gray-800 rounded-xl shadow p-4 md:p-6 overflow-hidden flex flex-col">
-                <h2 class="text-xl md:text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">Daftar Produk</h2>
+        <div class="flex flex-col gap-4 p-4 lg:flex-row relative">
+            <!-- Mobile Cart Toggle Button -->
+            <div v-if="!showMobileCart && cartItems.length > 0" class="lg:hidden fixed bottom-6 right-6 z-40 transition-transform hover:scale-110 active:scale-95">
+                <Button @click="showMobileCart = true" size="lg" class="rounded-full h-16 w-16 shadow-2xl bg-blue-600 hover:bg-blue-700 p-0 relative border-4 border-white dark:border-gray-800">
+                    <ShoppingCart class="h-8 w-8 text-white" />
+                    <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-extrabold rounded-full h-6 w-6 flex items-center justify-center border-2 border-white shadow-sm">{{ cartItems.reduce((s, i) => s + i.quantity, 0) }}</span>
+                </Button>
+            </div>
 
-                <div class="mb-4 flex flex-col sm:flex-row gap-3 items-end">
-                    <div class="flex flex-col flex-1 min-w-[120px]">
-                        <Label for="searchTerm" class="text-gray-700 dark:text-gray-300 text-sm mb-1">Cari Produk</Label>
+            <!-- Product List Section (Left/Top) -->
+            <div :class="['flex-1 bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4 md:p-6 overflow-hidden flex flex-col min-h-[500px]', showMobileCart ? 'hidden lg:flex' : 'flex']">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-xl md:text-2xl font-bold text-gray-900 dark:text-gray-100">Catalog</h2>
+                    <div class="text-xs text-gray-500 font-medium bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-full lg:hidden">
+                        {{ paginatedProducts.length }} Products Found
+                    </div>
+                </div>
+
+                <div class="mb-6 space-y-4">
+                    <!-- Search Input with Icon -->
+                    <div class="relative group">
+                        <Search class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
                         <Input
                             id="searchTerm"
                             type="text"
                             v-model="searchTerm"
-                            placeholder="Ketik nama, unit, atau SKU..."
-                            class="w-full flex-1"
+                            class="pl-10 pr-12 h-12 text-base rounded-xl border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-blue-500/20 transition-all shadow-sm"
                         />
+                        <div class="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                            <button v-if="searchTerm" @click="searchTerm = ''" class="text-gray-400 hover:text-gray-600">
+                                <XCircle class="h-5 w-5" />
+                            </button>
+                            <button class="text-blue-600 hover:text-blue-700 bg-blue-50 dark:bg-blue-900/40 p-1.5 rounded-lg">
+                                <ScanBarcode class="h-5 w-5" />
+                            </button>
+                        </div>
                     </div>
-                    <div class="flex flex-col sm:w-[160px]">
-                        <Label for="categorySelect" class="text-gray-700 dark:text-gray-300 text-sm mb-1">Filter Kategori</Label>
-                        <Select v-model="selectedCategory">
-                            <SelectTrigger id="categorySelect" class="w-full">
-                                <SelectValue placeholder="Filter Kategori" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem :value="null">Semua Kategori</SelectItem>
-                                <SelectItem v-for="category in categories" :key="category.id" :value="category.id">
-                                    {{ category.name }}
-                                </SelectItem>
-                            </SelectContent>
-                        </Select>
+
+                    <!-- Category Chips for Mobile / Horizontal Scroll -->
+                    <div class="flex overflow-x-auto gap-2 pb-2 scrollbar-hide no-scrollbar -mx-1 px-1">
+                        <button 
+                            @click="selectedCategory = null"
+                            :class="['px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all border shrink-0', selectedCategory === null ? 'bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-200 dark:shadow-none' : 'bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-600 hover:border-blue-300']"
+                        >
+                            Semua
+                        </button>
+                        <button 
+                            v-for="category in categories" 
+                            :key="category.id"
+                            @click="selectedCategory = category.id"
+                            :class="['px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all border shrink-0', selectedCategory === category.id ? 'bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-200 dark:shadow-none' : 'bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-600 hover:border-blue-300']"
+                        >
+                            {{ category.name }}
+                        </button>
                     </div>
-                    <div class="flex flex-col w-[150px]">
-                        <Label for="sortField" class="text-gray-700 dark:text-gray-300 text-sm mb-1">Urutkan Berdasarkan</Label>
-                        <Select v-model="sortField">
-                            <SelectTrigger id="sortField" class="w-full">
-                                <SelectValue placeholder="Sort By" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="name">Nama</SelectItem>
-                                <SelectItem value="price">Harga</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
-                    <div class="flex flex-col w-[120px]">
-                        <Label for="sortDirection" class="text-gray-700 dark:text-gray-300 text-sm mb-1">Arah</Label>
-                        <Select v-model="sortDirection">
-                            <SelectTrigger id="sortDirection" class="w-full">
-                                <SelectValue placeholder="Arah" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="asc">Naik</SelectItem>
-                                <SelectItem value="desc">Turun</SelectItem>
-                            </SelectContent>
-                        </Select>
+
+                    <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                        <div class="flex flex-col">
+                            <Label class="text-[10px] uppercase tracking-wider text-gray-500 font-bold mb-1 ml-1">Sort By</Label>
+                            <Select v-model="sortField">
+                                <SelectTrigger class="h-10 rounded-lg border-gray-200 dark:border-gray-700 shadow-sm">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="name">Name</SelectItem>
+                                    <SelectItem value="price">Price</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div class="flex flex-col">
+                            <Label class="text-[10px] uppercase tracking-wider text-gray-500 font-bold mb-1 ml-1">Order</Label>
+                            <Select v-model="sortDirection">
+                                <SelectTrigger class="h-10 rounded-lg border-gray-200 dark:border-gray-700 shadow-sm">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="asc">Ascending</SelectItem>
+                                    <SelectItem value="desc">Descending</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
                     </div>
                 </div>
 
@@ -1032,12 +1100,21 @@ const appDomain = import.meta.env.VITE_API_DOMAIN || 'http://localhost:8000';
             </div>
 
             <!-- Cart and Payment Section (Right/Bottom) -->
-            <div class="w-full lg:w-96 xl:w-[420px] bg-white dark:bg-gray-800 rounded-xl shadow p-4 md:p-6 flex flex-col">
-                <h2 class="text-xl md:text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
-                    <ShoppingCart class="h-5 w-5 md:h-6 md:w-6" /> Keranjang Belanja
+            <div :class="['w-full lg:w-96 xl:w-[420px] bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-4 md:p-6 flex flex-col min-h-[500px]', showMobileCart ? 'flex fixed inset-0 z-50 lg:relative lg:inset-auto' : 'hidden lg:flex']">
+                <!-- Mobile Header for Cart -->
+                <div class="lg:hidden flex items-center justify-between mb-6 pb-4 border-b">
+                    <Button variant="ghost" @click="showMobileCart = false" class="p-0 h-10 w-10">
+                        <ArrowLeft class="h-6 w-6" />
+                    </Button>
+                    <h2 class="text-xl font-bold">Review Order</h2>
+                    <div class="w-10"></div>
+                </div>
+
+                <h2 class="hidden lg:flex text-xl md:text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4 items-center gap-2">
+                    <ShoppingCart class="h-5 w-5 md:h-6 md:w-6 text-blue-600" /> Keranjang Belanja
                 </h2>
 
-                <div class="flex-1 overflow-y-auto pr-1 mb-4 border-b border-gray-200 dark:border-gray-700 pb-4">
+                <div class="flex-1 overflow-y-auto min-h-0 pr-1 mb-4 border-b border-gray-200 dark:border-gray-700 pb-4">
                     <div v-if="cartItems.length === 0" class="text-center text-gray-500 dark:text-gray-400 py-6">
                         Keranjang kosong. Tambahkan produk!
                     </div>
@@ -1049,32 +1126,63 @@ const appDomain = import.meta.env.VITE_API_DOMAIN || 'http://localhost:8000';
                                     {{ formatCurrency(item.price) }} x {{ item.quantity }} {{ item.unit || 'pcs' }}
                                 </p>
                             </div>
-                            <div class="flex items-center gap-1 ml-2">
-                                <Button variant="ghost" size="icon" @click="updateCartQuantity(item, -1)" class="h-8 w-8">
-                                    <MinusCircle class="h-3.5 w-3.5" />
+                            <div class="flex items-center gap-2 ml-2 bg-white dark:bg-gray-800 rounded-lg p-1 shadow-sm border border-gray-100 dark:border-gray-600">
+                                <Button variant="ghost" size="icon" @click="updateCartQuantity(item, -1)" class="h-9 w-9 text-gray-500">
+                                    <MinusCircle class="h-5 w-5" />
                                 </Button>
-                                <span class="font-semibold text-sm w-6 text-center">{{ item.quantity }}</span>
-                                <Button variant="ghost" size="icon" @click="updateCartQuantity(item, 1)" class="h-8 w-8">
-                                    <PlusCircle class="h-3.5 w-3.5" />
+                                <span class="font-bold text-sm w-8 text-center">{{ item.quantity }}</span>
+                                <Button variant="ghost" size="icon" @click="updateCartQuantity(item, 1)" class="h-9 w-9 text-blue-600">
+                                    <PlusCircle class="h-5 w-5" />
                                 </Button>
-                                <Button variant="ghost" size="icon" @click="removeFromCart(item.product_id)" class="h-8 w-8 text-red-500">
-                                    <XCircle class="h-3.5 w-3.5" />
+                                <div class="w-px h-6 bg-gray-200 dark:bg-gray-700 mx-1"></div>
+                                <Button variant="ghost" size="icon" @click="removeFromCart(item.product_id)" class="h-9 w-9 text-red-500">
+                                    <XCircle class="h-5 w-5" />
                                 </Button>
-                            </div>
-                        </div>
                     </div>
                 </div>
+            </div>
+        </div>
 
                 <!-- Summary Section -->
-                <div class="space-y-4 mt-auto">
-                    <!-- Subtotal -->
-                    <div class="flex justify-between items-center text-gray-700 dark:text-gray-300">
-                        <span>Subtotal:</span>
-                        <span class="font-semibold">{{ formatCurrency(overallSubtotal) }}</span>
+                <div class="space-y-3 mt-auto bg-gray-50 dark:bg-gray-900/50 -mx-4 -mb-4 p-4 rounded-t-3xl border-t shadow-[0_-10px_20px_rgba(0,0,0,0.05)] lg:bg-transparent lg:p-0 lg:rounded-none lg:border-t-0 lg:shadow-none lg:mx-0 lg:mb-0">
+                    <!-- Subtotal & Total (Always visible) -->
+                    <div class="flex flex-col gap-1">
+                        <div class="flex justify-between items-center text-gray-500 dark:text-gray-400 text-xs">
+                            <span>Subtotal:</span>
+                            <span class="font-medium">{{ formatCurrency(overallSubtotal) }}</span>
+                        </div>
+                        <div v-if="voucherDiscount > 0" class="flex justify-between items-center text-green-600 dark:text-green-400 text-xs">
+                            <span>Voucher:</span>
+                            <span class="font-medium">-{{ formatCurrency(voucherDiscount) }}</span>
+                        </div>
+                        <div v-if="form.discount_amount > 0" class="flex justify-between items-center text-orange-600 dark:text-orange-400 text-xs">
+                            <span>Diskon:</span>
+                            <span class="font-medium">-{{ formatCurrency(form.discount_amount) }}</span>
+                        </div>
+                        <div class="flex justify-between font-black text-xl text-gray-900 dark:text-gray-100 pt-1">
+                            <span>TOTAL:</span>
+                            <span class="text-blue-600">{{ formatCurrency(totalAmount) }}</span>
+                        </div>
                     </div>
 
-                    <!-- Voucher & Promo Section -->
-                    <div class="bg-gray-50 dark:bg-gray-700 p-3 rounded-lg">
+                    <!-- Collapsible Settings Trigger (Mobile Only) -->
+                    <Button 
+                        variant="outline" 
+                        size="sm" 
+                        @click="showOrderSettings = !showOrderSettings" 
+                        class="w-full lg:hidden flex items-center justify-between h-10 rounded-xl border-dashed border-gray-300"
+                    >
+                        <span class="flex items-center gap-2">
+                            <ReceiptText class="h-4 w-4" />
+                            Opsi Tambahan (Voucher, Diskon, dll)
+                        </span>
+                        <ChevronRight :class="['h-4 w-4 transition-transform', showOrderSettings ? 'rotate-90' : '']" />
+                    </Button>
+
+                    <!-- Settings Content (Collapsible on mobile) -->
+                    <div :class="['space-y-4 overflow-y-auto transition-all duration-300', showOrderSettings ? 'max-h-[300px] py-2' : 'max-h-0 overflow-hidden lg:max-h-none lg:py-0']">
+                        <!-- Voucher & Promo Section -->
+                        <div class="bg-white dark:bg-gray-800 p-3 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm">
                         <Label for="voucher" class="text-gray-700 dark:text-gray-300 flex items-center gap-1 text-sm font-medium mb-1">
                             <ReceiptText class="h-4 w-4" /> Voucher:
                         </Label>
@@ -1109,7 +1217,7 @@ const appDomain = import.meta.env.VITE_API_DOMAIN || 'http://localhost:8000';
                         </div>
                     </div>
 
-                    <div class="bg-gray-50 dark:bg-gray-700 p-3 rounded-lg">
+                    <div class="bg-white dark:bg-gray-800 p-3 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm">
                         <Label for="promo" class="text-gray-700 dark:text-gray-300 flex items-center gap-1 text-sm font-medium mb-1">
                             <Percent class="h-4 w-4" /> Promo:
                         </Label>
@@ -1144,46 +1252,55 @@ const appDomain = import.meta.env.VITE_API_DOMAIN || 'http://localhost:8000';
                     </div>
 
                     <!-- Discount -->
-                    <div class="flex justify-between items-center">
-                        <Label for="discount" class="text-gray-700 dark:text-gray-300 flex items-center gap-1 text-sm">
-                            <DollarSign class="h-4 w-4" /> Diskon:
-                        </Label>
-                        <Input
-                            id="discount"
-                            type="number"
-                            step="0.01"
-                            v-model.number="form.discount_amount"
-                            class="w-28 text-right text-sm"
-                            min="0"
-                            :max="overallSubtotal"
-                        />
+                    <div class="space-y-2">
+                        <div class="flex justify-between items-center">
+                            <Label for="discount" class="text-gray-700 dark:text-gray-300 flex items-center gap-1 text-sm font-medium">
+                                <DollarSign class="h-4 w-4" /> Diskon (Nominal)
+                            </Label>
+                            <Input
+                                id="discount"
+                                type="number"
+                                v-model.number="form.discount_amount"
+                                class="w-32 text-right font-bold text-blue-600 border-gray-200 dark:border-gray-700"
+                                min="0"
+                            />
+                        </div>
+                        <div class="flex flex-wrap gap-1">
+                            <button v-for="pct in [5, 10, 15, 20]" :key="pct" @click="setQuickDiscount(pct)" class="text-[10px] bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors">
+                                {{ pct }}%
+                            </button>
+                            <button @click="form.discount_amount = 0" class="text-[10px] bg-red-50 text-red-600 px-2 py-1 rounded hover:bg-red-100 transition-colors">
+                                Clear
+                            </button>
+                        </div>
                     </div>
 
                     <!-- Tax -->
-                    <div class="flex justify-between items-center">
-                        <Label for="tax_rate" class="text-gray-700 dark:text-gray-300 flex items-center gap-1 text-sm">
-                            <Percent class="h-4 w-4" /> Pajak (%):
-                        </Label>
-                        <Input
-                            id="tax_rate"
-                            type="number"
-                            step="0.01"
-                            v-model.number="form.tax_rate"
-                            class="w-28 text-right text-sm"
-                            min="0"
-                            max="100"
-                        />
+                    <div class="space-y-2">
+                        <div class="flex justify-between items-center">
+                            <Label for="tax_rate" class="text-gray-700 dark:text-gray-300 flex items-center gap-1 text-sm font-medium">
+                                <Percent class="h-4 w-4" /> Pajak (%)
+                            </Label>
+                            <Input
+                                id="tax_rate"
+                                type="number"
+                                v-model.number="form.tax_rate"
+                                class="w-32 text-right font-bold text-blue-600 border-gray-200 dark:border-gray-700"
+                                min="0"
+                            />
+                        </div>
+                        <div class="flex flex-wrap gap-1">
+                            <button v-for="pct in [0, 10, 11]" :key="pct" @click="setQuickTax(pct)" :class="['text-[10px] px-2 py-1 rounded transition-colors', form.tax_rate === pct ? 'bg-blue-600 text-white' : 'bg-gray-100 dark:bg-gray-700']">
+                                {{ pct }}%
+                            </button>
+                        </div>
                     </div>
 
-                    <!-- Total & Payment -->
-                    <div class="flex justify-between font-bold text-lg text-gray-900 dark:text-gray-100 border-t border-gray-200 dark:border-gray-700 pt-3 mt-1">
-                        <span>TOTAL:</span>
-                        <span>{{ formatCurrency(totalAmount) }}</span>
-                    </div>
-                    
-                    <div class="flex justify-between items-center">
-                        <Label for="payment_method" class="text-gray-700 dark:text-gray-300 text-sm">Metode Pembayaran:</Label>
-                        <Select v-model="form.payment_method" class="w-40">
+                    <!-- Total & Payment (Always visible part for Desktop, Hidden part for Mobile toggle) -->
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center">
+                            <Label for="payment_method" class="text-gray-700 dark:text-gray-300 text-sm font-bold">Metode:</Label>
+                            <Select v-model="form.payment_method" class="w-40">
                             <SelectTrigger class="w-full text-sm">
                                 <SelectValue placeholder="Pilih Metode" />
                             </SelectTrigger>
@@ -1203,25 +1320,72 @@ const appDomain = import.meta.env.VITE_API_DOMAIN || 'http://localhost:8000';
 
                     <!-- Modal for cash payment -->
                     <transition name="fade">
-                        <div v-if="showCashModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
-                            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-6 max-w-xs w-full mx-4 text-center relative animate-fadeIn">
-                                <button @click="showCashModal = false" class="absolute top-3 right-3 text-gray-400 hover:text-red-500 text-2xl font-bold">&times;</button>
-                                <h3 class="text-lg font-bold mb-2 text-gray-900 dark:text-gray-100">Pembayaran Tunai</h3>
-                                <div class="mb-3">
-                                    <Label for="cashInputAmount" class="text-gray-700 dark:text-gray-300 text-sm">Jumlah Dibayar:</Label>
-                                    <Input
-                                        id="cashInputAmount"
-                                        type="number"
-                                        step="0.01"
-                                        v-model.number="cashInputAmount"
-                                        class="w-full text-right text-lg font-bold mt-1"
-                                        :min="totalAmount"
-                                    />
-                                    <div class="text-xs text-gray-500 mt-1">Total: <span class="font-semibold">{{ formatCurrency(totalAmount) }}</span></div>
-                                    <div v-if="cashInputAmount > 0" class="text-xs text-green-600 dark:text-green-400 mt-1">Kembalian: <span class="font-semibold">{{ formatCurrency(cashInputAmount - totalAmount) }}</span></div>
-                                    <div v-if="cashInputError" class="text-xs text-red-500 mt-1">{{ cashInputError }}</div>
+                        <div v-if="showCashModal" class="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-md">
+                            <div class="bg-white dark:bg-gray-900 rounded-t-3xl sm:rounded-3xl shadow-2xl p-6 w-full max-w-md mx-auto relative animate-slideUp sm:animate-fadeIn">
+                                <div class="w-12 h-1.5 bg-gray-300 dark:bg-gray-700 rounded-full mx-auto mb-6 sm:hidden"></div>
+                                <button @click="showCashModal = false" class="absolute top-4 right-4 text-gray-400 hover:text-red-500 transition-colors hidden sm:block">
+                                    <XCircle class="h-8 w-8" />
+                                </button>
+                                
+                                <div class="text-center mb-6">
+                                    <div class="bg-blue-100 dark:bg-blue-900/30 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                                        <Wallet class="h-8 w-8 text-blue-600 dark:text-blue-400" />
+                                    </div>
+                                    <h3 class="text-2xl font-black text-gray-900 dark:text-gray-100">Pembayaran Tunai</h3>
+                                    <p class="text-gray-500 text-sm mt-1">Selesaikan transaksi dengan uang tunai</p>
                                 </div>
-                                <Button @click="confirmCashPayment" class="w-full py-2 mt-2 font-semibold">Bayar</Button>
+
+                                <div class="space-y-6">
+                                    <div class="bg-gray-50 dark:bg-gray-800/50 p-6 rounded-2xl border border-dashed border-gray-200 dark:border-gray-700">
+                                        <div class="flex justify-between items-center mb-4">
+                                            <span class="text-gray-500 font-medium">Total Tagihan</span>
+                                            <span class="text-xl font-black text-gray-900 dark:text-white">{{ formatCurrency(totalAmount) }}</span>
+                                        </div>
+                                        
+                                        <Label for="cashInputAmount" class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 ml-1">Uang yang Diterima</Label>
+                                        <div class="relative">
+                                            <Banknote class="absolute left-4 top-1/2 -translate-y-1/2 h-6 w-6 text-green-500" />
+                                            <Input
+                                                id="cashInputAmount"
+                                                type="number"
+                                                v-model.number="cashInputAmount"
+                                                class="w-full pl-14 h-16 text-2xl font-black text-right border-2 border-blue-100 dark:border-gray-700 rounded-2xl focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all"
+                                                placeholder="0"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div class="grid grid-cols-3 gap-2">
+                                        <Button 
+                                            v-for="amt in quickCashAmounts" 
+                                            :key="amt" 
+                                            @click="setQuickCash(amt)"
+                                            variant="outline"
+                                            :class="['h-14 rounded-xl text-sm font-bold transition-all border-2', cashInputAmount === amt ? 'bg-blue-600 text-white border-blue-600 shadow-lg' : 'border-gray-100 dark:border-gray-800 hover:border-blue-200']"
+                                        >
+                                            {{ amt === totalAmount ? 'PAS' : (amt >= 1000 ? (amt/1000) + 'k' : amt) }}
+                                        </Button>
+                                    </div>
+
+                                    <div v-if="cashInputAmount > totalAmount" class="flex items-center justify-between p-5 bg-green-50 dark:bg-green-900/20 rounded-2xl border border-green-100 dark:border-green-900/30">
+                                        <div class="flex flex-col">
+                                            <span class="text-green-600 dark:text-green-400 text-sm font-bold">Kembalian</span>
+                                            <span class="text-2xl font-black text-green-700 dark:text-green-300">{{ formatCurrency(cashInputAmount - totalAmount) }}</span>
+                                        </div>
+                                        <div class="bg-green-200 dark:bg-green-800 h-10 w-10 rounded-full flex items-center justify-center animate-bounce">
+                                            <DollarSign class="h-6 w-6 text-green-700 dark:text-green-100" />
+                                        </div>
+                                    </div>
+
+                                    <div v-if="cashInputError" class="p-3 bg-red-50 text-red-600 text-sm rounded-xl border border-red-100 font-medium">
+                                        {{ cashInputError }}
+                                    </div>
+
+                                    <div class="flex gap-3">
+                                        <Button @click="showCashModal = false" variant="ghost" class="h-14 flex-1 rounded-2xl font-bold text-gray-500 sm:hidden">Batal</Button>
+                                        <Button @click="confirmCashPayment" class="h-14 flex-[2] rounded-2xl font-black text-lg bg-blue-600 hover:bg-blue-700 shadow-xl shadow-blue-200 dark:shadow-none">Selesaikan Pembayaran</Button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </transition>
@@ -1242,14 +1406,15 @@ const appDomain = import.meta.env.VITE_API_DOMAIN || 'http://localhost:8000';
                         </Select>
                     </div>
 
-                    <!-- Notes (Optional) -->
-                    <div>
-                        <Label for="notes" class="text-gray-700 dark:text-gray-300 text-sm">Catatan (Opsional):</Label>
-                        <Textarea id="notes" v-model="form.notes" rows="2" class="mt-1 text-sm" />
+                        <div>
+                            <Label for="notes" class="text-gray-700 dark:text-gray-300 text-sm font-bold">Catatan:</Label>
+                            <Textarea id="notes" v-model="form.notes" rows="2" class="mt-1 text-sm rounded-xl" placeholder="Ketik catatan di sini..." />
+                        </div>
                     </div>
+                </div> <!-- End of Collapsible Settings Content -->
 
-                    <!-- Save Order & Pay Buttons (Cash flow) -->
-                    <div class="flex gap-2 mt-2">
+                    <!-- Action Buttons (Always visible) -->
+                    <div class="flex gap-3 pt-2">
                         <Button 
                             @click="saveOrderPending" 
                             :disabled="isProcessingSaveOrder || cartItems.length === 0"
@@ -1313,6 +1478,23 @@ const appDomain = import.meta.env.VITE_API_DOMAIN || 'http://localhost:8000';
 ::-webkit-scrollbar-thumb {
     background: #c5c5c5;
     border-radius: 10px;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+.no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.animate-slideUp {
+    animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideUp {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
 }
 
 ::-webkit-scrollbar-thumb:hover {

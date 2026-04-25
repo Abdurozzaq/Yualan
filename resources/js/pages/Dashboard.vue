@@ -70,128 +70,137 @@ const formatTime = (dateTimeString: string) => {
     <AppLayout :breadcrumbs="breadcrumbs">
 
         <div class="flex h-full flex-1 flex-col gap-4 rounded-xl p-4 overflow-x-auto">
-            <!-- Header with Welcome Message -->
-            <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100">
-                Selamat Datang, {{ page.props.auth.user.name }}!
-            </h1>
-            <p class="text-muted-foreground text-lg">
-                Dashboard untuk {{ tenantName }}.
-            </p>
+            <div class="flex flex-col gap-1 mb-2">
+                <h1 class="text-2xl md:text-4xl font-black text-gray-900 dark:text-gray-100 tracking-tight">
+                    Selamat Datang, {{ page.props.auth.user.name }}!
+                </h1>
+                <p class="text-muted-foreground text-base md:text-lg font-medium">
+                    Dashboard untuk <span class="text-blue-600 dark:text-blue-400 font-bold">{{ tenantName }}</span>.
+                </p>
+            </div>
 
             <!-- Quick Stats Section -->
-            <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
                 <!-- Card 1: Total Penjualan Hari Ini -->
-                <Card class="p-6 flex flex-col items-start gap-2 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm">
-                    <div class="flex items-center gap-2 text-green-600 dark:text-green-400">
-                        <DollarSign class="h-6 w-6" />
-                        <span class="text-lg font-semibold">Penjualan Hari Ini</span>
+                <Card class="p-6 flex flex-col items-start gap-2 border-none rounded-2xl shadow-xl shadow-blue-100 dark:shadow-none bg-gradient-to-br from-blue-600 to-indigo-700 text-white">
+                    <div class="flex items-center gap-2 opacity-90">
+                        <DollarSign class="h-5 w-5" />
+                        <span class="text-sm font-bold uppercase tracking-wider">Penjualan Hari Ini</span>
                     </div>
-                    <p class="text-4xl font-extrabold text-gray-900 dark:text-gray-100">{{ formatCurrency(todaysSales) }}</p>
-                    <p class="text-sm text-muted-foreground">Data per {{ currentDateTime }}</p>
+                    <p class="text-3xl md:text-4xl font-black">{{ formatCurrency(todaysSales) }}</p>
+                    <p class="text-xs opacity-75 font-medium mt-1">Data per {{ currentDateTime }}</p>
                 </Card>
-
+ 
                 <!-- Card 2: Total Produk Tersedia -->
-                <Card class="p-6 flex flex-col items-start gap-2 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm">
-                    <div class="flex items-center gap-2 text-blue-600 dark:text-blue-400">
-                        <Package class="h-6 w-6" />
-                        <span class="text-lg font-semibold">Total Produk</span>
+                <Card class="p-6 flex flex-col items-start gap-2 border-none rounded-2xl shadow-xl shadow-emerald-100 dark:shadow-none bg-gradient-to-br from-emerald-500 to-teal-600 text-white">
+                    <div class="flex items-center gap-2 opacity-90">
+                        <Package class="h-5 w-5" />
+                        <span class="text-sm font-bold uppercase tracking-wider">Total Produk</span>
                     </div>
-                    <p class="text-4xl font-extrabold text-gray-900 dark:text-gray-100">{{ totalProducts }}</p>
-                    <p class="text-sm text-muted-foreground">Jumlah produk yang terdaftar</p>
+                    <p class="text-3xl md:text-4xl font-black">{{ totalProducts }}</p>
+                    <p class="text-xs opacity-75 font-medium mt-1">Jumlah produk aktif</p>
                 </Card>
-
+ 
                 <!-- Card 3: Total Pelanggan -->
-                <Card class="p-6 flex flex-col items-start gap-2 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm">
-                    <div class="flex items-center gap-2 text-purple-600 dark:text-purple-400">
-                        <Users class="h-6 w-6" />
-                        <span class="text-lg font-semibold">Total Pelanggan</span>
+                <Card class="p-6 flex flex-col items-start gap-2 border-none rounded-2xl shadow-xl shadow-purple-100 dark:shadow-none bg-gradient-to-br from-purple-500 to-fuchsia-600 text-white">
+                    <div class="flex items-center gap-2 opacity-90">
+                        <Users class="h-5 w-5" />
+                        <span class="text-sm font-bold uppercase tracking-wider">Total Pelanggan</span>
                     </div>
-                    <p class="text-4xl font-extrabold text-gray-900 dark:text-gray-100">{{ totalCustomers }}</p>
-                    <p class="text-sm text-muted-foreground">Jumlah pelanggan terdaftar</p>
+                    <p class="text-3xl md:text-4xl font-black">{{ totalCustomers }}</p>
+                    <p class="text-xs opacity-75 font-medium mt-1">Pelanggan terdaftar</p>
                 </Card>
             </div>
 
             <!-- Main Content Area: Recent Sales & Quick Actions -->
             <div class="grid gap-4 lg:grid-cols-2">
                 <!-- Recent Sales/Transactions -->
-                <Card class="p-6 flex flex-col border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm">
-                    <h3 class="text-xl font-semibold mb-4 flex items-center gap-2 text-gray-900 dark:text-gray-100">
-                        <ReceiptText class="h-5 w-5" /> Penjualan Terbaru
+                <Card class="p-6 flex flex-col border-none rounded-2xl shadow-xl shadow-gray-100 dark:shadow-none bg-white dark:bg-gray-800">
+                    <h3 class="text-xl font-black mb-6 flex items-center gap-2 text-gray-900 dark:text-gray-100">
+                        <ReceiptText class="h-5 w-5 text-blue-600" /> Penjualan Terbaru
                     </h3>
-                    <div v-if="recentSales.length === 0" class="text-muted-foreground text-center py-8">
-                        Belum ada penjualan terbaru.
+                    <div v-if="recentSales.length === 0" class="text-muted-foreground text-center py-12">
+                        <p class="text-lg font-medium">Belum ada penjualan terbaru.</p>
+                        <p class="text-sm">Transaksi Anda akan muncul di sini.</p>
                     </div>
                     <div v-else class="space-y-4">
-                        <div v-for="sale in recentSales" :key="sale.id" class="flex justify-between items-center border-b border-gray-100 dark:border-gray-700 pb-2 last:border-b-0">
-                            <div>
-                                <p class="font-medium text-gray-900 dark:text-gray-100">{{ sale.invoice_number }}</p>
-                                <p class="text-sm text-muted-foreground">{{ sale.customer?.name || 'Umum' }} - {{ formatTime(sale.created_at) }}</p>
+                        <div v-for="sale in recentSales" :key="sale.id" class="flex justify-between items-center bg-gray-50 dark:bg-gray-900/50 p-4 rounded-xl border border-transparent hover:border-blue-100 dark:hover:border-blue-900/30 transition-all">
+                            <div class="flex flex-col gap-0.5">
+                                <p class="font-bold text-gray-900 dark:text-gray-100">{{ sale.invoice_number }}</p>
+                                <p class="text-xs font-medium text-muted-foreground uppercase tracking-tight">{{ sale.customer?.name || 'Umum' }} • {{ formatTime(sale.created_at) }}</p>
                             </div>
-                            <div class="flex flex-col items-end">
-                                <span class="font-semibold text-lg text-gray-900 dark:text-gray-100">{{ formatCurrency(sale.total_amount) }}</span>
-                                <span :class="['px-2 py-0.5 rounded-full text-xs font-semibold', getStatusColor(sale.status)]">
-                                    {{ sale.status.toUpperCase() }}
+                            <div class="flex flex-col items-end gap-1">
+                                <span class="font-black text-lg text-gray-900 dark:text-gray-100">{{ formatCurrency(sale.total_amount) }}</span>
+                                <span :class="['px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest', getStatusColor(sale.status)]">
+                                    {{ sale.status }}
                                 </span>
                             </div>
                         </div>
                     </div>
-                    <div class="mt-4 text-center">
-                        <Link :href="route('sales.history', { tenantSlug: tenantSlug })" class="text-blue-600 hover:underline text-sm">Lihat Semua Penjualan</Link>
+                    <div class="mt-6">
+                        <Button variant="ghost" as-child class="w-full text-blue-600 dark:text-blue-400 font-bold hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-xl">
+                            <Link :href="route('sales.history', { tenantSlug: tenantSlug })">Lihat Semua Penjualan</Link>
+                        </Button>
                     </div>
                 </Card>
 
                 <!-- Quick Actions & Top Selling Products -->
                 <div class="flex flex-col gap-4">
-                    <Card class="p-6 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm">
-                        <h3 class="text-xl font-semibold mb-4 flex items-center gap-2 text-gray-900 dark:text-gray-100">
-                            <Zap class="h-5 w-5" /> Tindakan Cepat
+                    <Card class="p-6 border-none rounded-2xl shadow-xl shadow-gray-100 dark:shadow-none bg-white dark:bg-gray-800">
+                        <h3 class="text-xl font-black mb-6 flex items-center gap-2 text-gray-900 dark:text-gray-100">
+                            <Zap class="h-5 w-5 text-amber-500" /> Tindakan Cepat
                         </h3>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <Button as-child class="w-full">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <Button as-child class="h-14 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-lg shadow-blue-200 dark:shadow-none transition-all active:scale-95">
                                 <Link :href="route('sales.order', { tenantSlug: tenantSlug })">
-                                    <ShoppingCart class="h-4 w-4 mr-2" /> Buat Pesanan Baru
+                                    <ShoppingCart class="h-5 w-5 mr-2" /> POS Kasir
                                 </Link>
                             </Button>
-                            <Button as-child variant="outline" class="w-full">
+                            <Button as-child variant="outline" class="h-14 rounded-xl font-bold border-gray-200 dark:border-gray-700 transition-all active:scale-95">
                                 <Link :href="route('products.index', { tenantSlug: tenantSlug })">
-                                    <Package class="h-4 w-4 mr-2" /> Kelola Produk
+                                    <Package class="h-5 w-5 mr-2 text-emerald-500" /> Produk
                                 </Link>
                             </Button>
-                            <Button as-child variant="outline" class="w-full">
+                            <Button as-child variant="outline" class="h-14 rounded-xl font-bold border-gray-200 dark:border-gray-700 transition-all active:scale-95">
                                 <Link :href="route('customers.index', { tenantSlug: tenantSlug })">
-                                    <Users class="h-4 w-4 mr-2" /> Kelola Pelanggan
+                                    <Users class="h-5 w-5 mr-2 text-purple-500" /> Pelanggan
                                 </Link>
                             </Button>
-                            <Button as-child variant="outline" class="w-full">
+                            <Button as-child variant="outline" class="h-14 rounded-xl font-bold border-gray-200 dark:border-gray-700 transition-all active:scale-95">
                                 <Link :href="route('categories.index', { tenantSlug: tenantSlug })">
-                                    <Tag class="h-4 w-4 mr-2" /> Kelola Kategori
+                                    <Tag class="h-5 w-5 mr-2 text-fuchsia-500" /> Kategori
                                 </Link>
                             </Button>
                         </div>
                     </Card>
 
                     <!-- Top Selling Products -->
-                    <Card class="p-6 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm">
-                        <h3 class="text-xl font-semibold mb-4 flex items-center gap-2 text-gray-900 dark:text-gray-100">
-                            <Award class="h-5 w-5" /> Produk Terlaris
+                    <Card class="p-6 border-none rounded-2xl shadow-xl shadow-gray-100 dark:shadow-none bg-white dark:bg-gray-800">
+                        <h3 class="text-xl font-black mb-6 flex items-center gap-2 text-gray-900 dark:text-gray-100">
+                            <Award class="h-5 w-5 text-rose-500" /> Produk Terlaris
                         </h3>
-                        <div v-if="topSellingProducts.length === 0" class="text-muted-foreground text-center py-8">
-                            Belum ada data produk terlaris.
+                        <div v-if="topSellingProducts.length === 0" class="text-muted-foreground text-center py-12">
+                            <p class="text-lg font-medium">Belum ada data produk terlaris.</p>
                         </div>
-                        <div v-else class="space-y-3">
-                            <div v-for="(product, index) in topSellingProducts" :key="index" class="flex items-center gap-3 border-b border-gray-100 dark:border-gray-700 pb-2 last:border-b-0">
-                                <img
-                                    v-if="product.product_image"
-                                    :src="`/storage/${product.product_image}`"
-                                    alt="Product Image"
-                                    class="w-12 h-12 object-cover rounded-md flex-shrink-0"
-                                />
-                                <div v-else class="w-12 h-12 bg-gray-200 dark:bg-gray-600 rounded-md flex items-center justify-center text-gray-500 dark:text-gray-400 flex-shrink-0">
-                                    <ImageIcon class="w-6 h-6" />
+                        <div v-else class="space-y-4">
+                            <div v-for="(product, index) in topSellingProducts" :key="index" class="flex items-center gap-4 bg-gray-50 dark:bg-gray-900/50 p-3 rounded-xl border border-transparent transition-all">
+                                <div class="relative">
+                                    <img
+                                        v-if="product.product_image"
+                                        :src="`/storage/${product.product_image}`"
+                                        alt="Product Image"
+                                        class="w-14 h-14 object-cover rounded-xl shadow-sm"
+                                    />
+                                    <div v-else class="w-14 h-14 bg-gray-200 dark:bg-gray-700 rounded-xl flex items-center justify-center text-gray-400">
+                                        <ImageIcon class="w-6 h-6" />
+                                    </div>
+                                    <div class="absolute -top-2 -left-2 bg-rose-500 text-white w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black border-2 border-white dark:border-gray-800 shadow-md">
+                                        {{ index + 1 }}
+                                    </div>
                                 </div>
                                 <div class="flex-grow">
-                                    <p class="font-medium text-gray-900 dark:text-gray-100">{{ product.product_name }}</p>
-                                    <p class="text-sm text-muted-foreground">Terjual: {{ product.total_quantity_sold }} unit</p>
+                                    <p class="font-black text-gray-900 dark:text-gray-100 leading-tight">{{ product.product_name }}</p>
+                                    <p class="text-sm font-bold text-rose-600 dark:text-rose-400 mt-0.5">Terjual: {{ product.total_quantity_sold }} unit</p>
                                 </div>
                             </div>
                         </div>

@@ -55,20 +55,7 @@ const mainNavItems = computed<NavItem[]>(() => {
         },
     ];
 
-    // Jika superadmin (tanpa tenantSlug), tambahkan menu Superadmin
-    if (!tenantSlug.value && userRole.value === 'superadmin') {
-        items.push({
-            title: 'Pricing Plans',
-            href: route('superadmin.pricing.index'),
-            icon: Tag,
-        });
-        items.push({
-            title: 'SaaS Settings',
-            href: route('superadmin.settings.index'),
-            icon: Tag,
-        });
-        
-    }
+
 
     // Hanya tambahkan tautan jika tenantSlug tersedia dan user bukan superadmin
     if (tenantSlug.value && userRole.value !== 'superadmin') {
@@ -134,20 +121,7 @@ const mainNavItems = computed<NavItem[]>(() => {
     return items;
 });
 
-const footerNavItems = computed<NavItem[]>(() => {
-    // Hide subscription history when there is no tenantSlug (e.g. superadmin dashboard)
-    if (!tenantSlug.value) {
-        return [];
-    }
-
-    return [
-        {
-            title: 'Riwayat Subscription',
-            href: route('invoices.history', { tenantSlug: tenantSlug.value }),
-            icon: Tag,
-        },
-    ];
-});
+const footerNavItems = computed<NavItem[]>(() => []);
 
 const isSubscriptionExpired = computed(() => {
     
@@ -189,30 +163,18 @@ const { state } = useSidebar(); // state: ComputedRef<'expanded' | 'collapsed'>
         <SidebarFooter
             class="px-4 py-4 border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900"
         >
-            <!-- Hide subscription status when collapsed -->
+            <!-- Community Edition Branding -->
             <div
-                v-if="state !== undefined && state !== 'collapsed' && userRole !== 'superadmin' && String(trialDays) !== 'INTERNAL'"
-                class="p-3 rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-xs text-gray-700 dark:text-gray-200"
+                v-if="state !== 'collapsed'"
+                class="p-4 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-100 dark:border-blue-900/30"
             >
-                <h4 class="font-semibold text-sm mb-2 text-gray-800 dark:text-gray-100">Status Langganan</h4>
                 <div class="flex flex-col gap-1">
-                    <span>
-                        <span class="font-medium">Jenis Paket:</span>
-                        <span class="text-blue-600 dark:text-blue-400">&nbsp;{{ tenant?.plan_name || tenant?.pricing_plan_id || 'TRIAL' }}</span>
-                    </span>
-                    <span>
-                        <span class="font-medium">Status:</span>
-                        <span :class="tenant?.is_subscribed ? 'text-green-600 dark:text-green-400' : 'text-red-500 dark:text-red-400'">&nbsp;{{ tenant?.is_subscribed ? 'Aktif' : 'Tidak Aktif' }}</span>
-                    </span>
-                    <span>
-                        <span class="font-medium">Berlaku Hingga:</span>
-                        <span>&nbsp;{{ tenant?.subscription_ends_at || '-' }}</span>
-                    </span>
-                    <div class="text-center" v-if="isSubscriptionExpired">
-                        <Link :href="`/subscription/payment`" class="mt-2 block w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-center">
-                            Perpanjang Langganan
-                        </Link>
+                    <div class="flex items-center gap-2 mb-1">
+                        <div class="w-2 h-2 rounded-full bg-blue-600 animate-pulse"></div>
+                        <p class="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest">Active Node</p>
                     </div>
+                    <p class="text-xs font-black text-gray-900 dark:text-gray-100 leading-tight">Yualan Community Edition</p>
+                    <p class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-tight">Dedicated Enterprise</p>
                 </div>
             </div>
             <div class=" pt-3 mt-2">

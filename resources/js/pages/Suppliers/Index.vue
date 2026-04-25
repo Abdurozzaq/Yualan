@@ -214,14 +214,16 @@ const applySearch = () => {
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full flex-1 flex-col gap-4 rounded-xl p-4 overflow-x-auto">
-            <div class="flex items-center justify-between mb-4">
-                <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+                <h1 class="text-xl md:text-2xl font-black text-gray-900 dark:text-gray-100">
                     Master Supplier {{ tenantName ? `(${tenantName})` : '' }}
                 </h1>
-                <Button @click="openFormDialog()" class="flex items-center gap-2">
-                    <PlusCircle class="h-4 w-4" />
-                    Tambah Supplier
-                </Button>
+                <div class="flex flex-col sm:flex-row gap-2">
+                    <Button @click="openFormDialog()" class="flex items-center justify-center gap-2 h-11 sm:h-10 rounded-xl shadow-lg shadow-blue-200 dark:shadow-none bg-blue-600 hover:bg-blue-700">
+                        <PlusCircle class="h-4 w-4" />
+                        Tambah Supplier
+                    </Button>
+                </div>
             </div>
 
             <!-- Filter and Search Section -->
@@ -357,44 +359,44 @@ const applySearch = () => {
                     </DialogDescription>
                 </DialogHeader>
                 <form @submit.prevent="submitForm" class="grid gap-4 py-4">
-                    <div class="grid grid-cols-4 items-center gap-4">
-                        <Label for="name" class="text-right">Nama Supplier</Label>
-                        <Input id="name" v-model="form.name" required class="col-span-3" />
-                        <InputError :message="form.errors.name" class="col-span-4 col-start-2" />
+                    <div class="grid grid-cols-1 sm:grid-cols-4 sm:items-center gap-2 sm:gap-4">
+                        <Label for="name" class="sm:text-right font-bold">Nama Supplier</Label>
+                        <Input id="name" v-model="form.name" required class="sm:col-span-3 h-11 sm:h-10 rounded-xl" />
+                        <InputError :message="form.errors.name" class="sm:col-span-3 sm:col-start-2" />
                     </div>
 
-                    <div class="grid grid-cols-4 items-center gap-4">
-                        <Label for="contact_person" class="text-right">Kontak Person (Opsional)</Label>
-                        <Input id="contact_person" v-model="form.contact_person" class="col-span-3" />
-                        <InputError :message="form.errors.contact_person" class="col-span-4 col-start-2" />
+                    <div class="grid grid-cols-1 sm:grid-cols-4 sm:items-center gap-2 sm:gap-4">
+                        <Label for="contact_person" class="sm:text-right font-bold">Kontak Person</Label>
+                        <Input id="contact_person" v-model="form.contact_person" class="sm:col-span-3 h-11 sm:h-10 rounded-xl" />
+                        <InputError :message="form.errors.contact_person" class="sm:col-span-3 sm:col-start-2" />
                     </div>
 
-                    <div class="grid grid-cols-4 items-center gap-4">
-                        <Label for="phone" class="text-right">Telepon (Opsional)</Label>
-                        <Input id="phone" type="text" v-model="form.phone" class="col-span-3" />
-                        <InputError :message="form.errors.phone" class="col-span-4 col-start-2" />
+                    <div class="grid grid-cols-1 sm:grid-cols-4 sm:items-center gap-2 sm:gap-4">
+                        <Label for="phone" class="sm:text-right font-bold">Telepon</Label>
+                        <Input id="phone" type="text" v-model="form.phone" class="sm:col-span-3 h-11 sm:h-10 rounded-xl" />
+                        <InputError :message="form.errors.phone" class="sm:col-span-3 sm:col-start-2" />
                     </div>
 
-                    <div class="grid grid-cols-4 items-center gap-4">
-                        <Label for="email" class="text-right">Email (Opsional)</Label>
-                        <Input id="email" type="email" v-model="form.email" class="col-span-3" />
-                        <InputError :message="form.errors.email" class="col-span-4 col-start-2" />
+                    <div class="grid grid-cols-1 sm:grid-cols-4 sm:items-center gap-2 sm:gap-4">
+                        <Label for="email" class="sm:text-right font-bold">Email</Label>
+                        <Input id="email" type="email" v-model="form.email" class="sm:col-span-3 h-11 sm:h-10 rounded-xl" />
+                        <InputError :message="form.errors.email" class="sm:col-span-3 sm:col-start-2" />
                     </div>
 
-                    <div class="grid grid-cols-4 items-center gap-4">
-                        <Label for="address" class="text-right">Alamat (Opsional)</Label>
-                        <Textarea id="address" v-model="form.address" rows="3" class="col-span-3" />
-                        <InputError :message="form.errors.address" class="col-span-4 col-start-2" />
+                    <div class="grid grid-cols-1 sm:grid-cols-4 sm:items-start gap-2 sm:gap-4">
+                        <Label for="address" class="sm:text-right font-bold sm:mt-2">Alamat</Label>
+                        <Textarea id="address" v-model="form.address" rows="3" class="sm:col-span-3 rounded-xl" />
+                        <InputError :message="form.errors.address" class="sm:col-span-3 sm:col-start-2" />
                     </div>
 
-                    <div class="grid grid-cols-4 items-center gap-4">
-                        <Label for="notes" class="text-right">Catatan (Opsional)</Label>
-                        <Textarea id="notes" v-model="form.notes" rows="3" class="col-span-3" />
-                        <InputError :message="form.errors.notes" class="col-span-4 col-start-2" />
+                    <div class="grid grid-cols-1 sm:grid-cols-4 sm:items-start gap-2 sm:gap-4">
+                        <Label for="notes" class="sm:text-right font-bold sm:mt-2">Catatan</Label>
+                        <Textarea id="notes" v-model="form.notes" rows="3" class="sm:col-span-3 rounded-xl" />
+                        <InputError :message="form.errors.notes" class="sm:col-span-3 sm:col-start-2" />
                     </div>
 
-                    <DialogFooter>
-                        <Button type="submit" :disabled="form.processing">
+                    <DialogFooter class="mt-4 gap-2 flex-col sm:flex-row">
+                        <Button type="submit" :disabled="form.processing" class="w-full sm:w-auto h-12 sm:h-10 rounded-xl bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-200 dark:shadow-none">
                             <LoaderCircle v-if="form.processing" class="h-4 w-4 animate-spin mr-2" />
                             Simpan Supplier
                         </Button>

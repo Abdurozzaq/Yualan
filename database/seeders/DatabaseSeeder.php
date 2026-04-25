@@ -23,7 +23,7 @@ class DatabaseSeeder extends Seeder
             'password' => Hash::make('password'),
             'tenant_id' => null
         ]);
-
+`
         $this->call([
             SaasSettingsSeeder::class,
             FullTenantSeeder::class

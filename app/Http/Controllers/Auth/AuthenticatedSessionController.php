@@ -41,22 +41,15 @@ class AuthenticatedSessionController extends Controller
         // Eager load the tenant relationship for the authenticated user
         $user = Auth::user()->load('tenant'); // Load the tenant relationship here
 
-        // Prioritaskan redirect untuk Superadmin
-        if ($user && $user->role === 'superadmin') {
-            return redirect()->route('superadmin.dashboard');
-        }
-
-        // Redirect ke dashboard tenant yang sesuai setelah login (untuk admin/cashier)
-        // Sekarang $user->tenant pasti sudah dimuat jika tenant_id ada
+        // Redirect ke Kasir (Order) setelah login
         if ($user && $user->tenant_id) {
             $tenant = $user->tenant;
             if ($tenant && $tenant->is_active) {
-                return redirect()->route('tenant.dashboard', ['tenantSlug' => $tenant->slug]);
+                return redirect()->route('sales.order', ['tenantSlug' => $tenant->slug]);
             }
         }
 
         // Fallback jika user tidak memiliki tenant_id atau tenant tidak ditemukan/tidak aktif
-        // Arahkan ke halaman khusus untuk user yang belum terhubung ke tenant
         return redirect()->route('tenant.unassigned');
     }
 

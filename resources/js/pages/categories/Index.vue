@@ -226,14 +226,16 @@ const applySearch = () => {
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full flex-1 flex-col gap-4 rounded-xl p-4 overflow-x-auto">
-            <div class="flex items-center justify-between mb-4">
-                <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+                <h1 class="text-xl md:text-2xl font-black text-gray-900 dark:text-gray-100">
                     Master Kategori {{ tenantName ? `(${tenantName})` : '' }}
                 </h1>
-                <Button @click="openFormDialog()" class="flex items-center gap-2">
-                    <PlusCircle class="h-4 w-4" />
-                    Tambah Kategori
-                </Button>
+                <div class="flex flex-col sm:flex-row gap-2">
+                    <Button @click="openFormDialog()" class="flex items-center justify-center gap-2 h-11 sm:h-10 rounded-xl shadow-lg shadow-blue-200 dark:shadow-none bg-blue-600 hover:bg-blue-700">
+                        <PlusCircle class="h-4 w-4" />
+                        Tambah Kategori
+                    </Button>
+                </div>
             </div>
 
             <!-- Filter and Search Section -->
@@ -362,17 +364,17 @@ const applySearch = () => {
                 </DialogHeader>
                 <form @submit.prevent="submitForm" class="grid gap-4 py-4">
                     <div class="grid gap-2">
-                        <Label for="name">Nama Kategori</Label>
-                        <Input id="name" v-model="form.name" required />
+                        <Label for="name" class="font-bold">Nama Kategori</Label>
+                        <Input id="name" v-model="form.name" required class="h-11 sm:h-10 rounded-xl" />
                         <InputError :message="form.errors.name" />
                     </div>
                     <div class="grid gap-2">
-                        <Label for="description">Deskripsi (Opsional)</Label>
-                        <Textarea id="description" v-model="form.description" rows="3" />
+                        <Label for="description" class="font-bold">Deskripsi (Opsional)</Label>
+                        <Textarea id="description" v-model="form.description" rows="3" class="rounded-xl" />
                         <InputError :message="form.errors.description" />
                     </div>
-                    <DialogFooter>
-                        <Button type="submit" :disabled="form.processing">
+                    <DialogFooter class="mt-4">
+                        <Button type="submit" :disabled="form.processing" class="w-full h-12 sm:h-10 rounded-xl bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-200 dark:shadow-none">
                             <LoaderCircle v-if="form.processing" class="h-4 w-4 animate-spin mr-2" />
                             Simpan Kategori
                         </Button>

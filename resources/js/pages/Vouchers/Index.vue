@@ -359,12 +359,12 @@ const applySearch = () => {
     <Head title="Master Voucher" />
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full flex-1 flex-col gap-4 rounded-xl p-4 overflow-x-auto">
-            <div class="flex items-center justify-between mb-4">
-                <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+                <h1 class="text-xl md:text-2xl font-black text-gray-900 dark:text-gray-100">
                     Master Voucher {{ tenantName ? `(${tenantName})` : '' }}
                 </h1>
-                <div class="flex gap-2">
-                    <Button @click="openFormDialog()" class="flex items-center gap-2">
+                <div class="flex flex-col sm:flex-row gap-2">
+                    <Button @click="openFormDialog()" class="flex items-center justify-center gap-2 h-11 sm:h-10 rounded-xl shadow-lg shadow-blue-200 dark:shadow-none bg-blue-600 hover:bg-blue-700">
                         <PlusCircle class="h-4 w-4" />
                         Tambah Voucher
                     </Button>
@@ -465,46 +465,46 @@ const applySearch = () => {
                     </DialogDescription>
                 </DialogHeader>
                 <form @submit.prevent="submitForm" class="grid gap-4 py-4">
-                    <div class="grid grid-cols-4 items-center gap-4">
-                        <Label for="code" class="text-right">Kode</Label>
-                        <Input id="code" v-model="form.code" required class="col-span-3" />
+                    <div class="grid grid-cols-1 sm:grid-cols-4 sm:items-center gap-2 sm:gap-4">
+                        <Label for="code" class="sm:text-right font-bold">Kode</Label>
+                        <Input id="code" v-model="form.code" required class="sm:col-span-3 h-11 sm:h-10 rounded-xl" />
                     </div>
-                    <InputError :message="form.errors.code" />
-                    <div class="grid grid-cols-4 items-center gap-4">
-                        <Label for="name" class="text-right">Nama</Label>
-                        <Input id="name" v-model="form.name" required class="col-span-3" />
+                    <InputError :message="form.errors.code" class="sm:col-span-3 sm:col-start-2" />
+                    <div class="grid grid-cols-1 sm:grid-cols-4 sm:items-center gap-2 sm:gap-4">
+                        <Label for="name" class="sm:text-right font-bold">Nama</Label>
+                        <Input id="name" v-model="form.name" required class="sm:col-span-3 h-11 sm:h-10 rounded-xl" />
                     </div>
-                    <InputError :message="form.errors.name" />
-                    <div class="grid grid-cols-4 items-center gap-4">
-                        <Label for="type" class="text-right">Tipe</Label>
-                        <select id="type" v-model="form.type" required class="col-span-3 border rounded px-2 py-1">
+                    <InputError :message="form.errors.name" class="sm:col-span-3 sm:col-start-2" />
+                    <div class="grid grid-cols-1 sm:grid-cols-4 sm:items-center gap-2 sm:gap-4">
+                        <Label for="type" class="sm:text-right font-bold">Tipe</Label>
+                        <select id="type" v-model="form.type" required class="sm:col-span-3 h-11 sm:h-10 border rounded-xl px-2 py-1 bg-white dark:bg-gray-900">
                             <option value="percentage">Persentase</option>
                             <option value="percentage_max">Persentase + Max Nominal</option>
                             <option value="nominal">Nominal</option>
                         </select>
                     </div>
-                    <InputError :message="form.errors.type" />
-                    <div class="grid grid-cols-4 items-center gap-4">
-                        <Label for="value" class="text-right">Nilai</Label>
-                        <Input id="value" type="number" v-model.number="form.value" min="0" required class="col-span-3" />
+                    <InputError :message="form.errors.type" class="sm:col-span-3 sm:col-start-2" />
+                    <div class="grid grid-cols-1 sm:grid-cols-4 sm:items-center gap-2 sm:gap-4">
+                        <Label for="value" class="sm:text-right font-bold">Nilai</Label>
+                        <Input id="value" type="number" v-model.number="form.value" min="0" required class="sm:col-span-3 h-11 sm:h-10 rounded-xl" />
                     </div>
-                    <InputError :message="form.errors.value" />
-                    <div class="grid grid-cols-4 items-center gap-4">
-                        <Label for="max_nominal" class="text-right">Max Nominal</Label>
-                        <Input id="max_nominal" type="number" :value="form.max_nominal ?? ''" @input="form.max_nominal = $event.target.value ? Number($event.target.value) : null" min="0" class="col-span-3" />
+                    <InputError :message="form.errors.value" class="sm:col-span-3 sm:col-start-2" />
+                    <div class="grid grid-cols-1 sm:grid-cols-4 sm:items-center gap-2 sm:gap-4">
+                        <Label for="max_nominal" class="sm:text-right font-bold">Max Nominal</Label>
+                        <Input id="max_nominal" type="number" :value="form.max_nominal ?? ''" @input="form.max_nominal = $event.target.value ? Number($event.target.value) : null" min="0" class="sm:col-span-3 h-11 sm:h-10 rounded-xl" />
                     </div>
-                    <InputError :message="form.errors.max_nominal" />
-                    <div class="grid grid-cols-4 items-center gap-4">
-                        <Label for="expiry_date" class="text-right">Expired</Label>
-                        <Input id="expiry_date" type="date" v-model="form.expiry_date" required class="col-span-3" />
+                    <InputError :message="form.errors.max_nominal" class="sm:col-span-3 sm:col-start-2" />
+                    <div class="grid grid-cols-1 sm:grid-cols-4 sm:items-center gap-2 sm:gap-4">
+                        <Label for="expiry_date" class="sm:text-right font-bold">Expired</Label>
+                        <Input id="expiry_date" type="date" v-model="form.expiry_date" required class="sm:col-span-3 h-11 sm:h-10 rounded-xl" />
                     </div>
-                    <InputError :message="form.errors.expiry_date" />
+                    <InputError :message="form.errors.expiry_date" class="sm:col-span-3 sm:col-start-2" />
                     <div class="grid grid-cols-4 items-center gap-4">
                         <!-- Status field removed -->
                     </div>
                     <!-- Error for is_active removed -->
-                    <DialogFooter>
-                        <Button type="submit" :disabled="form.processing">
+                    <DialogFooter class="mt-4 gap-2 flex-col sm:flex-row">
+                        <Button type="submit" :disabled="form.processing" class="w-full sm:w-auto h-12 sm:h-10 rounded-xl bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-200 dark:shadow-none">
                             <LoaderCircle v-if="form.processing" class="h-4 w-4 animate-spin mr-2" />
                             Simpan
                         </Button>

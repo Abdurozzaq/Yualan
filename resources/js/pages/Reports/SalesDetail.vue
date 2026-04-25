@@ -153,41 +153,45 @@ function handleSort(column: string) {
     <Head title="Laporan Penjualan Detail" />
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full flex-1 flex-col gap-4 rounded-xl p-4 overflow-x-auto">
-            <div class="flex items-center justify-between mb-4">
-                <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+                <h1 class="text-xl md:text-2xl font-black text-gray-900 dark:text-gray-100">
                     Laporan Penjualan Detail {{ tenantName ? `(${tenantName})` : '' }}
                 </h1>
-                <button @click="exportToExcel" class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-lg shadow">
+                <button @click="exportToExcel" class="flex items-center justify-center gap-2 h-11 sm:h-10 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 rounded-xl shadow-lg shadow-blue-200 dark:shadow-none transition-all active:scale-95">
                     <FileText class="h-5 w-5" />
                     Export Excel
                 </button>
             </div>
             <!-- Filter Section -->
-            <div class="flex items-center gap-4 mb-4">
-                <label class="font-semibold">Periode:</label>
-                <select v-model="filterType" class="border rounded px-2 py-1 bg-white text-gray-900 dark:bg-gray-900 dark:text-gray-100">
-                    <option value="day">Hari</option>
-                    <option value="week">Minggu</option>
-                    <option value="month">Bulan</option>
-                </select>
-                <input
-                    v-if="filterType === 'day'"
-                    type="date"
-                    v-model="filterDate"
-                    class="border rounded px-2 py-1"
-                />
-                <input
-                    v-if="filterType === 'week'"
-                    type="date"
-                    v-model="filterDate"
-                    class="border rounded px-2 py-1"
-                />
-                <input
-                    v-if="filterType === 'month'"
-                    type="month"
-                    v-model="filterDate"
-                    class="border rounded px-2 py-1"
-                />
+            <div class="bg-blue-50 dark:bg-blue-900/10 p-4 rounded-xl border border-blue-100 dark:border-blue-900/20 mb-6">
+                <div class="flex flex-col sm:flex-row sm:items-center gap-4">
+                    <label class="font-black text-blue-900 dark:text-blue-300">Periode:</label>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <select v-model="filterType" class="h-11 sm:h-10 border rounded-xl px-4 py-1 bg-white text-gray-900 dark:bg-gray-900 dark:text-gray-100 shadow-sm focus:ring-2 focus:ring-blue-500 transition-all">
+                            <option value="day">Hari</option>
+                            <option value="week">Minggu</option>
+                            <option value="month">Bulan</option>
+                        </select>
+                        <input
+                            v-if="filterType === 'day'"
+                            type="date"
+                            v-model="filterDate"
+                            class="h-11 sm:h-10 border rounded-xl px-4 py-1 shadow-sm focus:ring-2 focus:ring-blue-500 transition-all"
+                        />
+                        <input
+                            v-if="filterType === 'week'"
+                            type="date"
+                            v-model="filterDate"
+                            class="h-11 sm:h-10 border rounded-xl px-4 py-1 shadow-sm focus:ring-2 focus:ring-blue-500 transition-all"
+                        />
+                        <input
+                            v-if="filterType === 'month'"
+                            type="month"
+                            v-model="filterDate"
+                            class="h-11 sm:h-10 border rounded-xl px-4 py-1 shadow-sm focus:ring-2 focus:ring-blue-500 transition-all"
+                        />
+                    </div>
+                </div>
             </div>
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 border border-gray-200 dark:border-gray-700 mb-6">
                 <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">Deskripsi Laporan</h3>
