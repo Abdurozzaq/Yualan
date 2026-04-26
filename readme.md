@@ -1,7 +1,5 @@
 # 🚀 Yualan Community Edition (Dedicated Enterprise)
 
-![Yualan POS Banner](https://github.com/user-attachments/assets/1057787c-9f71-444e-ab98-86a7fdea9b69)
-
 **Solusi Point of Sale (POS) Mandiri untuk Instansi Tunggal yang Mengutamakan Kendali Penuh atas Data dan Infrastruktur.**
 
 ---
