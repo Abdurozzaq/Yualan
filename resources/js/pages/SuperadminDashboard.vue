@@ -1,216 +1,51 @@
 <script setup lang="ts">
 import SuperadminLayout from '@/layouts/app/SuperadminLayout.vue';
 import { type BreadcrumbItem } from '@/types';
-import { Link, usePage } from '@inertiajs/vue3';
-import { Card } from '@/components/ui/card';
-import { DollarSign, Package, Users, Store, Clock, TrendingUp, BarChart } from 'lucide-vue-next';
-import { formatCurrency } from '@/utils/formatters';
-import { computed } from 'vue';
-
-const page = usePage();
+import { Head } from '@inertiajs/vue3';
+import { ShieldAlert, Zap } from 'lucide-vue-next';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Superadmin Dashboard',
-        href: route('superadmin.dashboard'),
+        href: '#',
     },
 ];
-
-const defaultStats = {
-    totalTenants: 0,
-    activeTenants: 0,
-    inactiveTenants: 0,
-    totalUsers: 0,
-    superadmins: 0,
-    admins: 0,
-    cashiers: 0,
-    totalProducts: 0,
-    totalProductStock: 0,
-    totalSalesAmount: 0,
-    totalCompletedSales: 0,
-    totalPendingSales: 0,
-    totalSalesLast7Days: 0,
-    newTenantsLast30Days: 0,
-    topProductCategoriesByProductCount: [] as { category_name: string; product_count: number }[],
-};
-
-const stats = computed(() => {
-    const props = page.props as any;
-    return {
-        ...defaultStats,
-        ...(props?.stats ?? {}),
-    };
-});
-
-const recentTenants = computed(() => {
-    const props = page.props as any;
-    return props?.recentTenants ?? [];
-});
-
-const topTenantsBySales = computed(() => {
-    const props = page.props as any;
-    return props?.topTenantsBySales ?? [];
-});
-
-const getTenantStatusColor = (isActive: boolean) => {
-    return isActive ? 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-200' : 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-200';
-};
-
-const formatDate = (dateTimeString: string) => {
-    return new Date(dateTimeString).toLocaleDateString('id-ID', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-    });
-};
 </script>
 
 <template>
+    <Head title="Superadmin Disabled" />
+
     <SuperadminLayout :breadcrumbs="breadcrumbs">
-        <div class="flex h-full flex-1 flex-col gap-4 rounded-xl p-4 overflow-x-auto">
-            <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100">Selamat Datang, {{ page.props.auth.user.name }}!</h1>
-            <p class="text-gray-600 dark:text-gray-400 text-lg">Ini adalah gambaran umum sistem Yualan POS Anda.</p>
-
-            <!-- Global Statistics Cards -->
-            <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                <!-- Total Tenants -->
-                <Card class="p-6 flex flex-col items-start gap-2 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm">
-                    <div class="flex items-center gap-2 text-blue-600 dark:text-blue-400">
-                        <Store class="h-6 w-6" />
-                        <span class="text-lg font-semibold">Total Tenant</span>
+        <div class="flex flex-col items-center justify-center min-h-[70vh] p-4 text-center animate-fade-in">
+            <div class="bg-gradient-to-br from-gray-900 to-gray-800 p-8 sm:p-16 rounded-[2.5rem] shadow-2xl max-w-2xl w-full text-white overflow-hidden relative group border-4 border-white/10">
+                <!-- Decorative background elements -->
+                <div class="absolute -top-24 -right-24 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl group-hover:bg-blue-500/20 transition-all duration-700"></div>
+                <div class="absolute -bottom-24 -left-24 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl group-hover:bg-indigo-500/20 transition-all duration-700"></div>
+                
+                <div class="relative z-10 flex flex-col items-center">
+                    <div class="bg-white/10 p-6 rounded-3xl backdrop-blur-xl mb-8 shadow-inner border border-white/30">
+                        <ShieldAlert class="h-14 w-14 text-blue-400" />
                     </div>
-                    <!-- Updated font sizes for responsiveness -->
-                    <p class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-gray-900 dark:text-gray-100">{{ stats.totalTenants }}</p>
-                    <div class="text-sm text-muted-foreground">
-                        <span class="text-green-600 dark:text-green-400 font-medium">{{ stats.activeTenants }} Aktif</span> |
-                        <span class="text-red-600 dark:text-red-400 font-medium">{{ stats.inactiveTenants }} Nonaktif</span>
-                    </div>
-                </Card>
-
-                <!-- Total Users -->
-                <Card class="p-6 flex flex-col items-start gap-2 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm">
-                    <div class="flex items-center gap-2 text-purple-600 dark:text-purple-400">
-                        <Users class="h-6 w-6" />
-                        <span class="text-lg font-semibold">Total Pengguna</span>
-                    </div>
-                    <!-- Updated font sizes for responsiveness -->
-                    <p class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-gray-900 dark:text-gray-100">{{ stats.totalUsers }}</p>
-                    <div class="text-sm text-muted-foreground">
-                        <span class="font-medium">S: {{ stats.superadmins }}</span> |
-                        <span class="font-medium">A: {{ stats.admins }}</span> |
-                        <span class="font-medium">K: {{ stats.cashiers }}</span>
-                    </div>
-                </Card>
-
-                <!-- Total Products -->
-                <Card class="p-6 flex flex-col items-start gap-2 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm">
-                    <div class="flex items-center gap-2 text-orange-600 dark:text-orange-400">
-                        <Package class="h-6 w-6" />
-                        <span class="text-lg font-semibold">Total Produk</span>
-                    </div>
-                    <!-- Updated font sizes for responsiveness -->
-                    <p class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-gray-900 dark:text-gray-100">{{ stats.totalProducts }}</p>
-                    <p class="text-sm text-muted-foreground">Total Stok: {{ stats.totalProductStock }} unit</p>
-                </Card>
-
-                <!-- Total Sales Amount -->
-                <Card class="p-6 flex flex-col items-start gap-2 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm">
-                    <div class="flex items-center gap-2 text-green-600 dark:text-green-400">
-                        <DollarSign class="h-6 w-6" />
-                        <span class="text-lg font-semibold">Total Penjualan Selesai</span>
-                    </div>
-                    <!-- Updated font sizes for responsiveness -->
-                    <p class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-gray-900 dark:text-gray-100">{{ formatCurrency(stats.totalSalesAmount) }}</p>
-                    <div class="text-sm text-muted-foreground">
-                        <span class="font-medium">{{ stats.totalCompletedSales }} Transaksi Selesai</span> |
-                        <span class="font-medium">{{ stats.totalPendingSales }} Transaksi Pending</span>
-                    </div>
-                </Card>
-            </div>
-
-            <!-- Recent Tenants & Top Tenants by Sales -->
-            <div class="grid gap-4 lg:grid-cols-2">
-                <!-- Recent Tenants -->
-                <Card class="p-6 flex flex-col border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm">
-                    <h3 class="text-xl font-semibold mb-4 flex items-center gap-2 text-gray-900 dark:text-gray-100">
-                        <Clock class="h-5 w-5" /> Tenant Terbaru
-                    </h3>
-                    <div v-if="recentTenants.length === 0" class="text-muted-foreground text-center py-8">
-                        Belum ada tenant yang terdaftar.
-                    </div>
-                    <div v-else class="space-y-3">
-                        <div v-for="tenant in recentTenants" :key="tenant.id" class="flex justify-between items-center border-b border-gray-100 dark:border-gray-700 pb-2 last:border-b-0">
-                            <div>
-                                <Link :href="route('tenant.dashboard', { tenantSlug: tenant.slug })" class="font-medium text-blue-600 hover:underline dark:text-blue-400">
-                                    {{ tenant.name }}
-                                </Link>
-                                <p class="text-sm text-muted-foreground">{{ tenant.slug }}</p>
-                            </div>
-                            <div class="flex flex-col items-end">
-                                <span :class="['px-2 py-0.5 rounded-full text-xs font-semibold', getTenantStatusColor(tenant.is_active)]">
-                                    {{ tenant.is_active ? 'AKTIF' : 'NONAKTIF' }}
-                                </span>
-                                <p class="text-sm text-muted-foreground mt-1">{{ formatDate(tenant.created_at) }}</p>
-                            </div>
-                        </div>
-                    </div>
-                </Card>
-
-                <!-- Top Tenants by Sales (last 30 days) -->
-                <Card class="p-6 flex flex-col border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm">
-                    <h3 class="text-xl font-semibold mb-4 flex items-center gap-2 text-gray-900 dark:text-gray-100">
-                        <TrendingUp class="h-5 w-5" /> Tenant Terlaris (30 Hari Terakhir)
-                    </h3>
-                    <div v-if="topTenantsBySales.length === 0" class="text-muted-foreground text-center py-8">
-                        Belum ada data penjualan untuk 30 hari terakhir.
-                    </div>
-                    <div v-else class="space-y-3">
-                        <div v-for="(tenant, index) in topTenantsBySales" :key="tenant.tenant_slug" class="flex justify-between items-center border-b border-gray-100 dark:border-gray-700 pb-2 last:border-b-0">
-                            <div class="flex items-center gap-2">
-                                <span class="font-bold text-lg text-gray-700 dark:text-gray-300">{{ index + 1 }}.</span>
-                                <Link :href="route('tenant.dashboard', { tenantSlug: tenant.tenant_slug })" class="font-medium text-blue-600 hover:underline dark:text-blue-400">
-                                    {{ tenant.tenant_name }}
-                                </Link>
-                            </div>
-                            <span class="font-semibold text-lg text-gray-900 dark:text-gray-100">{{ formatCurrency(tenant.total_sales_amount) }}</span>
-                        </div>
-                    </div>
-                </Card>
-            </div>
-
-            <!-- Global System Overview (Dynamic Data) -->
-            <Card class="p-6 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm">
-                <h3 class="text-xl font-semibold mb-4 flex items-center gap-2 text-gray-900 dark:text-gray-100">
-                    <BarChart class="h-5 w-5" /> Analisis Sistem Global
-                </h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Total Sales Last 7 Days -->
-                    <div class="flex flex-col gap-1">
-                        <p class="text-sm text-muted-foreground">Total Penjualan (7 Hari Terakhir):</p>
-                        <p class="text-2xl font-bold text-gray-900 dark:text-gray-100">{{ formatCurrency(stats.totalSalesLast7Days) }}</p>
-                    </div>
-
-                    <!-- New Tenants Last 30 Days -->
-                    <div class="flex flex-col gap-1">
-                        <p class="text-sm text-muted-foreground">Tenant Baru (30 Hari Terakhir):</p>
-                        <p class="text-2xl font-bold text-gray-900 dark:text-gray-100">{{ stats.newTenantsLast30Days }}</p>
-                    </div>
-
-                    <!-- Top Product Categories by Product Count -->
-                    <div class="col-span-1 md:col-span-2">
-                        <p class="text-sm text-muted-foreground mb-2">Kategori Produk Teratas (Berdasarkan Jumlah Produk):</p>
-                        <div v-if="stats.topProductCategoriesByProductCount.length === 0" class="text-muted-foreground">
-                            Tidak ada kategori produk.
-                        </div>
-                        <ul v-else class="space-y-1">
-                            <li v-for="(category, index) in stats.topProductCategoriesByProductCount" :key="index" class="flex justify-between items-center text-gray-800 dark:text-gray-200">
-                                <span class="font-medium">{{ category.category_name }}</span>
-                                <span class="text-sm text-muted-foreground">{{ category.product_count }} produk</span>
-                            </li>
-                        </ul>
+                    
+                    <h1 class="text-4xl sm:text-5xl font-black mb-6 tracking-tight leading-tight">
+                        Superadmin <br/>Dashboard Nonaktif
+                    </h1>
+                    <p class="text-xl text-gray-400 mb-10 leading-relaxed max-w-md mx-auto">
+                        Dalam versi <strong>Community Edition Dedicated Enterprise</strong>, manajemen tersentralisasi dinonaktifkan untuk mendukung operasional mandiri yang lebih fokus.
+                    </p>
+                    
+                    <div class="flex flex-col sm:flex-row gap-4 w-full justify-center">
+                        <a href="https://yualan.web.id" target="_blank" class="bg-blue-600 text-white font-black px-10 py-5 rounded-2xl shadow-xl hover:bg-blue-700 transition-all transform hover:scale-105 active:scale-95 flex items-center justify-center gap-3 text-lg">
+                            <Zap class="h-6 w-6 fill-white" />
+                            Pelajari Lebih Lanjut
+                        </a>
                     </div>
                 </div>
-            </Card>
+            </div>
+            
+            <p class="mt-8 text-gray-500 text-sm font-medium">
+                Yualan POS Community Edition Dedicated Enterprise
+            </p>
         </div>
     </SuperadminLayout>
 </template>

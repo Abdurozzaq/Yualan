@@ -122,34 +122,36 @@ const submitReceiveGoods = () => {
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full flex-1 flex-col gap-4 rounded-xl p-4 overflow-x-auto">
-            <div class="flex items-center justify-between mb-4">
-                <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+                <h1 class="text-xl md:text-2xl font-black text-gray-900 dark:text-gray-100">
                     Penerimaan Barang {{ tenantName ? `(${tenantName})` : '' }}
                 </h1>
             </div>
 
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 max-w-2xl mx-auto w-full">
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl shadow-gray-100 dark:shadow-none p-8 max-w-2xl mx-auto w-full border border-gray-100 dark:border-gray-700 animate-fade-in">
                 <form @submit.prevent="submitReceiveGoods" class="grid gap-6">
                     <div class="grid gap-2">
-                        <Label for="product_id">Produk</Label>
+                        <Label for="product_id" class="font-bold text-gray-700 dark:text-gray-300">Produk</Label>
                         <div class="relative">
                             <Input
                                 id="product_search"
                                 v-model="productSearch"
                                 placeholder="Cari produk..."
                                 autocomplete="off"
+                                class="h-11 sm:h-12 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 focus:ring-blue-500 focus:border-blue-500 shadow-sm"
                             />
-                            <div v-if="productSearch.length >= 2 && showProductDropdown" class="absolute z-10 bg-white border rounded w-full mt-1 shadow-lg max-h-60 overflow-auto">
-                                <div v-if="searchingProduct" class="p-2 text-sm text-gray-500">Mencari...</div>
+                            <div v-if="productSearch.length >= 2 && showProductDropdown" class="absolute z-50 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl w-full mt-2 shadow-2xl max-h-72 overflow-auto">
+                                <div v-if="searchingProduct" class="p-4 text-sm text-gray-500 animate-pulse">Mencari...</div>
                                 <template v-else>
-                                    <div v-if="productResults.length === 0" class="p-2 text-sm text-gray-500">Produk tidak ditemukan</div>
+                                    <div v-if="productResults.length === 0" class="p-4 text-sm text-gray-500">Produk tidak ditemukan</div>
                                     <div
                                         v-for="product in productResults"
                                         :key="product.id"
                                         @click="form.product_id = product.id; productSearch = product.name; showProductDropdown = false"
-                                        class="p-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+                                        class="p-4 cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/30 border-b border-gray-100 dark:border-gray-800 last:border-0 transition-colors"
                                     >
-                                        {{ product.name }} (Stok: {{ product.stock }}, HPP: {{ formatCurrency(product.cost_price) }})
+                                        <div class="font-bold text-gray-900 dark:text-gray-100">{{ product.name }}</div>
+                                        <div class="text-sm text-gray-500 dark:text-gray-400">Stok: {{ product.stock }} | HPP: {{ formatCurrency(product.cost_price) }}</div>
                                     </div>
                                 </template>
                             </div>
@@ -158,19 +160,20 @@ const submitReceiveGoods = () => {
                     </div>
 
                     <div class="grid gap-2">
-                        <Label for="quantity">Kuantitas Diterima</Label>
+                        <Label for="quantity" class="font-bold text-gray-700 dark:text-gray-300">Kuantitas Diterima</Label>
                         <Input
                             id="quantity"
                             type="number"
                             v-model.number="form.quantity"
                             required
                             min="1"
+                            class="h-11 sm:h-12 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 focus:ring-blue-500 focus:border-blue-500 shadow-sm"
                         />
                         <InputError :message="form.errors.quantity" />
                     </div>
 
                     <div class="grid gap-2">
-                        <Label for="cost_per_unit">Harga Pokok per Unit (saat ini)</Label>
+                        <Label for="cost_per_unit" class="font-bold text-gray-700 dark:text-gray-300">Harga Pokok per Unit (saat ini)</Label>
                         <Input
                             id="cost_per_unit"
                             type="number"
@@ -178,20 +181,21 @@ const submitReceiveGoods = () => {
                             v-model.number="form.cost_per_unit"
                             required
                             min="0"
+                            class="h-11 sm:h-12 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 focus:ring-blue-500 focus:border-blue-500 shadow-sm"
                         />
                         <InputError :message="form.errors.cost_per_unit" />
-                        <p class="text-sm text-muted-foreground">
+                        <p class="text-xs text-muted-foreground bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg border border-blue-100 dark:border-blue-900/30 mt-1 font-medium">
                             Harga pokok ini akan digunakan untuk menghitung rata-rata tertimbang harga pokok produk.
                         </p>
                     </div>
 
                     <div class="grid gap-2">
-                        <Label for="supplier_id">Supplier (Opsional)</Label>
+                        <Label for="supplier_id" class="font-bold text-gray-700 dark:text-gray-300">Supplier (Opsional)</Label>
                         <Select v-model="form.supplier_id">
-                            <SelectTrigger>
+                            <SelectTrigger class="h-11 sm:h-12 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-sm">
                                 <SelectValue placeholder="Pilih Supplier" />
                             </SelectTrigger>
-                            <SelectContent>
+                            <SelectContent class="rounded-xl">
                                 <SelectItem :value="null">Tidak Ada Supplier</SelectItem>
                                 <SelectItem v-for="supplier in suppliers" :key="supplier.id" :value="supplier.id">
                                     {{ supplier.name }}
@@ -202,18 +206,19 @@ const submitReceiveGoods = () => {
                     </div>
 
                     <div class="grid gap-2">
-                        <Label for="reason">Alasan Penerimaan (Opsional)</Label>
+                        <Label for="reason" class="font-bold text-gray-700 dark:text-gray-300">Alasan Penerimaan (Opsional)</Label>
                         <Textarea
                             id="reason"
                             v-model="form.reason"
                             rows="3"
                             placeholder="Misalnya: Pembelian dari Supplier ABC, Pengembalian dari pelanggan, dll."
+                            class="rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 focus:ring-blue-500 focus:border-blue-500 shadow-sm min-h-[100px] p-4"
                         />
                         <InputError :message="form.errors.reason" />
                     </div>
 
-                    <Button type="submit" :disabled="form.processing">
-                        <LoaderCircle v-if="form.processing" class="h-4 w-4 animate-spin mr-2" />
+                    <Button type="submit" :disabled="form.processing" class="h-14 rounded-xl bg-blue-600 hover:bg-blue-700 shadow-xl shadow-blue-200 dark:shadow-none font-bold text-lg transition-all active:scale-95 mt-4">
+                        <LoaderCircle v-if="form.processing" class="h-5 w-5 animate-spin mr-2" />
                         Catat Penerimaan
                     </Button>
                 </form>

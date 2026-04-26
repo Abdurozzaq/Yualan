@@ -112,49 +112,49 @@ const submit = () => {
                     <Button
                         type="button"
                         @click="registrationType = 'personal'"
-                        :class="{ 'bg-blue-600 hover:bg-blue-700 text-white': registrationType === 'personal', 'bg-gray-200 hover:bg-gray-300 text-gray-800': registrationType !== 'personal' }"
-                        class="w-full py-4 rounded-md shadow-sm transition-colors duration-200"
+                        :class="{ 'bg-blue-600 hover:bg-blue-700 text-white border-blue-600 shadow-lg shadow-blue-200 dark:shadow-none': registrationType === 'personal', 'bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200 border-gray-200 dark:border-gray-700': registrationType !== 'personal' }"
+                        class="w-full h-14 rounded-xl border-2 transition-all duration-200 font-bold"
                     >
                         Daftar sebagai Perorangan
                     </Button>
-                    <p class="text-sm text-center text-muted-foreground">
-                        Jika Anda mendaftar sebagai perorangan, Anda memerlukan kode undangan.
+                    <p class="text-xs text-center text-muted-foreground px-4">
+                        Jika Anda mendaftar sebagai perorangan, Anda memerlukan kode undangan dari pemilik bisnis.
                     </p>
                 </div>
                 <div class="grid gap-4">
                     <Button
                         type="button"
                         @click="registrationType = 'company'"
-                        :class="{ 'bg-blue-600 hover:bg-blue-700 text-white': registrationType === 'company', 'bg-gray-200 hover:bg-gray-300 text-gray-800': registrationType !== 'company' }"
-                        class="w-full py-4 rounded-md shadow-sm transition-colors duration-200"
+                        :class="{ 'bg-blue-600 hover:bg-blue-700 text-white border-blue-600 shadow-lg shadow-blue-200 dark:shadow-none': registrationType === 'company', 'bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200 border-gray-200 dark:border-gray-700': registrationType !== 'company' }"
+                        class="w-full h-14 rounded-xl border-2 transition-all duration-200 font-bold"
                     >
                         Daftar sebagai Perusahaan
                     </Button>
-                    <p class="text-sm text-center text-muted-foreground">
-                        Daftarkan perusahaan Anda untuk mengelola bisnis Anda.
+                    <p class="text-xs text-center text-muted-foreground px-4">
+                        Daftarkan perusahaan baru untuk mulai mengelola bisnis Anda sendiri.
                     </p>
                 </div>
-                <Button type="button" @click="nextStep" :disabled="!registrationType" class="mt-4 w-full">
+                <Button type="button" @click="nextStep" :disabled="!registrationType" class="mt-4 w-full h-12 rounded-xl bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-200 dark:shadow-none font-bold">
                     Lanjutkan
                 </Button>
             </div>
 
             <!-- Step 2: User Account Details -->
-            <div v-else-if="currentStep === 2" class="grid gap-6">
+            <div v-else-if="currentStep === 2" class="grid gap-4">
                 <div class="grid gap-2">
-                    <Label for="name">Nama Lengkap</Label>
-                    <Input id="name" type="text" required autofocus autocomplete="name" v-model="form.name" placeholder="Nama Lengkap Anda" />
+                    <Label for="name" class="font-bold">Nama Lengkap</Label>
+                    <Input id="name" type="text" required autofocus autocomplete="name" v-model="form.name" placeholder="Nama Lengkap Anda" class="h-12 rounded-xl" />
                     <InputError :message="form.errors.name" />
                 </div>
 
                 <div class="grid gap-2">
-                    <Label for="email">Alamat Email</Label>
-                    <Input id="email" type="email" required autocomplete="email" v-model="form.email" placeholder="email@example.com" />
+                    <Label for="email" class="font-bold">Alamat Email</Label>
+                    <Input id="email" type="email" required autocomplete="email" v-model="form.email" placeholder="email@example.com" class="h-12 rounded-xl" />
                     <InputError :message="form.errors.email" />
                 </div>
 
                 <div class="grid gap-2">
-                    <Label for="password">Kata Sandi</Label>
+                    <Label for="password" class="font-bold">Kata Sandi</Label>
                     <Input
                         id="password"
                         type="password"
@@ -162,12 +162,13 @@ const submit = () => {
                         autocomplete="new-password"
                         v-model="form.password"
                         placeholder="Kata Sandi"
+                        class="h-12 rounded-xl"
                     />
                     <InputError :message="form.errors.password" />
                 </div>
 
                 <div class="grid gap-2">
-                    <Label for="password_confirmation">Konfirmasi Kata Sandi</Label>
+                    <Label for="password_confirmation" class="font-bold">Konfirmasi Kata Sandi</Label>
                     <Input
                         id="password_confirmation"
                         type="password"
@@ -175,89 +176,66 @@ const submit = () => {
                         autocomplete="new-password"
                         v-model="form.password_confirmation"
                         placeholder="Konfirmasi Kata Sandi"
+                        class="h-12 rounded-xl"
                     />
                     <InputError :message="form.errors.password_confirmation" />
                 </div>
 
-                <div class="flex justify-between mt-4">
-                    <Button type="button" @click="prevStep" variant="outline">
+                <div class="flex flex-col sm:flex-row gap-3 mt-4">
+                    <Button type="button" @click="prevStep" variant="outline" class="w-full sm:w-1/2 h-12 rounded-xl">
                         Kembali
                     </Button>
-                    <Button type="button" @click="nextStep">
+                    <Button type="button" @click="nextStep" class="w-full sm:w-1/2 h-12 rounded-xl bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-200 dark:shadow-none font-bold">
                         Lanjutkan
                     </Button>
                 </div>
             </div>
 
             <!-- Step 3: Type-Specific Details -->
-            <div v-else-if="currentStep === 3" class="grid gap-6">
+            <div v-else-if="currentStep === 3" class="grid gap-4">
                 <div v-if="registrationType === 'personal'" class="grid gap-2">
-                    <Label for="invitation_code">Kode Undangan</Label>
-                    <Input id="invitation_code" type="text" required v-model="form.invitation_code" placeholder="Masukkan kode undangan Anda" />
+                    <Label for="invitation_code" class="font-bold">Kode Undangan</Label>
+                    <Input id="invitation_code" type="text" required v-model="form.invitation_code" placeholder="Masukkan kode undangan Anda" class="h-12 rounded-xl" />
                     <InputError :message="form.errors.invitation_code" />
-                    <p class="text-sm text-muted-foreground mt-2">
-                        Setelah mendaftar, akun Anda akan memerlukan kode undangan dari admin tenant. Jika tidak memiliki kode, hubungi admin Anda atau register sebagai tenant.
+                    <p class="text-xs text-muted-foreground mt-2 leading-relaxed">
+                        Akun perorangan memerlukan kode undangan dari pemilik bisnis. Jika Anda ingin membuka bisnis baru, silakan kembali dan pilih "Daftar sebagai Perusahaan".
                     </p>
                 </div>
 
                 <div v-else-if="registrationType === 'company'" class="grid gap-4">
                     <div class="grid gap-2">
-                        <Label for="company_name">Nama Perusahaan</Label>
-                        <Input id="company_name" type="text" required v-model="form.company_name" placeholder="Nama Perusahaan Anda" />
+                        <Label for="company_name" class="font-bold">Nama Perusahaan</Label>
+                        <Input id="company_name" type="text" required v-model="form.company_name" placeholder="Nama Perusahaan Anda" class="h-12 rounded-xl" />
                         <InputError :message="form.errors.company_name" />
                     </div>
                     <div class="grid gap-2">
-                        <Label for="company_email">Email Perusahaan</Label>
-                        <Input id="company_email" type="email" required v-model="form.company_email" placeholder="email.perusahaan@example.com" />
+                        <Label for="company_email" class="font-bold">Email Bisnis</Label>
+                        <Input id="company_email" type="email" required v-model="form.company_email" placeholder="email.bisnis@example.com" class="h-12 rounded-xl" />
                         <InputError :message="form.errors.company_email" />
                     </div>
                     <div class="grid gap-2">
-                        <Label for="company_phone">Nomor Telepon Perusahaan</Label>
-                        <Input id="company_phone" type="text" v-model="form.company_phone" placeholder="Nomor Telepon" />
+                        <Label for="company_phone" class="font-bold">Nomor Telepon Bisnis</Label>
+                        <Input id="company_phone" type="text" v-model="form.company_phone" placeholder="Contoh: 08123456789" class="h-12 rounded-xl" />
                         <InputError :message="form.errors.company_phone" />
                     </div>
                     <div class="grid gap-2">
-                        <Label for="company_address">Alamat Perusahaan</Label>
-                        <Input id="company_address" type="text" v-model="form.company_address" placeholder="Alamat Lengkap" />
-                        <InputError :message="form.errors.company_address" />
-                    </div>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="grid gap-2">
-                            <Label for="company_city">Kota</Label>
-                            <Input id="company_city" type="text" v-model="form.company_city" placeholder="Kota" />
-                            <InputError :message="form.errors.company_city" />
-                        </div>
-                        <div class="grid gap-2">
-                            <Label for="company_state">Provinsi</Label>
-                            <Input id="company_state" type="text" v-model="form.company_state" placeholder="Provinsi" />
-                            <InputError :message="form.errors.company_state" />
-                        </div>
-                    </div>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="grid gap-2">
-                            <Label for="company_zip_code">Kode Pos</Label>
-                            <Input id="company_zip_code" type="text" v-model="form.company_zip_code" placeholder="Kode Pos" />
-                            <InputError :message="form.errors.company_zip_code" />
-                        </div>
-                        <div class="grid gap-2">
-                            <Label for="company_country">Negara</Label>
-                            <Input id="company_country" type="text" v-model="form.company_country" placeholder="Negara" />
-                            <InputError :message="form.errors.company_country" />
-                        </div>
+                        <Label for="business_type" class="font-bold">Tipe Bisnis</Label>
+                        <Input id="business_type" type="text" required v-model="form.business_type" placeholder="Contoh: Toko, Restoran, Kafe" class="h-12 rounded-xl" />
+                        <InputError :message="form.errors.business_type" />
                     </div>
                     <div class="grid gap-2">
-                        <Label for="business_type">Tipe Bisnis</Label>
-                        <Input id="business_type" type="text" required v-model="form.business_type" placeholder="e.g., Toko, Restoran, Minimarket" />
-                        <InputError :message="form.errors.business_type" />
+                        <Label for="company_address" class="font-bold">Alamat Bisnis</Label>
+                        <Input id="company_address" type="text" v-model="form.company_address" placeholder="Alamat Lengkap" class="h-12 rounded-xl" />
+                        <InputError :message="form.errors.company_address" />
                     </div>
                 </div>
 
-                <div class="flex justify-between mt-4">
-                    <Button type="button" @click="prevStep" variant="outline">
+                <div class="flex flex-col sm:flex-row gap-3 mt-4">
+                    <Button type="button" @click="prevStep" variant="outline" class="w-full sm:w-1/2 h-12 rounded-xl">
                         Kembali
                     </Button>
-                    <Button type="submit" :disabled="form.processing">
-                        <LoaderCircle v-if="form.processing" class="h-4 w-4 animate-spin" />
+                    <Button type="submit" :disabled="form.processing" class="w-full sm:w-1/2 h-12 rounded-xl bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-200 dark:shadow-none font-bold">
+                        <LoaderCircle v-if="form.processing" class="h-4 w-4 animate-spin mr-2" />
                         Daftar Akun
                     </Button>
                 </div>

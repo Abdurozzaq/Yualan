@@ -58,21 +58,12 @@ const props = defineProps<{
     customers: Customer[];
     tenantSlug: string;
     tenantName: string;
-    ipaymuConfigured: boolean;
-    ipaymuRedirectUrl?: string;
-    midtransConfigured: boolean;
-    midtransClientKey?: string;
     vouchers: Voucher[];
     promos: Promo[];
 }>();
 
 
-// TypeScript: declare window.snap for Snap.js
-declare global {
-    interface Window {
-        snap?: any;
-    }
-}
+
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -358,108 +349,7 @@ const totalAmount = computed(() => {
     return Math.max(0, taxed); // Ensure total is not negative
 });
 
-// Watch totalAmount to update paid_amount if iPaymu is selected
-watch(totalAmount, (newTotal) => {
-    if (form.payment_method === 'ipaymu') {
-        form.paid_amount = newTotal;
-    }
-});
 
-// Watch payment_method to adjust paid_amount
-watch(() => form.payment_method, (newMethod) => {
-    if (newMethod === 'ipaymu') {
-        form.paid_amount = totalAmount.value;
-    } else {
-        // Reset paid_amount if switching back to cash, or keep it if already entered
-        if (form.paid_amount < totalAmount.value) {
-            form.paid_amount = totalAmount.value; // Ensure at least total amount is set for cash
-        }
-    }
-});
-
-
-
-// Load Snap.js script for Midtrans
-onMounted(() => {
-    if (props.midtransConfigured) {
-        if (!document.getElementById('midtrans-snapjs')) {
-            let clientKey = props.midtransClientKey || '';
-            if (!clientKey) {
-                fetch(route('tenant.midtransClientKey', { tenantSlug: props.tenantSlug }))
-                    .then(res => res.json())
-                    .then(data => {
-                        clientKey = data.clientKey || '';
-                        const script = document.createElement('script');
-                        script.id = 'midtrans-snapjs';
-                        script.type = 'text/javascript';
-                        script.src = 'https://app.sandbox.midtrans.com/snap/snap.js';
-                        script.setAttribute('data-client-key', clientKey);
-                        document.body.appendChild(script);
-                    });
-            } else {
-                const script = document.createElement('script');
-                script.id = 'midtrans-snapjs';
-                script.type = 'text/javascript';
-                script.src = 'https://app.sandbox.midtrans.com/snap/snap.js';
-                script.setAttribute('data-client-key', clientKey);
-                document.body.appendChild(script);
-            }
-        }
-    }
-});
-
-const handleMidtransPay = (snapToken: any) => {
-    if (window.snap && snapToken) {
-        const redirectToReceiptByOrderId = (orderId: string) => {
-            if (!orderId) {
-                alert('Order ID tidak ditemukan di response Midtrans.');
-                return;
-            }
-            fetch(route('sales.getSaleIdByOrderId', { tenantSlug: props.tenantSlug, orderId }), {
-                method: 'GET',
-                headers: { 'X-Requested-With': 'XMLHttpRequest' },
-                credentials: 'same-origin',
-            })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.saleId) {
-                        window.location.href = route('sales.receipt', { tenantSlug: props.tenantSlug, sale: data.saleId });
-                    } else {
-                        alert('Tidak dapat menemukan ID penjualan (UUID) dari order_id.');
-                    }
-                })
-                .catch(() => {
-                    alert('Gagal mengambil sales.id dari order_id.');
-                });
-        };
-        window.snap.pay(snapToken, {
-            onSuccess: function(result: any) {
-                if (result && result.order_id) {
-                    redirectToReceiptByOrderId(result.order_id);
-                } else {
-                    alert('Pembayaran berhasil, tetapi order_id tidak ditemukan.');
-                }
-            },
-            onPending: function(result: any) {
-                if (result && result.order_id) {
-                    redirectToReceiptByOrderId(result.order_id);
-                } else {
-                    alert('Pembayaran pending, tetapi order_id tidak ditemukan.');
-                }
-            },
-            onError: function(result: any) {
-                if (result && result.order_id) {
-                    redirectToReceiptByOrderId(result.order_id);
-                } else {
-                    alert('Pembayaran gagal, tetapi order_id tidak ditemukan.');
-                }
-            },
-            onClose: function() {
-                // Optionally handle close event
-            }
-        });
-    }
-};
 
 // Edit mode state: get order id from Inertia page props if present
 const page = usePage();
@@ -746,75 +636,6 @@ const payOrder = async () => {
         showCashModal.value = true;
         return;
     }
-
-    // Non-cash: proses pembayaran sesuai metode
-    form.items = cartItems.value.map(item => ({
-        product_id: item.product_id,
-        quantity: item.quantity,
-    }));
-    form.customer_id = selectedCustomer.value;
-    (form as any).voucher_codes = selectedVoucherCodes.value;
-    (form as any).status = 'paid';
-    (form as any).promo_codes = selectedPromoCodes.value;
-    const id = currentOrderId;
-    if (form.payment_method === 'ipaymu') {
-        form.paid_amount = totalAmount.value;
-        // Kirim request pembayaran iPaymu pakai axios
-        try {
-            const response = await axios.post(route('sales.store', { tenantSlug: props.tenantSlug, id }), {
-                ...form,
-            }, {
-                headers: { 'X-Requested-With': 'XMLHttpRequest' }
-            });
-            if (response.data && response.data.payment_url) {
-                window.location.href = response.data.payment_url;
-            } else {
-                errorDialog.value = {
-                    show: true,
-                    message: 'Gagal mendapatkan URL pembayaran iPaymu.',
-                    info: ''
-                };
-            }
-        } catch (error: any) {
-            let errorMessage = 'Terjadi kesalahan saat membayar order (iPaymu).';
-            if (error.response && error.response.data && error.response.data.errors) {
-                const errors = error.response.data.errors;
-                if (errors.items) errorMessage += '\n' + errors.items;
-                if (errors.paid_amount) errorMessage += '\n' + errors.paid_amount;
-            }
-            alert(errorMessage);
-        } finally {
-            delete (form as any).status;
-            delete (form as any).promo_codes;
-        }
-        return;
-    }
-    if (form.payment_method === 'midtrans') {
-        form.post(route('sales.store', { tenantSlug: props.tenantSlug, id }), {
-            onSuccess: (page: any) => {
-                if (page.props && page.props.snapToken) {
-                    handleMidtransPay(page.props.snapToken);
-                } else {
-                    errorDialog.value = {
-                        show: true,
-                        message: 'Gagal mendapatkan Snap Token Midtrans.',
-                        info: ''
-                    };
-                }
-            },
-            onError: (errors: any) => {
-                let errorMessage = 'Terjadi kesalahan saat membayar order (Midtrans).';
-                if (errors.items) errorMessage += '\n' + errors.items;
-                if (errors.paid_amount) errorMessage += '\n' + errors.paid_amount;
-                alert(errorMessage);
-            },
-            onFinish: () => {
-                delete (form as any).status;
-                delete (form as any).promo_codes;
-            }
-        });
-        return;
-    }
 };
 
 // Proses cash setelah input modal
@@ -967,10 +788,10 @@ const appDomain = import.meta.env.VITE_API_DOMAIN || 'http://localhost:8000';
 
             <!-- Product List Section (Left/Top) -->
             <div :class="['flex-1 bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4 md:p-6 overflow-hidden flex flex-col min-h-[500px]', showMobileCart ? 'hidden lg:flex' : 'flex']">
-                <div class="flex items-center justify-between mb-4">
-                    <h2 class="text-xl md:text-2xl font-bold text-gray-900 dark:text-gray-100">Catalog</h2>
-                    <div class="text-xs text-gray-500 font-medium bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-full lg:hidden">
-                        {{ paginatedProducts.length }} Products Found
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+                    <h2 class="text-xl md:text-2xl font-black text-gray-900 dark:text-gray-100 uppercase tracking-tight">Katalog Produk</h2>
+                    <div class="text-[10px] sm:text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/40 px-3 py-1 rounded-full border border-blue-100 dark:border-blue-800 self-start sm:self-auto">
+                        {{ paginatedProducts.length }} Produk Ditemukan
                     </div>
                 </div>
 
@@ -1306,14 +1127,6 @@ const appDomain = import.meta.env.VITE_API_DOMAIN || 'http://localhost:8000';
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="cash" class="text-sm">Tunai</SelectItem>
-                                <SelectItem value="ipaymu" :disabled="!ipaymuConfigured" class="text-sm">
-                                    iPaymu
-                                    <span v-if="!ipaymuConfigured" class="text-xs text-red-500 ml-1">(×)</span>
-                                </SelectItem>
-                                <SelectItem value="midtrans" :disabled="!midtransConfigured" class="text-sm">
-                                    Midtrans
-                                    <span v-if="!midtransConfigured" class="text-xs text-red-500 ml-1">(×)</span>
-                                </SelectItem>
                             </SelectContent>
                         </Select>
                     </div>

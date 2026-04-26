@@ -99,10 +99,10 @@ const mainNavItems = computed<NavItem[]>(() => {
         items.push({
             title: 'Laporan', // NEW MAIN MENU ITEM
             children: [
-                { title: 'Laba Kotor', href: route('reports.grossProfit', { tenantSlug: tenantSlug.value }) },
-                { title: 'Laba Bersih', href: route('reports.netProfit', { tenantSlug: tenantSlug.value }) },
-                { title: 'Nilai Stok', href: route('reports.stock', { tenantSlug: tenantSlug.value }) },
-                { title: 'Produk Terlaris & Margin', href: route('reports.product-margin', { tenantSlug: tenantSlug.value }) }, // <-- Tambahkan ini
+                { title: 'Laba Kotor', href: route('reports.grossProfit', { tenantSlug: tenantSlug.value }), isLocked: true },
+                { title: 'Laba Bersih', href: route('reports.netProfit', { tenantSlug: tenantSlug.value }), isLocked: true },
+                { title: 'Nilai Stok', href: route('reports.stock', { tenantSlug: tenantSlug.value }), isLocked: true },
+                { title: 'Produk Terlaris & Margin', href: route('reports.product-margin', { tenantSlug: tenantSlug.value }), isLocked: true }, // <-- Tambahkan ini
                 // Laporan Penjualan Detail: Export transaksi penjualan lengkap (per hari/bulan/tahun), termasuk item, metode pembayaran, diskon, pajak, dan kasir.
                 { title: 'Penjualan Detail', href: route('reports.salesDetail', { tenantSlug: tenantSlug.value }) },
                 // Tambahkan link Pembayaran & Piutang
@@ -115,6 +115,7 @@ const mainNavItems = computed<NavItem[]>(() => {
             title: 'Karyawan',
             href: route('employees.index', { tenantSlug: tenantSlug.value }),
             icon: Users,
+            isLocked: true,
         });
     }
 

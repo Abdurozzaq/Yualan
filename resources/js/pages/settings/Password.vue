@@ -60,48 +60,50 @@ const updatePassword = () => {
 
                 <form @submit.prevent="updatePassword" class="space-y-6">
                     <div class="grid gap-2">
-                        <Label for="current_password">Current password</Label>
+                        <Label for="current_password" class="font-bold">Password Saat Ini</Label>
                         <Input
                             id="current_password"
                             ref="currentPasswordInput"
                             v-model="form.current_password"
                             type="password"
-                            class="mt-1 block w-full"
+                            class="mt-1 block w-full h-11 sm:h-10 rounded-xl"
                             autocomplete="current-password"
-                            placeholder="Current password"
+                            placeholder="Password saat ini"
                         />
                         <InputError :message="form.errors.current_password" />
                     </div>
 
                     <div class="grid gap-2">
-                        <Label for="password">New password</Label>
+                        <Label for="password" class="font-bold">Password Baru</Label>
                         <Input
                             id="password"
                             ref="passwordInput"
                             v-model="form.password"
                             type="password"
-                            class="mt-1 block w-full"
+                            class="mt-1 block w-full h-11 sm:h-10 rounded-xl"
                             autocomplete="new-password"
-                            placeholder="New password"
+                            placeholder="Password baru"
                         />
                         <InputError :message="form.errors.password" />
                     </div>
 
                     <div class="grid gap-2">
-                        <Label for="password_confirmation">Confirm password</Label>
+                        <Label for="password_confirmation" class="font-bold">Konfirmasi Password</Label>
                         <Input
                             id="password_confirmation"
                             v-model="form.password_confirmation"
                             type="password"
-                            class="mt-1 block w-full"
+                            class="mt-1 block w-full h-11 sm:h-10 rounded-xl"
                             autocomplete="new-password"
-                            placeholder="Confirm password"
+                            placeholder="Konfirmasi password baru"
                         />
                         <InputError :message="form.errors.password_confirmation" />
                     </div>
 
-                    <div class="flex items-center gap-4">
-                        <Button :disabled="form.processing">Save password</Button>
+                    <div class="flex items-center gap-4 pt-4">
+                        <Button :disabled="form.processing" class="h-12 sm:h-10 px-8 rounded-xl bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-200 dark:shadow-none w-full sm:w-auto">
+                            Simpan Password
+                        </Button>
 
                         <Transition
                             enter-active-class="transition ease-in-out"
@@ -109,7 +111,7 @@ const updatePassword = () => {
                             leave-active-class="transition ease-in-out"
                             leave-to-class="opacity-0"
                         >
-                            <p v-show="form.recentlySuccessful" class="text-sm text-neutral-600">Saved.</p>
+                            <p v-show="form.recentlySuccessful" class="text-sm text-green-600 dark:text-green-400 font-medium">Password berhasil diperbarui.</p>
                         </Transition>
                     </div>
                 </form>

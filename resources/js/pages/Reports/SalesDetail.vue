@@ -193,9 +193,9 @@ function handleSort(column: string) {
                     </div>
                 </div>
             </div>
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 border border-gray-200 dark:border-gray-700 mb-6">
-                <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">Deskripsi Laporan</h3>
-                <p class="text-gray-600 dark:text-gray-400">
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl shadow-gray-100 dark:shadow-none p-8 border border-gray-100 dark:border-gray-700 mb-8 animate-fade-in">
+                <h3 class="text-xl font-black text-gray-900 dark:text-white mb-4">Deskripsi Laporan</h3>
+                <p class="text-gray-600 dark:text-gray-400 leading-relaxed text-lg">
                     Export transaksi penjualan lengkap (per hari/bulan/tahun), termasuk item, metode pembayaran, diskon, pajak, dan kasir. Cocok untuk audit dan rekap keuangan.
                 </p>
             </div>

@@ -1,78 +1,86 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
+import { ShoppingCart, ArrowLeft, HelpCircle } from 'lucide-vue-next';
+
 const appName = import.meta.env.VITE_APP_NAME || 'Yualan POS';
 const faqs = [
   {
     q: 'Apa itu Yualan POS?',
-    a: 'Yualan POS adalah sistem Point of Sale berbasis cloud yang memudahkan pengelolaan bisnis, penjualan, inventaris, dan laporan secara online.'
+    a: 'Yualan POS adalah sistem Point of Sale tercanggih yang memudahkan pengelolaan bisnis, penjualan, inventaris, dan laporan secara real-time.'
   },
   {
-    q: 'Bagaimana cara mendaftar dan mulai menggunakan Yualan POS?',
-    a: 'Klik tombol Daftar di halaman utama, isi data yang diperlukan, dan ikuti instruksi aktivasi melalui email.'
+    q: 'Bagaimana cara mendaftar?',
+    a: 'Klik tombol "Daftar Bisnis" di halaman utama, isi data yang diperlukan, dan Anda bisa langsung mulai mengelola bisnis Anda.'
   },
   {
-    q: 'Apakah data saya aman di Yualan POS?',
-    a: 'Ya, kami menggunakan standar keamanan tinggi dan enkripsi untuk melindungi data bisnis Anda.'
+    q: 'Apakah data saya aman?',
+    a: 'Ya, kami menggunakan infrastruktur cloud enterprise dengan enkripsi tingkat tinggi untuk memastikan seluruh data bisnis Anda tersimpan dengan aman.'
   },
   {
-    q: 'Bagaimana sistem pembayaran dan langganan?',
-    a: 'Pembayaran dilakukan secara online melalui iPaymu. Anda dapat memilih paket langganan sesuai kebutuhan.'
+    q: 'Bagaimana sistem pembayaran?',
+    a: 'Kami mendukung berbagai metode pembayaran otomatis melalui gateway terpercaya untuk memudahkan aktivasi layanan Anda.'
   },
   {
-    q: 'Bagaimana jika saya ingin refund?',
-    a: 'Silakan baca kebijakan refund kami di halaman Refund. Pengajuan refund dapat dilakukan maksimal 3x24 jam setelah pembayaran.'
-  },
-  {
-    q: 'Siapa yang bisa saya hubungi untuk bantuan?',
-    a: 'Anda dapat menghubungi tim support kami melalui email support@yualan.com atau kontak yang tersedia di aplikasi.'
+    q: 'Siapa yang bisa saya hubungi?',
+    a: 'Tim support profesional kami siap membantu Anda 24/7 melalui email support@yualan.com atau melalui help desk di dalam aplikasi.'
   }
 ];
 </script>
+
 <template>
   <Head :title="`FAQ | ${appName}`" />
-  <div class="min-h-screen flex flex-col bg-gradient-to-br from-blue-500 to-indigo-600 text-gray-900 dark:text-gray-100 font-inter">
-    <!-- Hero Section -->
-    <section class="relative flex flex-col items-center justify-center text-center px-4 sm:px-6 lg:px-8 py-24 sm:py-32 md:py-40 text-white overflow-hidden">
-      <div class="absolute inset-0 opacity-20 bg-pattern-dots"></div>
-      <div class="relative z-10 max-w-3xl mx-auto">
-        <h1 class="text-5xl sm:text-6xl font-extrabold leading-tight mb-6 animate-fade-in-up">
-          Frequently Asked <span class="text-yellow-300">Questions</span>
-        </h1>
-        <p class="text-lg sm:text-xl mb-10 opacity-90 animate-fade-in-up delay-200">
-          Temukan jawaban atas pertanyaan umum seputar <span class="font-bold">{{ appName }}</span>.
-        </p>
-      </div>
-    </section>
+  
+  <div class="min-h-screen relative overflow-hidden bg-white dark:bg-gray-950 font-sans flex flex-col items-center px-4 py-20">
+    <!-- Background Elements -->
+    <div class="absolute top-0 left-0 w-full h-full overflow-hidden z-0 pointer-events-none">
+        <div class="absolute -top-[10%] -right-[10%] w-[40%] h-[40%] bg-blue-100/50 dark:bg-blue-900/20 blur-[120px] rounded-full animate-pulse"></div>
+        <div class="absolute -bottom-[10%] -left-[10%] w-[40%] h-[40%] bg-indigo-100/50 dark:bg-indigo-900/20 blur-[120px] rounded-full animate-pulse delay-700"></div>
+    </div>
 
-    <!-- Card Section -->
-    <section class="relative z-10 max-w-3xl mx-auto w-full -mt-32 mb-16 px-4 sm:px-8">
-      <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl p-10 md:p-14 border border-blue-100 dark:border-gray-700 animate-fade-in-up">
-        <div v-for="(item, idx) in faqs" :key="idx" class="mb-10">
-          <h2 class="text-xl font-bold mb-2 text-blue-700 dark:text-yellow-300">Q: {{ item.q }}</h2>
-          <p class="text-gray-700 dark:text-gray-200">A: {{ item.a }}</p>
+    <div class="relative z-10 w-full max-w-3xl mx-auto space-y-12 animate-fade-in">
+        <!-- Header -->
+        <div class="text-center space-y-4">
+            <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-blue-600 shadow-xl shadow-blue-200 dark:shadow-none mb-4">
+                <HelpCircle class="text-white w-8 h-8" />
+            </div>
+            <h1 class="text-4xl sm:text-5xl font-black text-gray-900 dark:text-white tracking-tighter leading-tight">
+                Frequently Asked <span class="text-blue-600">Questions</span>
+            </h1>
+            <p class="text-lg text-gray-600 dark:text-gray-400 font-medium">
+                Temukan jawaban cepat untuk pertanyaan umum seputar {{ appName }}.
+            </p>
         </div>
-      </div>
-      <div class="mt-8 text-center">
-        <Link :href="route('home')" class="inline-block px-8 py-3 rounded-full text-lg font-bold bg-indigo-600 text-white hover:bg-indigo-700 transition-all duration-300 shadow-xl transform hover:scale-105">Kembali ke Beranda</Link>
-      </div>
-    </section>
+
+        <!-- FAQ Cards -->
+        <div class="space-y-4">
+            <div v-for="(item, idx) in faqs" :key="idx" class="bg-white dark:bg-gray-900 rounded-2xl p-6 sm:p-8 border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-md transition-shadow">
+                <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-3 flex items-start gap-3">
+                    <span class="text-blue-600 font-black">Q:</span>
+                    {{ item.q }}
+                </h2>
+                <p class="text-gray-600 dark:text-gray-400 leading-relaxed pl-8 border-l-2 border-gray-100 dark:border-gray-800">
+                    {{ item.a }}
+                </p>
+            </div>
+        </div>
+
+        <!-- Call to Action -->
+        <div class="text-center pt-8">
+            <Link :href="route('home')" class="group inline-flex items-center justify-center gap-2 px-10 py-4 rounded-2xl text-lg font-bold bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:bg-blue-600 dark:hover:bg-blue-600 dark:hover:text-white transition-all duration-300 shadow-xl active:scale-95">
+                <ArrowLeft class="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+                Kembali ke Beranda
+            </Link>
+        </div>
+    </div>
   </div>
 </template>
-<style scoped>
-@keyframes fadeInFromBottom {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+
+<style>
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
 }
-.animate-fade-in-up {
-  animation: fadeInFromBottom 0.8s ease-out forwards;
+.animate-fade-in {
+    animation: fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
-.animate-fade-in-up.delay-200 {
-  animation-delay: 0.2s;
-}
-.bg-pattern-dots {
-  background-image: radial-gradient(currentColor 1px, transparent 1px);
-  background-size: 20px 20px;
-  color: rgba(255,255,255,0.1);
-}
-.font-inter { font-family: 'Inter', sans-serif; }
 </style>

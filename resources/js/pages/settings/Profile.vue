@@ -49,21 +49,21 @@ const submit = () => {
 
                 <form @submit.prevent="submit" class="space-y-6">
                     <div class="grid gap-2">
-                        <Label for="name">Name</Label>
-                        <Input id="name" class="mt-1 block w-full" v-model="form.name" required autocomplete="name" placeholder="Full name" />
+                        <Label for="name" class="font-bold">Nama Lengkap</Label>
+                        <Input id="name" class="mt-1 block w-full h-11 sm:h-10 rounded-xl" v-model="form.name" required autocomplete="name" placeholder="Nama lengkap Anda" />
                         <InputError class="mt-2" :message="form.errors.name" />
                     </div>
 
                     <div class="grid gap-2">
-                        <Label for="email">Email address</Label>
+                        <Label for="email" class="font-bold">Alamat Email</Label>
                         <Input
                             id="email"
                             type="email"
-                            class="mt-1 block w-full"
+                            class="mt-1 block w-full h-11 sm:h-10 rounded-xl"
                             v-model="form.email"
                             required
                             autocomplete="username"
-                            placeholder="Email address"
+                            placeholder="Alamat email"
                         />
                         <InputError class="mt-2" :message="form.errors.email" />
                     </div>
@@ -86,8 +86,10 @@ const submit = () => {
                         </div>
                     </div>
 
-                    <div class="flex items-center gap-4">
-                        <Button :disabled="form.processing">Save</Button>
+                    <div class="flex items-center gap-4 pt-4">
+                        <Button :disabled="form.processing" class="h-12 sm:h-10 px-8 rounded-xl bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-200 dark:shadow-none w-full sm:w-auto">
+                            Simpan Profil
+                        </Button>
 
                         <Transition
                             enter-active-class="transition ease-in-out"
@@ -95,7 +97,7 @@ const submit = () => {
                             leave-active-class="transition ease-in-out"
                             leave-to-class="opacity-0"
                         >
-                            <p v-show="form.recentlySuccessful" class="text-sm text-neutral-600">Saved.</p>
+                            <p v-show="form.recentlySuccessful" class="text-sm text-green-600 dark:text-green-400 font-medium">Profil berhasil diperbarui.</p>
                         </Transition>
                     </div>
                 </form>
