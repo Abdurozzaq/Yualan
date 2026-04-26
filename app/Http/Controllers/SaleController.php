@@ -247,9 +247,9 @@ class SaleController extends Controller {
         }
         if ($search) {
             $query->where(function($q) use ($search) {
-                $q->where('name', 'like', '%' . $search . '%')
-                  ->orWhere('unit', 'like', '%' . $search . '%')
-                  ->orWhere('sku', 'like', '%' . $search . '%');
+                $q->where('name', 'ILIKE', '%' . $search . '%')
+                  ->orWhere('unit', 'ILIKE', '%' . $search . '%')
+                  ->orWhere('sku', 'ILIKE', '%' . $search . '%');
             });
         }
         $products = $query->with('category')->orderBy($sortField, $sortDirection)->paginate($perPage, ['*'], 'page', $page);

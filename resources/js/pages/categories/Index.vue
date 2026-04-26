@@ -226,49 +226,49 @@ const applySearch = () => {
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full flex-1 flex-col gap-4 rounded-xl p-4 overflow-x-auto">
-            <div class="flex items-center justify-between mb-4">
-                <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+                <h1 class="text-xl md:text-2xl font-black text-gray-900 dark:text-gray-100">
                     Master Kategori {{ tenantName ? `(${tenantName})` : '' }}
                 </h1>
-                <Button @click="openFormDialog()" class="flex items-center gap-2">
-                    <PlusCircle class="h-4 w-4" />
-                    Tambah Kategori
-                </Button>
+                <div class="flex flex-col sm:flex-row gap-2">
+                    <Button @click="openFormDialog()" class="flex items-center justify-center gap-2 h-11 sm:h-10 rounded-xl shadow-lg shadow-blue-200 dark:shadow-none bg-blue-600 hover:bg-blue-700">
+                        <PlusCircle class="h-4 w-4" />
+                        Tambah Kategori
+                    </Button>
+                </div>
             </div>
 
             <!-- Filter and Search Section -->
-            <div class="flex flex-col sm:flex-row items-center gap-4 mb-4">
-                <div class="relative w-full sm:w-1/2 md:w-1/3">
+            <div class="flex flex-col sm:flex-row items-center gap-4 mb-6 bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
+                <div class="relative w-full sm:flex-grow">
                     <Search class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
                     <Input
                         type="text"
                         placeholder="Cari kategori..."
                         v-model="currentSearch"
                         @input="applySearch"
-                        class="pl-9 pr-3 py-2 rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 focus:ring-blue-500 focus:border-blue-500"
+                        class="pl-9 pr-3 h-11 sm:h-10 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 focus:ring-blue-500 focus:border-blue-500 shadow-sm w-full"
                     />
                 </div>
-                <div class="w-full sm:w-auto">
+                <div class="flex items-center gap-2 w-full sm:w-auto">
                     <Select v-model="currentFilterField">
-                        <SelectTrigger class="w-full sm:w-[180px]">
-                            <SelectValue placeholder="Filter Berdasarkan" />
+                        <SelectTrigger class="flex-grow sm:flex-grow-0 sm:w-[160px] h-11 sm:h-10 rounded-xl bg-white dark:bg-gray-900 shadow-sm">
+                            <SelectValue placeholder="Berdasarkan" />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="name">Nama Kategori</SelectItem>
+                            <SelectItem value="name">Nama</SelectItem>
                             <SelectItem value="description">Deskripsi</SelectItem>
                         </SelectContent>
                     </Select>
-                </div>
-                <div class="w-full sm:w-auto">
                     <Select v-model.number="currentPerPage">
-                        <SelectTrigger class="w-full sm:w-[100px]">
-                            <SelectValue placeholder="Per Halaman" />
+                        <SelectTrigger class="w-[100px] h-11 sm:h-10 rounded-xl bg-white dark:bg-gray-900 shadow-sm">
+                            <SelectValue placeholder="Hal" />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem :value="5">5</SelectItem>
-                            <SelectItem :value="10">10</SelectItem>
-                            <SelectItem :value="25">25</SelectItem>
-                            <SelectItem :value="50">50</SelectItem>
+                            <SelectItem :value="5">5 / Hal</SelectItem>
+                            <SelectItem :value="10">10 / Hal</SelectItem>
+                            <SelectItem :value="25">25 / Hal</SelectItem>
+                            <SelectItem :value="50">50 / Hal</SelectItem>
                         </SelectContent>
                     </Select>
                 </div>
@@ -362,17 +362,17 @@ const applySearch = () => {
                 </DialogHeader>
                 <form @submit.prevent="submitForm" class="grid gap-4 py-4">
                     <div class="grid gap-2">
-                        <Label for="name">Nama Kategori</Label>
-                        <Input id="name" v-model="form.name" required />
+                        <Label for="name" class="font-bold">Nama Kategori</Label>
+                        <Input id="name" v-model="form.name" required class="h-11 sm:h-10 rounded-xl" />
                         <InputError :message="form.errors.name" />
                     </div>
                     <div class="grid gap-2">
-                        <Label for="description">Deskripsi (Opsional)</Label>
-                        <Textarea id="description" v-model="form.description" rows="3" />
+                        <Label for="description" class="font-bold">Deskripsi (Opsional)</Label>
+                        <Textarea id="description" v-model="form.description" rows="3" class="rounded-xl" />
                         <InputError :message="form.errors.description" />
                     </div>
-                    <DialogFooter>
-                        <Button type="submit" :disabled="form.processing">
+                    <DialogFooter class="mt-4">
+                        <Button type="submit" :disabled="form.processing" class="w-full h-12 sm:h-10 rounded-xl bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-200 dark:shadow-none">
                             <LoaderCircle v-if="form.processing" class="h-4 w-4 animate-spin mr-2" />
                             Simpan Kategori
                         </Button>

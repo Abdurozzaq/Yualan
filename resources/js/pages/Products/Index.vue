@@ -474,16 +474,16 @@ const appDomain = import.meta.env.VITE_API_DOMAIN || 'http://localhost:8000';
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full flex-1 flex-col gap-4 rounded-xl p-4 overflow-x-auto">
-            <div class="flex items-center justify-between mb-4">
-                <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+                <h1 class="text-xl md:text-2xl font-black text-gray-900 dark:text-gray-100">
                     Master Produk {{ tenantName ? `(${tenantName})` : '' }}
                 </h1>
-                <div class="flex gap-2">
-                    <Button @click="openFormDialog()" class="flex items-center gap-2">
+                <div class="flex flex-col sm:flex-row gap-2">
+                    <Button @click="openFormDialog()" class="flex items-center justify-center gap-2 h-11 sm:h-10 rounded-xl shadow-lg shadow-blue-200 dark:shadow-none bg-blue-600 hover:bg-blue-700">
                         <PlusCircle class="h-4 w-4" />
                         Tambah Produk
                     </Button>
-                    <Button @click="openImportDialog" variant="outline" class="flex items-center gap-2">
+                    <Button @click="openImportDialog" variant="outline" class="flex items-center justify-center gap-2 h-11 sm:h-10 rounded-xl border-2">
                         <UploadCloud class="h-4 w-4" />
                         Import Excel
                     </Button>
@@ -491,21 +491,21 @@ const appDomain = import.meta.env.VITE_API_DOMAIN || 'http://localhost:8000';
             </div>
 
             <!-- Filter and Search Section -->
-            <div class="flex flex-col sm:flex-row items-center gap-4 mb-4">
-                <div class="relative w-full sm:w-1/2 md:w-1/3">
+            <div class="flex flex-col sm:flex-row items-center gap-4 mb-6 bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
+                <div class="relative w-full sm:flex-grow">
                     <Search class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
                     <Input
                         type="text"
                         placeholder="Cari produk..."
                         v-model="currentSearch"
                         @input="applySearch"
-                        class="pl-9 pr-3 py-2 rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 focus:ring-blue-500 focus:border-blue-500"
+                        class="pl-9 pr-3 h-11 sm:h-10 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 focus:ring-blue-500 focus:border-blue-500 shadow-sm w-full"
                     />
                 </div>
-                <div class="w-full sm:w-auto">
+                <div class="flex items-center gap-2 w-full sm:w-auto">
                     <Select v-model="currentFilterField">
-                        <SelectTrigger class="w-full sm:w-[180px]">
-                            <SelectValue placeholder="Filter Berdasarkan" />
+                        <SelectTrigger class="flex-grow sm:flex-grow-0 sm:w-[160px] h-11 sm:h-10 rounded-xl bg-white dark:bg-gray-900 shadow-sm">
+                            <SelectValue placeholder="Berdasarkan" />
                         </SelectTrigger>
                         <SelectContent>
                             <SelectItem value="name">Nama Produk</SelectItem>
@@ -515,17 +515,15 @@ const appDomain = import.meta.env.VITE_API_DOMAIN || 'http://localhost:8000';
                             <SelectItem value="ingredients">Bahan-bahan</SelectItem>
                         </SelectContent>
                     </Select>
-                </div>
-                <div class="w-full sm:w-auto">
                     <Select v-model.number="currentPerPage">
-                        <SelectTrigger class="w-full sm:w-[100px]">
-                            <SelectValue placeholder="Per Halaman" />
+                        <SelectTrigger class="w-[100px] h-11 sm:h-10 rounded-xl bg-white dark:bg-gray-900 shadow-sm">
+                            <SelectValue placeholder="Hal" />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem :value="5">5</SelectItem>
-                            <SelectItem :value="10">10</SelectItem>
-                            <SelectItem :value="25">25</SelectItem>
-                            <SelectItem :value="50">50</SelectItem>
+                            <SelectItem :value="5">5 / Hal</SelectItem>
+                            <SelectItem :value="10">10 / Hal</SelectItem>
+                            <SelectItem :value="25">25 / Hal</SelectItem>
+                            <SelectItem :value="50">50 / Hal</SelectItem>
                         </SelectContent>
                     </Select>
                 </div>
@@ -674,16 +672,16 @@ const appDomain = import.meta.env.VITE_API_DOMAIN || 'http://localhost:8000';
                     </DialogDescription>
                 </DialogHeader>
                 <form @submit.prevent="submitForm" class="grid gap-4 py-4">
-                    <div class="grid grid-cols-4 items-center gap-4">
-                        <Label for="name" class="text-right">Nama Produk</Label>
-                        <Input id="name" v-model="form.name" required class="col-span-3" />
-                        <InputError :message="form.errors.name" class="col-span-4 col-start-2" />
+                    <div class="grid grid-cols-1 sm:grid-cols-4 sm:items-center gap-2 sm:gap-4">
+                        <Label for="name" class="sm:text-right font-bold">Nama Produk</Label>
+                        <Input id="name" v-model="form.name" required class="sm:col-span-3 h-11 sm:h-10 rounded-xl" />
+                        <InputError :message="form.errors.name" class="sm:col-span-3 sm:col-start-2" />
                     </div>
 
-                    <div class="grid grid-cols-4 items-center gap-4">
-                            <Label for="category_id" class="text-right">Kategori</Label>
+                    <div class="grid grid-cols-1 sm:grid-cols-4 sm:items-center gap-2 sm:gap-4">
+                            <Label for="category_id" class="sm:text-right font-bold">Kategori</Label>
                             <Select v-model="form.category_id">
-                                <SelectTrigger class="col-span-3">
+                                <SelectTrigger class="sm:col-span-3 h-11 sm:h-10 rounded-xl">
                                 <SelectValue placeholder="Pilih Kategori (Opsional)" />
                             </SelectTrigger>
                             <SelectContent>
@@ -693,43 +691,43 @@ const appDomain = import.meta.env.VITE_API_DOMAIN || 'http://localhost:8000';
                                 </SelectItem>
                             </SelectContent>
                         </Select>
-                        <InputError :message="form.errors.category_id" class="col-span-4 col-start-2" />
+                        <InputError :message="form.errors.category_id" class="sm:col-span-3 sm:col-start-2" />
                     </div>
 
-                    <div class="grid grid-cols-4 items-center gap-4">
-                        <Label for="sku" class="text-right">SKU (Opsional)</Label>
-                        <Input id="sku" v-model="form.sku" class="col-span-3" />
-                        <InputError :message="form.errors.sku" class="col-span-4 col-start-2" />
+                    <div class="grid grid-cols-1 sm:grid-cols-4 sm:items-center gap-2 sm:gap-4">
+                        <Label for="sku" class="sm:text-right font-bold">SKU (Opsional)</Label>
+                        <Input id="sku" v-model="form.sku" class="sm:col-span-3 h-11 sm:h-10 rounded-xl" />
+                        <InputError :message="form.errors.sku" class="sm:col-span-3 sm:col-start-2" />
                     </div>
 
-                    <div class="grid grid-cols-4 items-center gap-4">
-                        <Label for="description" class="text-right">Deskripsi (Opsional)</Label>
-                        <Textarea id="description" v-model="form.description" rows="3" class="col-span-3" />
-                        <InputError :message="form.errors.description" class="col-span-4 col-start-2" />
+                    <div class="grid grid-cols-1 sm:grid-cols-4 sm:items-start gap-2 sm:gap-4">
+                        <Label for="description" class="sm:text-right font-bold sm:mt-2">Deskripsi</Label>
+                        <Textarea id="description" v-model="form.description" rows="3" class="sm:col-span-3 rounded-xl" />
+                        <InputError :message="form.errors.description" class="sm:col-span-3 sm:col-start-2" />
                     </div>
 
-                    <div class="grid grid-cols-4 items-center gap-4">
-                        <Label for="price" class="text-right">Harga Jual</Label>
-                        <Input id="price" type="number" step="0.01" v-model.number="form.price" required class="col-span-3" min="0" />
-                        <InputError :message="form.errors.price" class="col-span-4 col-start-2" />
+                    <div class="grid grid-cols-1 sm:grid-cols-4 sm:items-center gap-2 sm:gap-4">
+                        <Label for="price" class="sm:text-right font-bold">Harga Jual</Label>
+                        <Input id="price" type="number" step="0.01" v-model.number="form.price" required class="sm:col-span-3 h-11 sm:h-10 rounded-xl" min="0" />
+                        <InputError :message="form.errors.price" class="sm:col-span-3 sm:col-start-2" />
                     </div>
 
-                    <div class="grid grid-cols-4 items-center gap-4">
-                        <Label for="cost_price" class="text-right">Harga Pokok</Label>
-                        <Input id="cost_price" type="number" step="0.01" v-model.number="form.cost_price" required class="col-span-3" min="0" />
-                        <InputError :message="form.errors.cost_price" class="col-span-4 col-start-2" />
+                    <div class="grid grid-cols-1 sm:grid-cols-4 sm:items-center gap-2 sm:gap-4">
+                        <Label for="cost_price" class="sm:text-right font-bold">Harga Pokok</Label>
+                        <Input id="cost_price" type="number" step="0.01" v-model.number="form.cost_price" required class="sm:col-span-3 h-11 sm:h-10 rounded-xl" min="0" />
+                        <InputError :message="form.errors.cost_price" class="sm:col-span-3 sm:col-start-2" />
                     </div>
 
-                    <div class="grid grid-cols-4 items-center gap-4">
-                        <Label for="stock" class="text-right">Stok</Label>
-                        <Input readonly ="stock" type="number" v-model.number="form.stock" required class="col-span-3" min="0" />
-                        <InputError :message="form.errors.stock" class="col-span-4 col-start-2" />
+                    <div class="grid grid-cols-1 sm:grid-cols-4 sm:items-center gap-2 sm:gap-4">
+                        <Label for="stock" class="sm:text-right font-bold">Stok</Label>
+                        <Input readonly ="stock" type="number" v-model.number="form.stock" required class="sm:col-span-3 h-11 sm:h-10 rounded-xl" min="0" />
+                        <InputError :message="form.errors.stock" class="sm:col-span-3 sm:col-start-2" />
                     </div>
 
-                    <div class="grid grid-cols-4 items-center gap-4">
-                        <Label for="unit" class="text-right">Unit (Opsional)</Label>
+                    <div class="grid grid-cols-1 sm:grid-cols-4 sm:items-center gap-2 sm:gap-4">
+                        <Label for="unit" class="sm:text-right font-bold">Unit</Label>
                         <Select v-model="form.unit">
-                            <SelectTrigger class="col-span-3">
+                            <SelectTrigger class="sm:col-span-3 h-11 sm:h-10 rounded-xl">
                                 <SelectValue placeholder="Pilih Satuan" />
                             </SelectTrigger>
                             <SelectContent>
@@ -738,27 +736,27 @@ const appDomain = import.meta.env.VITE_API_DOMAIN || 'http://localhost:8000';
                                 </template>
                             </SelectContent>
                         </Select>
-                        <InputError :message="form.errors.unit" class="col-span-4 col-start-2" />
+                        <InputError :message="form.errors.unit" class="sm:col-span-3 sm:col-start-2" />
                     </div>
 
-                    <div class="grid grid-cols-4 items-center gap-4">
-                        <Label for="image" class="text-right">Gambar (Opsional)</Label>
-                        <div class="col-span-3 flex flex-col gap-2">
-                            <Input id="image" type="file" @change="handleImageChange" accept="image/*" class="col-span-3" />
+                    <div class="grid grid-cols-1 sm:grid-cols-4 sm:items-start gap-2 sm:gap-4">
+                        <Label for="image" class="sm:text-right font-bold sm:mt-2">Gambar</Label>
+                        <div class="sm:col-span-3 flex flex-col gap-2">
+                            <Input id="image" type="file" @change="handleImageChange" accept="image/*" class="h-11 sm:h-10 rounded-xl pt-2" />
                             <InputError :message="form.errors.image" />
-                            <div v-if="imagePreviewUrl" class="relative w-32 h-32 border rounded-md overflow-hidden bg-gray-100 dark:bg-gray-700">
+                            <div v-if="imagePreviewUrl" class="relative w-32 h-32 border-2 rounded-2xl overflow-hidden bg-gray-50 dark:bg-gray-700 shadow-sm">
                                 <img v-if="imagePreviewUrl" :src="imagePreviewUrl" alt="Image Preview" class="w-full h-full object-cover" />
                                 <Button
                                     type="button"
                                     variant="destructive"
                                     size="icon"
-                                    class="absolute top-1 right-1 h-6 w-6 rounded-full"
+                                    class="absolute top-1 right-1 h-7 w-7 rounded-full shadow-lg"
                                     @click="clearImage"
                                 >
                                     <XCircle class="h-4 w-4" />
                                 </Button>
                             </div>
-                            <p v-else class="text-sm text-muted-foreground">Tidak ada gambar yang dipilih.</p>
+                            <p v-else class="text-xs text-muted-foreground italic">Opsional: Tambahkan foto produk</p>
                         </div>
                     </div>
 
@@ -771,14 +769,14 @@ const appDomain = import.meta.env.VITE_API_DOMAIN || 'http://localhost:8000';
                         <InputError :message="form.errors.is_food_item" class="col-span-4 col-start-2" />
                     </div> -->
 
-                    <div v-if="form.is_food_item" class="grid grid-cols-4 items-center gap-4">
-                        <Label for="ingredients" class="text-right">Bahan-bahan (Opsional)</Label>
-                        <Textarea id="ingredients" v-model="form.ingredients" rows="3" class="col-span-3" placeholder="Daftar bahan-bahan, pisahkan dengan koma." />
-                        <InputError :message="form.errors.ingredients" class="col-span-4 col-start-2" />
+                    <div v-if="form.is_food_item" class="grid grid-cols-1 sm:grid-cols-4 sm:items-start gap-2 sm:gap-4">
+                        <Label for="ingredients" class="sm:text-right font-bold sm:mt-2">Bahan-bahan</Label>
+                        <Textarea id="ingredients" v-model="form.ingredients" rows="3" class="sm:col-span-3 rounded-xl" placeholder="Daftar bahan-bahan, pisahkan dengan koma." />
+                        <InputError :message="form.errors.ingredients" class="sm:col-span-3 sm:col-start-2" />
                     </div>
 
-                    <DialogFooter>
-                        <Button type="submit" :disabled="form.processing">
+                    <DialogFooter class="mt-4 gap-2 flex-col sm:flex-row">
+                        <Button type="submit" :disabled="form.processing" class="w-full sm:w-auto h-12 sm:h-10 rounded-xl bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-200 dark:shadow-none">
                             <LoaderCircle v-if="form.processing" class="h-4 w-4 animate-spin mr-2" />
                             Simpan Produk
                         </Button>

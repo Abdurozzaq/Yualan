@@ -51,25 +51,7 @@ Route::get('/', function () {
         ]);
     }
 
-    $plans = PricingPlan::query()
-        ->select([
-            'id',
-            'plan_name',
-            'plan_description',
-            'period_type',
-            'price',
-            'discount_percentage'
-        ])
-        ->orderBy('period_type')
-        ->orderBy('price')
-        ->get();
-
-    $trialDays = SaasSetting::get('trial_days', 'INTERNAL');
-
-    return Inertia::render('Welcome', [
-        'pricingPlans' => $plans,
-        'trialDays' => $trialDays,
-    ]);
+    return Inertia::render('Welcome');
 
 })->name('home');
 
@@ -78,18 +60,7 @@ Route::get('/file/products/{folder}/{filename}', [FileController::class, 'showPr
 // Midtrans Payment
 // Route::post('/{tenantSlug}/midtrans/pay', [MidtransController::class, 'pay'])->name('midtrans.pay');
 Route::post('/midtrans/callback', [SaleController::class, 'midtransNotify'])->name('midtrans.callback');
-// Informational pages (FAQ, Terms, Refund)
-Route::get('faq', function () {
-    return Inertia::render('Faq');
-})->name('faq');
-
-Route::get('terms', function () {
-    return Inertia::render('Terms');
-})->name('terms');
-
-Route::get('refund', function () {
-    return Inertia::render('Refund');
-})->name('refund');
+// Informational pages removed as per request
 
 Route::middleware('guest')->group(function () {
     Route::get('register', [RegisteredUserController::class, 'create'])
@@ -154,22 +125,17 @@ Route::middleware('auth')->group(function () {
      * This route is crucial for directing users after login/registration.
      */
     Route::get('/dashboard', function () {
-        // Eager load the tenant relationship to ensure it's available
         $user = \Illuminate\Support\Facades\Auth::user();
         if ($user) {
-            // Ensure $user is an Eloquent model instance
             $user = \App\Models\User::find($user->id);
             $user->load('tenant');
         }
 
-        // Prioritize redirect for Superadmin
-        if ($user && $user->role === 'superadmin') {
-            return redirect()->route('superadmin.dashboard');
-        }
-        // Redirect for regular tenant users
+        // Redirect for tenant users to Cashier
         if ($user && $user->tenant_id && ($tenant = $user->tenant) && $tenant->is_active) {
-            return redirect()->route('tenant.dashboard', ['tenantSlug' => $tenant->slug]);
+            return redirect()->route('sales.order', ['tenantSlug' => $tenant->slug]);
         }
+        
         // Fallback for users not assigned to any active tenant
         return Inertia::render('TenantUnassigned');
     })->name('dashboard.default');
@@ -179,26 +145,7 @@ Route::middleware('auth')->group(function () {
      */
 
 
-    /**
-     * START
-     * ############### SUPERADMIN AREA ###############
-     * Moved above USER AREA to prevent route conflicts.
-     */
 
-    // Rute khusus untuk Superadmin Dashboard
-    Route::get('/superadmin/dashboard', [SuperadminDashboardController::class, 'index'])
-        ->middleware(['superadmin.access'])->name('superadmin.dashboard');
-
-    // Superadmin Pricing Plans CRUD
-    Route::middleware(['superadmin.access'])->prefix('superadmin')->name('superadmin.')->group(function () {
-        Route::get('pricing', [PricingPlanController::class, 'index'])->name('pricing.index');
-        Route::post('pricing', [PricingPlanController::class, 'store'])->name('pricing.store');
-        Route::put('pricing/{pricing}', [PricingPlanController::class, 'update'])->name('pricing.update');
-        Route::delete('pricing/{pricing}', [PricingPlanController::class, 'destroy'])->name('pricing.destroy');
-
-        Route::get('settings', [\App\Http\Controllers\Superadmin\SaasSettingsController::class, 'index'])->name('settings.index');
-        Route::post('settings', [\App\Http\Controllers\Superadmin\SaasSettingsController::class, 'store'])->name('settings.store');
-    });
 
 
     /**

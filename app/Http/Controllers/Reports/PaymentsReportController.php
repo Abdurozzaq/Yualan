@@ -17,12 +17,13 @@ class PaymentsReportController extends Controller
 
         // Filter
         $filterType = $request->input('filterType', 'all');
-        $filterDate = $request->input('filterDate', date('Y-m-d'));
+        $filterDate = $request->input('filterDate'); // Default null untuk tampilkan semua
 
         // Ambil data pembayaran dan piutang
         $payments = DB::table('sales')
             ->leftJoin('customers', 'sales.customer_id', '=', 'customers.id')
             ->where('sales.tenant_id', $tenant->id)
+            ->whereNull('sales.deleted_at') // Pastikan tidak ambil yang sudah dihapus
             ->when($filterDate, function ($q) use ($filterDate) {
                 $q->whereDate('sales.created_at', $filterDate);
             })

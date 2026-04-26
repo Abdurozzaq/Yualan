@@ -90,61 +90,63 @@ const submit = () => {
     <AuthBase :title="authBaseTitle" :description="authBaseDescription">
         <Head title="Tenant Tidak Terhubung" />
 
-        <div class="flex flex-col items-center justify-center text-center gap-4 p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
+        <div class="flex flex-col items-center justify-center text-center gap-4 p-8 bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700">
 
             <!-- Conditional message for inactive tenant -->
-            <div v-if="isTenantInactive" class="text-center">
-                <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-2">
-                    Tenant Anda Telah Dinonaktifkan
+            <div v-if="isTenantInactive" class="text-center w-full max-w-sm">
+                <h2 class="text-2xl font-black text-gray-900 dark:text-gray-100 mb-4">
+                    Akses Bisnis Dinonaktifkan
                 </h2>
-                <p class="text-gray-600 dark:text-gray-400 mb-4">
-                    Mohon maaf, akses Anda ke tenant <strong>{{ user?.tenant?.name }}</strong> telah dinonaktifkan.
-                    Silakan hubungi support <strong>{{ appName }}</strong> untuk informasi lebih lanjut atau untuk mengaktifkan kembali tenant Anda.
+                <p class="text-gray-600 dark:text-gray-400 mb-6 leading-relaxed">
+                    Mohon maaf, akses Anda ke bisnis <strong class="text-blue-600 dark:text-blue-400">{{ user?.tenant?.name }}</strong> telah dinonaktifkan.
+                    Silakan hubungi administrator atau support <strong class="text-gray-900 dark:text-gray-100">{{ appName }}</strong> untuk mengaktifkan kembali.
                 </p>
                 <!-- Tombol Logout jika tenant tidak aktif -->
-                <Button :as="Link" :href="route('logout')" method="post" class="w-full mt-4">
-                    Logout
+                <Button :as="Link" :href="route('logout')" method="post" class="w-full h-12 rounded-xl bg-red-600 hover:bg-red-700 shadow-lg shadow-red-200 dark:shadow-none font-bold">
+                    Keluar Sesi
                 </Button>
             </div>
 
             <!-- Original content for unassigned tenant -->
-            <div v-else class="text-center">
-                <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-200">
-                    Anda Belum Masuk ke Tenant Mana Pun
+            <div v-else class="text-center w-full max-w-sm">
+                <h2 class="text-2xl font-black text-gray-900 dark:text-gray-100 mb-4">
+                    Bisnis Belum Terhubung
                 </h2>
-                <p class="text-gray-600 dark:text-gray-400 mb-4">
-                    Silakan hubungi pemilik tenant Anda untuk mendapatkan kode undangan. Setelah itu, masukkan kode tersebut di bawah ini bersama dengan email Anda untuk mendapatkan akses.
+                <p class="text-gray-600 dark:text-gray-400 mb-8 leading-relaxed">
+                    Silakan hubungi pemilik bisnis untuk mendapatkan kode undangan, lalu masukkan di bawah ini.
                 </p>
 
-                <form @submit.prevent="submit" class="w-full max-w-sm mt-4 space-y-4">
-                    <div class="grid gap-2">
-                        <Label for="invitation_code">Kode Undangan Tenant</Label>
+                <form @submit.prevent="submit" class="w-full space-y-5">
+                    <div class="grid gap-2 text-left">
+                        <Label for="invitation_code" class="font-bold text-sm ml-1">Kode Undangan Bisnis</Label>
                         <Input
                             id="invitation_code"
                             type="text"
-                            placeholder="Masukkan kode undangan tenant Anda"
+                            placeholder="Masukkan kode undangan"
                             v-model="form.invitation_code"
                             required
                             autofocus
+                            class="h-12 rounded-xl border-gray-300 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900 focus:ring-blue-500"
                         />
                         <InputError :message="form.errors.invitation_code" />
                     </div>
 
-                    <div class="grid gap-2">
-                        <Label for="email">Alamat Email Anda</Label>
+                    <div class="grid gap-2 text-left">
+                        <Label for="email" class="font-bold text-sm ml-1">Alamat Email Terdaftar</Label>
                         <Input
                             id="email"
                             type="email"
-                            placeholder="Masukkan email yang terdaftar"
+                            placeholder="nama@email.com"
                             v-model="form.email"
                             required
+                            class="h-12 rounded-xl border-gray-300 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900 focus:ring-blue-500"
                         />
                         <InputError :message="form.errors.email" />
                     </div>
 
-                    <Button type="submit" class="w-full mt-4" :disabled="form.processing">
+                    <Button type="submit" class="w-full h-12 rounded-xl bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-200 dark:shadow-none font-bold mt-2" :disabled="form.processing">
                         <LoaderCircle v-if="form.processing" class="h-4 w-4 animate-spin mr-2" />
-                        Kirim Kode Tenant
+                        Hubungkan Sekarang
                     </Button>
                 </form>
             </div>

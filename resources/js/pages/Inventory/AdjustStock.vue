@@ -102,34 +102,37 @@ const submitAdjustStock = () => {
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full flex-1 flex-col gap-4 rounded-xl p-4 overflow-x-auto">
-            <div class="flex items-center justify-between mb-4">
-                <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+                <h1 class="text-xl md:text-2xl font-black text-gray-900 dark:text-gray-100">
                     Penyesuaian Stok {{ tenantName ? `(${tenantName})` : '' }}
                 </h1>
             </div>
 
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 max-w-2xl mx-auto w-full">
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl shadow-gray-100 dark:shadow-none p-8 max-w-2xl mx-auto w-full border border-gray-100 dark:border-gray-700 animate-fade-in">
                 <form @submit.prevent="submitAdjustStock" class="grid gap-6">
                     <div class="grid gap-2">
-                        <Label for="product_id">Produk</Label>
-                            <div class="relative">
+                        <Label for="product_search" class="font-bold text-gray-700 dark:text-gray-300">Produk</Label>
+                            <div class="relative w-full">
+                                <Search class="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                                 <Input
                                     id="product_search"
                                     v-model="productSearch"
-                                    placeholder="Cari produk..."
+                                    placeholder="Cari nama produk..."
                                     autocomplete="off"
+                                    class="pl-10 h-12 rounded-xl text-lg border-gray-200 dark:border-gray-700 shadow-sm"
                                 />
-                                <div v-if="productSearch.length >= 2 && showProductDropdown" class="absolute z-10 bg-white border rounded w-full mt-1 shadow-lg max-h-60 overflow-auto">
-                                    <div v-if="searchingProduct" class="p-2 text-sm text-gray-500">Mencari...</div>
+                                <div v-if="productSearch.length >= 2 && showProductDropdown" class="absolute z-50 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl w-full mt-2 shadow-2xl max-h-72 overflow-auto">
+                                    <div v-if="searchingProduct" class="p-4 text-sm text-gray-500 animate-pulse">Mencari...</div>
                                     <template v-else>
-                                        <div v-if="productResults.length === 0" class="p-2 text-sm text-gray-500">Produk tidak ditemukan</div>
+                                        <div v-if="productResults.length === 0" class="p-4 text-sm text-gray-500">Produk tidak ditemukan</div>
                                         <div
                                             v-for="product in productResults"
                                             :key="product.id"
                                             @click="form.product_id = product.id; productSearch = product.name; showProductDropdown = false"
-                                            class="p-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+                                            class="p-4 cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/30 border-b border-gray-100 dark:border-gray-800 last:border-0 transition-colors"
                                         >
-                                            {{ product.name }} (Stok Saat Ini: {{ product.stock }}, HPP: {{ formatCurrency(product.cost_price) }})
+                                            <div class="font-bold text-gray-900 dark:text-gray-100">{{ product.name }}</div>
+                                            <div class="text-sm text-gray-500 dark:text-gray-400">Stok: {{ product.stock }} | HPP: {{ formatCurrency(product.cost_price) }}</div>
                                         </div>
                                     </template>
                                 </div>
@@ -138,37 +141,39 @@ const submitAdjustStock = () => {
                     </div>
 
                     <div class="grid gap-2">
-                        <Label for="quantity_change">Perubahan Kuantitas</Label>
+                        <Label for="quantity_change" class="font-bold text-gray-700 dark:text-gray-300">Perubahan Kuantitas</Label>
                         <Input
                             id="quantity_change"
                             type="number"
                             v-model.number="form.quantity_change"
                             required
-                            placeholder="Masukkan angka positif untuk menambah, negatif untuk mengurangi"
+                            placeholder="Contoh: 5 atau -3"
+                            class="h-11 sm:h-12 rounded-xl text-lg"
                         />
                         <InputError :message="form.errors.quantity_change" />
-                        <p class="text-sm text-muted-foreground">
-                            Masukkan nilai positif untuk menambah stok, atau nilai negatif untuk mengurangi stok.
-                            Misalnya, `5` untuk menambah 5 unit, atau `-3` untuk mengurangi 3 unit.
+                        <p class="text-xs sm:text-sm text-muted-foreground bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg border border-blue-100 dark:border-blue-900/30">
+                            <strong>Tips:</strong> Masukkan nilai positif (+) untuk menambah stok (misal: barang datang), atau nilai negatif (-) untuk mengurangi stok (misal: barang rusak/hilang).
                         </p>
                     </div>
 
                     <div class="grid gap-2">
-                        <Label for="reason">Alasan Penyesuaian</Label>
+                        <Label for="reason" class="font-bold text-gray-700 dark:text-gray-300">Alasan Penyesuaian</Label>
                         <Textarea
                             id="reason"
                             v-model="form.reason"
                             rows="3"
                             required
                             placeholder="Misalnya: Koreksi stok fisik, kerusakan barang, kehilangan, dll."
+                            class="rounded-xl p-4"
                         />
                         <InputError :message="form.errors.reason" />
                     </div>
-
-                    <Button type="submit" :disabled="form.processing">
-                        <LoaderCircle v-if="form.processing" class="h-4 w-4 animate-spin mr-2" />
-                        Catat Penyesuaian
-                    </Button>
+                    <div class="pt-4">
+                        <Button type="submit" :disabled="form.processing" class="w-full h-14 sm:h-12 rounded-xl text-lg font-bold bg-blue-600 hover:bg-blue-700 shadow-xl shadow-blue-200 dark:shadow-none transition-all active:scale-95">
+                            <LoaderCircle v-if="form.processing" class="h-5 w-5 animate-spin mr-2" />
+                            Catat Penyesuaian
+                        </Button>
+                    </div>
                 </form>
             </div>
         </div>

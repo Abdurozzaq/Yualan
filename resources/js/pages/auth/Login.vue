@@ -38,7 +38,7 @@ const submit = () => {
         <form @submit.prevent="submit" class="flex flex-col gap-6">
             <div class="grid gap-6">
                 <div class="grid gap-2">
-                    <Label for="email">Email address</Label>
+                    <Label for="email" class="font-bold">Alamat Email</Label>
                     <Input
                         id="email"
                         type="email"
@@ -48,15 +48,16 @@ const submit = () => {
                         autocomplete="email"
                         v-model="form.email"
                         placeholder="email@example.com"
+                        class="h-12 rounded-xl"
                     />
                     <InputError :message="form.errors.email" />
                 </div>
 
                 <div class="grid gap-2">
                     <div class="flex items-center justify-between">
-                        <Label for="password">Password</Label>
-                        <TextLink v-if="canResetPassword" :href="route('password.request')" class="text-sm" :tabindex="5">
-                            Forgot password?
+                        <Label for="password" class="font-bold">Password</Label>
+                        <TextLink v-if="canResetPassword" :href="route('password.request')" class="text-xs font-medium text-blue-600 hover:text-blue-500" :tabindex="5">
+                            Lupa password?
                         </TextLink>
                     </div>
                     <Input
@@ -67,6 +68,7 @@ const submit = () => {
                         autocomplete="current-password"
                         v-model="form.password"
                         placeholder="Password"
+                        class="h-12 rounded-xl"
                     />
                     <InputError :message="form.errors.password" />
                 </div>
@@ -78,9 +80,9 @@ const submit = () => {
                     </Label>
                 </div>
 
-                <Button type="submit" class="mt-4 w-full" :tabindex="4" :disabled="form.processing">
-                    <LoaderCircle v-if="form.processing" class="h-4 w-4 animate-spin" />
-                    Log in
+                <Button type="submit" class="mt-4 w-full h-12 rounded-xl bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-200 dark:shadow-none font-bold" :tabindex="4" :disabled="form.processing">
+                    <LoaderCircle v-if="form.processing" class="h-4 w-4 animate-spin mr-2" />
+                    Masuk Sekarang
                 </Button>
             </div>
 

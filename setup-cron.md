@@ -1,6 +1,4 @@
-# Setup Cron Job untuk Laravel Scheduler
-
-## 1. Di Server Linux/Unix
+## 1. Di Server Linux/Unix (Produksi)
 
 Buka crontab:
 ```bash
@@ -12,62 +10,25 @@ Tambahkan baris ini:
 * * * * * cd /path/to/yualan && php artisan schedule:run >> /dev/null 2>&1
 ```
 
-Ganti `/path/to/yualan` dengan path absolut ke project Anda.
+Ganti `/path/to/yualan` dengan path absolut ke project Anda di server.
 
-## 2. Di Server Windows
+## 2. Di Lingkungan Windows (Development)
 
-### Menggunakan Task Scheduler:
+Untuk Windows, Anda dapat menggunakan Task Scheduler atau PowerShell script untuk menjalankan scheduler setiap menit guna mensimulasikan lingkungan produksi.
 
-1. Buka "Task Scheduler" dari Start Menu
-2. Klik "Create Basic Task"
-3. Nama: "Laravel Yualan Scheduler"
-4. Trigger: "Daily" 
-5. Start time: 00:00
-6. Repeat task every: 1 minute
-7. Action: "Start a program"
-8. Program: `C:\php\php.exe` (path ke PHP)
-9. Arguments: `artisan schedule:run`
-10. Start in: `Q:\PROJECTS\yualan` (path ke project)
-
-### Atau menggunakan PowerShell Script:
-
-Buat file `run-scheduler.ps1`:
-```powershell
-Set-Location "Q:\PROJECTS\yualan"
-php artisan schedule:run
-```
-
-Lalu setup Task Scheduler untuk menjalankan PowerShell script ini setiap menit.
-
-## 3. Testing Cron Job
-
-Test manual:
+## 3. Verifikasi
+Test secara manual untuk memastikan scheduler terhubung ke database dengan benar:
 ```bash
-cd Q:\PROJECTS\yualan
 php artisan schedule:run
 ```
 
-Lihat log:
+Lihat daftar tugas yang dijadwalkan:
 ```bash
 php artisan schedule:list
 ```
 
-## 4. Monitoring
+## 4. Penting
+- Pastikan versi PHP CLI sama dengan versi PHP yang digunakan oleh web server.
+- Pastikan user yang menjalankan cron memiliki izin tulis ke folder `storage`.
 
-Cek log Laravel:
-```bash
-tail -f storage/logs/laravel.log
-```
-
-Cek apakah command berjalan:
-```bash
-php artisan yualan:check-pending-transactions --dry-run
-```
-
-## 5. Production Tips
-
-- Pastikan PHP CLI tersedia di PATH
-- Set proper file permissions
-- Monitor disk space untuk log files
-- Setup log rotation
-- Test cron job setelah deploy
+**Created Under PT. Nusavasoft Digital Solutions**

@@ -1,11 +1,4 @@
 <script setup lang="ts">
-// TypeScript: declare window.snap for Snap.js
-declare global {
-    interface Window {
-        snap?: any;
-    }
-}
-
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router } from '@inertiajs/vue3'; // Import router
@@ -142,28 +135,22 @@ const cancelPendingOrder = () => {
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full flex-1 flex-col gap-4 rounded-xl p-4 overflow-x-auto">
-            <div class="flex items-center justify-between mb-4 print:hidden">
-                <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 print:hidden">
+                <h1 class="text-xl md:text-2xl font-black text-gray-900 dark:text-gray-100">
                     Resi Penjualan
                 </h1>
-                <div class="flex gap-2">
-                    <!-- <Button v-if="showPayNowButton" @click="reinitiateIpaymuPayment" class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white">
-                        <Wallet class="h-4 w-4" /> Bayar Sekarang (iPaymu)
-                    </Button> -->
-                    <!-- <Button v-if="showMidtransRetryButton" @click="retryMidtransPayment" class="flex items-center gap-2 bg-orange-600 hover:bg-orange-700 text-white">
-                        <Wallet class="h-4 w-4" /> Bayar Ulang (Midtrans)
-                    </Button> -->
-                    <Button v-if="showCancelOrderButton" @click="cancelPendingOrder" class="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white">
-                        <XCircle class="h-4 w-4" /> Batalkan Pesanan
+                <div class="flex flex-col sm:flex-row gap-2">
+                    <Button v-if="showCancelOrderButton" @click="cancelPendingOrder" class="w-full sm:w-auto h-11 sm:h-10 rounded-xl bg-red-600 hover:bg-red-700 text-white shadow-lg shadow-red-200 dark:shadow-none transition-all active:scale-95">
+                        <XCircle class="h-4 w-4 mr-2" /> Batalkan Pesanan
                     </Button>
-                    <Button v-if="sale.status === 'completed'" @click="printReceiptThermal" class="flex items-center gap-2">
-                        <Printer class="h-4 w-4" /> Cetak Resi (Thermal)
+                    <Button v-if="sale.status === 'completed'" @click="printReceiptThermal" class="w-full sm:w-auto h-11 sm:h-10 rounded-xl bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-200 dark:shadow-none transition-all active:scale-95">
+                        <Printer class="h-4 w-4 mr-2" /> Cetak Resi (Thermal)
                     </Button>
-                    <Button v-if="sale.status === 'completed'" @click="printReceipt" class="flex items-center gap-2">
-                        <Printer class="h-4 w-4" /> Cetak Resi (PDF)
+                    <Button v-if="sale.status === 'completed'" @click="printReceipt" class="w-full sm:w-auto h-11 sm:h-10 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-200 dark:shadow-none transition-all active:scale-95">
+                        <Printer class="h-4 w-4 mr-2" /> Cetak Resi (PDF)
                     </Button>
-                    <Link v-if="sale.status !== 'completed'" :href="route('sales.order', { tenantSlug: props.tenantSlug, orderId: props.sale.id })">
-                        <Button variant="outline">
+                    <Link v-if="sale.status !== 'completed'" :href="route('sales.order', { tenantSlug: props.tenantSlug, orderId: props.sale.id })" class="w-full sm:w-auto">
+                        <Button variant="outline" class="w-full h-11 sm:h-10 rounded-xl font-bold transition-all active:scale-95">
                             Kembali ke Pemesanan
                         </Button>
                     </Link>

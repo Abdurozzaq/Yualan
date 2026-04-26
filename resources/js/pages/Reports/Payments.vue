@@ -58,7 +58,7 @@ function handleSort(column: string) {
 
 // Filter
 const filterType = ref<'all' | 'paid' | 'outstanding'>('all');
-const filterDate = ref<string>(new Date().toISOString().slice(0, 10));
+const filterDate = ref<string>('');
 
 function updateFilter() {
     router.get(
@@ -173,37 +173,57 @@ const exportToExcel = async () => {
     <Head title="Laporan Pembayaran & Piutang" />
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full flex-1 flex-col gap-4 rounded-xl p-4 overflow-x-auto">
-            <div class="flex items-center justify-between mb-4">
-                <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                    Laporan Pembayaran & Piutang {{ tenantName ? `(${tenantName})` : '' }}
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+                <h1 class="text-xl md:text-2xl font-black text-gray-900 dark:text-gray-100">
+                    Pembayaran & Piutang {{ tenantName ? `(${tenantName})` : '' }}
                 </h1>
-                <button @click="exportToExcel" class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-lg shadow">
+                <button @click="exportToExcel" class="w-full sm:w-auto h-11 sm:h-10 rounded-xl bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-200 dark:shadow-none flex items-center justify-center gap-2 font-bold text-white transition-all active:scale-95">
                     <FileText class="h-5 w-5" />
                     Export Excel
                 </button>
             </div>
             <!-- Filter Section -->
-            <div class="flex items-center gap-4 mb-4">
-                <label class="font-semibold">Status:</label>
-                <select v-model="filterType" class="border rounded px-2 py-1">
-                    <option value="all">Semua</option>
-                    <option value="paid">Lunas</option>
-                    <option value="outstanding">Belum Lunas</option>
-                </select>
-                <label class="font-semibold">Tanggal:</label>
-                <input
-                    type="date"
-                    v-model="filterDate"
-                    class="border rounded px-2 py-1"
-                />
+            <div class="flex flex-col sm:flex-row items-center gap-4 mb-6 bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
+                <div class="flex items-center gap-3 w-full sm:w-auto">
+                    <label class="font-bold uppercase tracking-wider text-[10px] text-gray-500 whitespace-nowrap">Status:</label>
+                    <select v-model="filterType" class="flex-grow sm:flex-grow-0 h-11 sm:h-10 px-4 border rounded-xl bg-white dark:bg-gray-900 text-sm shadow-sm outline-none cursor-pointer">
+                        <option value="all">Semua</option>
+                        <option value="paid">Lunas</option>
+                        <option value="outstanding">Belum Lunas</option>
+                    </select>
+                </div>
+                <div class="flex items-center gap-3 w-full sm:w-auto">
+                    <label class="font-bold uppercase tracking-wider text-[10px] text-gray-500 whitespace-nowrap">Tanggal:</label>
+                    <input
+                        type="date"
+                        v-model="filterDate"
+                        class="flex-grow sm:flex-grow-0 h-11 sm:h-10 px-4 border rounded-xl bg-white dark:bg-gray-900 text-sm shadow-sm outline-none"
+                    />
+                </div>
             </div>
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 border border-gray-200 dark:border-gray-700 mb-6">
-                <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">Deskripsi Laporan</h3>
-                <p class="text-gray-600 dark:text-gray-400">
+            <!-- Summary Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mb-8">
+                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl shadow-gray-100 dark:shadow-none p-8 border border-gray-100 dark:border-gray-700 transition-transform hover:scale-[1.02] duration-300">
+                    <h3 class="text-xs font-black text-gray-400 dark:text-gray-500 mb-2 uppercase tracking-widest">Total Penjualan</h3>
+                    <p class="text-2xl font-black text-blue-600 dark:text-blue-400">{{ formatCurrency(summary.totalAmount) }}</p>
+                </div>
+                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl shadow-gray-100 dark:shadow-none p-8 border border-gray-100 dark:border-gray-700 transition-transform hover:scale-[1.02] duration-300">
+                    <h3 class="text-xs font-black text-gray-400 dark:text-gray-500 mb-2 uppercase tracking-widest">Total Terbayar</h3>
+                    <p class="text-2xl font-black text-green-600 dark:text-green-400">{{ formatCurrency(summary.totalPaid) }}</p>
+                </div>
+                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl shadow-gray-100 dark:shadow-none p-8 border border-gray-100 dark:border-gray-700 transition-transform hover:scale-[1.02] duration-300">
+                    <h3 class="text-xs font-black text-gray-400 dark:text-gray-500 mb-2 uppercase tracking-widest">Total Piutang (Outstanding)</h3>
+                    <p class="text-2xl font-black text-red-600 dark:text-red-400">{{ formatCurrency(summary.totalOutstanding) }}</p>
+                </div>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl shadow-gray-100 dark:shadow-none p-8 border border-gray-100 dark:border-gray-700 mb-8 animate-fade-in">
+                <h3 class="text-xl font-black text-gray-900 dark:text-white mb-4">Deskripsi Laporan</h3>
+                <p class="text-gray-600 dark:text-gray-400 leading-relaxed text-lg">
                     Laporan pembayaran dan piutang, menampilkan status pembayaran, customer, invoice, jumlah terbayar, dan outstanding. Cocok untuk monitoring cashflow dan penagihan.
                 </p>
             </div>
-            <div class="rounded-lg border bg-white dark:bg-gray-800 shadow-sm overflow-hidden">
+            <div class="rounded-2xl border bg-white dark:bg-gray-800 shadow-sm overflow-hidden">
                 <Table>
                     <TableHeader>
                         <TableRow>
