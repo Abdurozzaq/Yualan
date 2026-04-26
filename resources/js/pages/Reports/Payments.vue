@@ -58,7 +58,7 @@ function handleSort(column: string) {
 
 // Filter
 const filterType = ref<'all' | 'paid' | 'outstanding'>('all');
-const filterDate = ref<string>(new Date().toISOString().slice(0, 10));
+const filterDate = ref<string>('');
 
 function updateFilter() {
     router.get(

@@ -60,18 +60,7 @@ Route::get('/file/products/{folder}/{filename}', [FileController::class, 'showPr
 // Midtrans Payment
 // Route::post('/{tenantSlug}/midtrans/pay', [MidtransController::class, 'pay'])->name('midtrans.pay');
 Route::post('/midtrans/callback', [SaleController::class, 'midtransNotify'])->name('midtrans.callback');
-// Informational pages (FAQ, Terms, Refund)
-Route::get('faq', function () {
-    return Inertia::render('Faq');
-})->name('faq');
-
-Route::get('terms', function () {
-    return Inertia::render('Terms');
-})->name('terms');
-
-Route::get('refund', function () {
-    return Inertia::render('Refund');
-})->name('refund');
+// Informational pages removed as per request
 
 Route::middleware('guest')->group(function () {
     Route::get('register', [RegisteredUserController::class, 'create'])

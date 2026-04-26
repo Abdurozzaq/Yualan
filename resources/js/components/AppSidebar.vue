@@ -150,7 +150,7 @@ const { state } = useSidebar(); // state: ComputedRef<'expanded' | 'collapsed'>
                 <SidebarMenuItem>
                     <SidebarMenuButton style="margin-left: -8px;" size="lg" as-child>
                         <Link :href="tenantSlug ? route('tenant.dashboard', { tenantSlug: tenantSlug }) : route('dashboard.default')">
-                            <AppLogo class="w-10 h-10" />
+                            <AppLogo />
                         </Link>
                     </SidebarMenuButton>
                 </SidebarMenuItem>

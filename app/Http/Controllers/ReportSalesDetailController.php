@@ -14,7 +14,7 @@ class ReportSalesDetailController extends Controller
 {
     public function index(Request $request, $tenantSlug)
     {
-        $filterType = $request->input('filterType', 'day');
+        $filterType = $request->input('filterType', 'all'); // Default ke 'all' agar tidak kosong
         $filterDate = $request->input('filterDate', date('Y-m-d'));
 
         // Ambil tenant berdasarkan slug
@@ -23,20 +23,23 @@ class ReportSalesDetailController extends Controller
         // Filter tanggal
         $query = Sale::where('tenant_id', $tenant->id);
 
-        $date = date('Y-m-d', strtotime($filterDate));
         if ($filterType === 'day') {
+            $date = date('Y-m-d', strtotime($filterDate));
             $query->whereDate('created_at', $date);
         } elseif ($filterType === 'week') {
-            $week = date('W', strtotime($filterDate));
-            $year = date('Y', strtotime($filterDate));
+            $date = date('Y-m-d', strtotime($filterDate));
+            $week = date('W', strtotime($date));
+            $year = date('Y', strtotime($date));
             $query->whereRaw("EXTRACT('week' FROM created_at) = ?", [$week])
                   ->whereRaw("EXTRACT('year' FROM created_at) = ?", [$year]);
         } elseif ($filterType === 'month') {
-            $month = date('m', strtotime($filterDate));
-            $year = date('Y', strtotime($filterDate));
+            $date = date('Y-m-d', strtotime($filterDate));
+            $month = date('m', strtotime($date));
+            $year = date('Y', strtotime($date));
             $query->whereMonth('created_at', $month)
                   ->whereYear('created_at', $year);
         }
+        // Jika 'all', tidak tambah constraint tanggal
 
         $sales = $query->with(['user', 'saleItems.product'])->orderBy('created_at', 'desc')->get();
 

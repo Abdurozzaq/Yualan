@@ -94,7 +94,7 @@ const exportToExcel = async () => {
     XLSX.writeFile(wb, `Laporan_Penjualan_Detail_${props.tenantName || 'Toko'}.xlsx`);
 };
 
-const filterType = ref<'day' | 'week' | 'month'>('day');
+const filterType = ref<'all' | 'day' | 'week' | 'month'>('all');
 const filterDate = ref<string>(new Date().toISOString().slice(0, 10)); // default hari ini
 const sortBy = ref<string>('date');
 const sortDirection = ref<'asc' | 'desc'>('desc');
@@ -168,6 +168,7 @@ function handleSort(column: string) {
                     <label class="font-black text-blue-900 dark:text-blue-300">Periode:</label>
                     <div class="flex flex-wrap items-center gap-2">
                         <select v-model="filterType" class="h-11 sm:h-10 border rounded-xl px-4 py-1 bg-white text-gray-900 dark:bg-gray-900 dark:text-gray-100 shadow-sm focus:ring-2 focus:ring-blue-500 transition-all">
+                            <option value="all">Semua</option>
                             <option value="day">Hari</option>
                             <option value="week">Minggu</option>
                             <option value="month">Bulan</option>

@@ -1,75 +1,95 @@
 <script setup lang="ts">
 import { Head, Link, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
-import { ShoppingCart, ArrowRight, UserPlus, LogIn } from 'lucide-vue-next';
+import { ShoppingCart, ArrowRight, UserPlus, LogIn, Server, Zap } from 'lucide-vue-next';
 
-const appName = import.meta.env.VITE_APP_NAME || 'Yualan POS';
+const appName = "Yualan Community Edition";
+const subName = "Dedicated Enterprise";
 
 const page = usePage();
 const isAuthenticated = computed(() => !!page.props.auth?.user);
 </script>
 
 <template>
-    <Head :title="`Selamat Datang di ${appName}`" />
+    <Head title="Yualan Community Edition - Dedicated Enterprise" />
 
-    <div class="min-h-screen relative overflow-hidden bg-white dark:bg-gray-950 font-sans flex flex-col justify-center items-center px-4">
-        <!-- Background Elements -->
-        <div class="absolute top-0 left-0 w-full h-full overflow-hidden z-0 pointer-events-none">
-            <div class="absolute -top-[10%] -left-[10%] w-[40%] h-[40%] bg-blue-100/50 dark:bg-blue-900/20 blur-[120px] rounded-full animate-pulse"></div>
-            <div class="absolute -bottom-[10%] -right-[10%] w-[40%] h-[40%] bg-indigo-100/50 dark:bg-indigo-900/20 blur-[120px] rounded-full animate-pulse delay-700"></div>
+    <div class="min-h-screen relative overflow-hidden bg-gray-50 dark:bg-gray-950 font-sans flex flex-col justify-center items-center px-4">
+        <!-- Subtle Background -->
+        <div class="absolute top-0 left-0 w-full h-full overflow-hidden z-0 pointer-events-none opacity-50">
+            <div class="absolute -top-[10%] -left-[10%] w-[50%] h-[50%] bg-blue-100 dark:bg-blue-900/10 blur-[120px] rounded-full"></div>
+            <div class="absolute -bottom-[10%] -right-[10%] w-[50%] h-[50%] bg-indigo-100 dark:bg-indigo-900/10 blur-[120px] rounded-full"></div>
         </div>
 
-        <div class="relative z-10 w-full max-w-4xl mx-auto text-center space-y-12 animate-fade-in">
-            <!-- Logo/Icon Section -->
-            <div class="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-blue-600 shadow-2xl shadow-blue-200 dark:shadow-none mb-4 transform hover:scale-105 transition-transform duration-300">
-                <ShoppingCart class="text-white w-10 h-10" />
-            </div>
-
-            <div class="space-y-4">
-                <h1 class="text-4xl sm:text-6xl md:text-7xl font-black text-gray-900 dark:text-white tracking-tighter leading-tight">
-                    Kelola Bisnis Lebih <br/> 
-                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">Mudah & Profesional</span>
+        <div class="relative z-10 w-full max-w-3xl mx-auto text-center space-y-10 animate-fade-in">
+            <!-- Branding -->
+            <div class="space-y-6">
+                <div class="inline-flex items-center gap-3 bg-white dark:bg-gray-900 px-6 py-3 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 mb-4">
+                    <Server class="w-5 h-5 text-blue-600" />
+                    <span class="text-sm font-black uppercase tracking-widest text-gray-900 dark:text-gray-100">{{ subName }}</span>
+                </div>
+                
+                <h1 class="text-5xl sm:text-7xl font-black text-gray-900 dark:text-white tracking-tighter leading-tight">
+                    {{ appName }}
                 </h1>
-                <p class="text-lg sm:text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto font-medium leading-relaxed">
-                    Solusi Point of Sale tercanggih untuk UMKM hingga Enterprise. 
-                    Mulai transformasi bisnis Anda bersama <span class="font-bold text-gray-900 dark:text-white">{{ appName }}</span>.
+                
+                <p class="text-xl text-gray-600 dark:text-gray-400 max-w-xl mx-auto leading-relaxed">
+                    Solusi Point of Sale mandiri yang tangguh untuk bisnis skala enterprise yang menginginkan kontrol penuh atas data dan infrastruktur.
                 </p>
             </div>
 
-            <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <!-- Main Actions -->
+            <div class="flex flex-col sm:flex-row gap-4 justify-center items-center pt-4">
                 <template v-if="isAuthenticated">
                     <Link
                         :href="route('dashboard.default')"
-                        class="group w-full sm:w-auto px-10 py-4 rounded-2xl text-lg font-bold bg-blue-600 text-white hover:bg-blue-700 transition-all duration-300 shadow-xl shadow-blue-200 dark:shadow-none flex items-center justify-center gap-2 active:scale-95"
+                        class="group w-full sm:w-auto px-10 py-5 rounded-2xl text-xl font-black bg-blue-600 text-white hover:bg-blue-700 transition-all duration-300 shadow-2xl shadow-blue-200 dark:shadow-none flex items-center justify-center gap-2 active:scale-95"
                     >
                         Masuk ke Dashboard
-                        <ArrowRight class="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                        <ArrowRight class="w-6 h-6 group-hover:translate-x-1 transition-transform" />
                     </Link>
                 </template>
 
                 <template v-else>
                     <Link
                         href="/login"
-                        class="group w-full sm:w-auto px-10 py-4 rounded-2xl text-lg font-bold bg-blue-600 text-white hover:bg-blue-700 transition-all duration-300 shadow-xl shadow-blue-200 dark:shadow-none flex items-center justify-center gap-2 active:scale-95"
+                        class="group w-full sm:w-auto px-10 py-5 rounded-2xl text-xl font-black bg-blue-600 text-white hover:bg-blue-700 transition-all duration-300 shadow-2xl shadow-blue-200 dark:shadow-none flex items-center justify-center gap-3 active:scale-95"
                     >
-                        <LogIn class="w-5 h-5" />
-                        Masuk Sekarang
+                        <LogIn class="w-6 h-6" />
+                        Masuk
                     </Link>
                     <Link
                         href="/register"
-                        class="group w-full sm:w-auto px-10 py-4 rounded-2xl text-lg font-bold bg-white dark:bg-gray-900 text-gray-900 dark:text-white border-2 border-gray-100 dark:border-gray-800 hover:border-blue-600 dark:hover:border-blue-500 transition-all duration-300 flex items-center justify-center gap-2 active:scale-95"
+                        class="group w-full sm:w-auto px-10 py-5 rounded-2xl text-xl font-black bg-white dark:bg-gray-900 text-gray-900 dark:text-white border-2 border-gray-200 dark:border-gray-800 hover:border-blue-600 dark:hover:border-blue-500 transition-all duration-300 flex items-center justify-center gap-3 active:scale-95"
                     >
-                        <UserPlus class="w-5 h-5" />
-                        Daftar Bisnis
+                        <UserPlus class="w-6 h-6" />
+                        Daftar Baru
                     </Link>
                 </template>
             </div>
 
-            <!-- Footer Links -->
-            <div class="pt-8 border-t border-gray-100 dark:border-gray-900 flex flex-wrap justify-center gap-x-8 gap-y-4 text-sm font-bold text-gray-400 dark:text-gray-600">
-                <Link :href="route('faq')" class="hover:text-blue-600 transition-colors">FAQ</Link>
-                <Link :href="route('terms')" class="hover:text-blue-600 transition-colors">Syarat & Ketentuan</Link>
-                <Link :href="route('refund')" class="hover:text-blue-600 transition-colors">Kebijakan Refund</Link>
+            <!-- Premium Upsell -->
+            <div class="pt-10">
+                <div class="inline-block p-1 rounded-[2rem] bg-gradient-to-r from-amber-200 via-orange-300 to-amber-200 dark:from-amber-900/50 dark:to-orange-900/50 shadow-lg">
+                    <div class="bg-white dark:bg-gray-950 rounded-[1.8rem] px-8 py-6 flex flex-col md:flex-row items-center gap-6">
+                        <div class="w-12 h-12 rounded-2xl bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center flex-shrink-0">
+                            <Zap class="w-6 h-6 text-amber-600 dark:text-amber-400 fill-amber-600 dark:fill-amber-400" />
+                        </div>
+                        <div class="text-left">
+                            <h4 class="font-black text-gray-900 dark:text-white text-lg">Malas Setup Server Sendiri?</h4>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Pilih <strong>Yualan Premium</strong> untuk solusi terima beres tanpa ribet.</p>
+                        </div>
+                        <a href="https://yualan.web.id" target="_blank" class="w-full md:w-auto px-6 py-3 rounded-xl bg-gray-900 dark:bg-white text-white dark:text-gray-950 font-bold text-sm hover:scale-105 transition-transform active:scale-95 whitespace-nowrap">
+                            Pilih Yualan Premium
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="pt-12 border-t border-gray-100 dark:border-gray-900">
+                <p class="text-xs font-black uppercase tracking-[0.3em] text-gray-400 dark:text-gray-600">
+                    Created Under <span class="text-blue-600 dark:text-blue-400">PT. Nusavasoft Digital Solutions</span>
+                </p>
             </div>
         </div>
     </div>
@@ -77,10 +97,10 @@ const isAuthenticated = computed(() => !!page.props.auth?.user);
 
 <style>
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(20px); }
+    from { opacity: 0; transform: translateY(30px); }
     to { opacity: 1; transform: translateY(0); }
 }
 .animate-fade-in {
-    animation: fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    animation: fadeIn 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 </style>
