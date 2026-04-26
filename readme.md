@@ -1,106 +1,100 @@
-# 🚀 Yualan POS (Community Edition)
+# 🚀 Yualan Community Edition (Dedicated Enterprise)
 
 ![Yualan POS Banner](https://github.com/user-attachments/assets/1057787c-9f71-444e-ab98-86a7fdea9b69)
 
-**Open Source Point of Sale untuk Belajar, Eksperimen, dan Implementasi Dasar**
+**Solusi Point of Sale (POS) Mandiri untuk Instansi Tunggal yang Mengutamakan Kendali Penuh atas Data dan Infrastruktur.**
 
 ---
 
-## 👋 Tentang Yualan POS Community Edition
+## 👋 Tentang Yualan Community Edition
 
-**Yualan POS Community Edition (CE)** adalah versi **open source** dari Yualan POS yang dirilis untuk **komunitas, pembelajaran, riset, dan penggunaan internal skala kecil**.
+**Yualan Community Edition (Dedicated Enterprise)** adalah platform POS *self-hosted* yang dirancang khusus bagi pemilik bisnis dan organisasi yang membutuhkan otoritas mutlak atas basis data mereka. 
 
-Versi ini cocok untuk:
-- Developer yang ingin belajar arsitektur POS modern
-- Kampus / sekolah / lab praktikum
-- UMKM untuk uji coba internal
-- Proof of Concept (PoC) atau demo
+Sistem ini ideal bagi instansi yang:
+- Menginginkan kedaulatan data penuh tanpa ketergantungan pada pihak ketiga.
+- Memerlukan akses database langsung untuk integrasi sistem internal.
+- Memiliki tim IT mandiri yang mampu mengelola infrastruktur server pribadi.
+- Membutuhkan performa tinggi melalui alokasi sumber daya server yang berdedikasi.
 
-⚠️ **Untuk penggunaan bisnis serius dan operasional harian, gunakan versi Premium:**  
-👉 https://yualan.web.id
+### 🖼️ Preview Antarmuka
+![Dashboard Preview](public/dashboard.png)
+*Tampilan Dashboard Analytics*
 
----
-
-## ✨ Fitur Utama (Community Edition)
-
-### 🛍️ Manajemen Penjualan Lengkap
-- **Checkout Cepat** - Proses transaksi dalam hitungan detik
-- **Multi-Metode Pembayaran** - Tunai, QRIS, E-Wallet (iPaymu & Midtrans)
-- **Manajemen Produk** - Kelola SKU, kategori, harga, dan stok dengan mudah
-- **Customer Management** - Bangun database pelanggan dan loyalitas
-
-### 📊 Manajemen Inventaris Cerdas
-- **Real-Time Stock Tracking** - Pantau stok secara live across semua outlet
-- **Supplier Management** - Kelola rantai pasokan dengan efisien
-- **Stock Adjustment** - Koreksi stok dengan antarmuka intuitif
-- **Inventory Reports** - Laporan nilai stok dan pergerakan barang
-
-### 👥 Multi-Level Access Control
-- **Superadmin** - Kontrol penuh atas seluruh sistem dan tenant
-- **Admin/Pemilik Toko** - Kelola operasional toko dan laporan keuangan
-- **Kasir** - Akses terbatas untuk transaksi harian
-
-### 🧱 Teknologi
-- Laravel 12 + PHP 8.2+
-- Vue 3 + Inertia
-- Tailwind CSS
-- Multi-tenant (basic)
+![Ordering Preview](public/ordering.png)
+*Antarmuka Point of Sale (POS)*
 
 ---
 
-## ⚠️ LIMITASI COMMUNITY EDITION
+## ✨ Fitur Utama
 
-### 🔄 Update & Maintenance
-- Update resmi **1x dalam 1 tahun**
-- Tidak ada security patch prioritas
-- Tidak ada SLA
+### 🛒 Operasional Kasir & Penjualan
+- **Transaksi Cepat & Responsif** - Dioptimalkan untuk alur kerja yang padat.
+- **Manajemen Produk Enterprise** - Dukungan SKU, kategori kompleks, dan manajemen unit barang.
+- **Voucher & Promosi** - Sistem manajemen promo mandiri untuk meningkatkan loyalitas pelanggan.
+- **Customer CRM** - Kelola database pelanggan Anda sendiri secara privat.
 
-### 🧑‍💻 Support
-- Tidak ada support teknis
-- Tidak ada onboarding
-- Dokumentasi terbatas
+### 📦 Inventaris & Rantai Pasokan
+- **Stock Card Real-Time** - Pantau histori pergerakan barang dengan detail.
+- **Adjustment & Receiving** - Modul penerimaan barang dan penyesuaian stok yang akurat.
+- **Supplier Directory** - Kelola data pemasok barang untuk mempermudah operasional.
 
----
-
-## 📜 Lisensi GPL v2
-
-Community Edition menggunakan **GNU GPL v2**, artinya:
-- Bebas digunakan & dimodifikasi
-- Wajib membuka source code jika didistribusikan
-- Tidak ada garansi
-- Tidak disarankan untuk SaaS komersial tertutup
+### 📊 Pelaporan & Transparansi
+- **Laporan Detail Penjualan** - Akses data mentah transaksi untuk keperluan audit dan analisis.
+- **Pembayaran & Piutang** - Pantau arus kas masuk dan manajemen piutang pelanggan.
 
 ---
 
-## 🚀 Yualan POS Premium (RECOMMENDED)
-
-Gunakan **Yualan POS Premium** untuk kebutuhan bisnis:
-- Update rutin
-- Security patch
-- Fitur lengkap
-- Support resmi
-- Aman untuk komersial
-
-🌐 https://yualan.web.id
+## 🏗️ Teknologi Inti
+- **Backend**: Laravel 12 (PHP 8.3+)
+- **Frontend**: Vue 3 + Inertia.js (Modern SPA)
+- **Database**: PostgreSQL (Priority for Enterprise Stability)
+- **Styling**: Tailwind CSS & Vanilla CSS
 
 ---
 
-## 🛠️ Instalasi
+## 🛠️ Instalasi Server Mandiri
+
+Pastikan server Anda sudah terpasang PHP 8.3+, Node.js 20+, dan PostgreSQL 15+.
 
 ```bash
+# 1. Clone repository
 git clone https://github.com/Abdurozzaq/Yualan.git
 cd Yualan
-composer install
+
+# 2. Instalasi Dependensi
+composer install --optimize-autoloader --no-dev
 npm install
+
+# 3. Konfigurasi Environment
 cp .env.example .env
+# Sesuaikan koneksi PostgreSQL Anda di .env
+
+# 4. Inisialisasi Database
 php artisan key:generate
-php artisan migrate --seed
-npm run dev
-php artisan serve
+php artisan migrate --seed --force
+
+# 5. Build Aset Frontend
+npm run build
 ```
 
 ---
 
-### TL;DR
-Community Edition = belajar & eksperimen  
-Premium = bisnis & produksi
+## ⚡ Malas Setup Server?
+
+Bagi instansi yang ingin menggunakan fitur lengkap Yualan tanpa perlu repot mengelola server sendiri, kami menyediakan **Yualan Premium**.
+
+- **Terima Beres** - Hosting, SSL, dan Maintenance ditangani oleh kami.
+- **Fitur Lanjutan** - Termasuk Laba Bersih, Analisis Produk Terlaris, Manajemen Karyawan, dan update rutin.
+- **Dukungan Prioritas** - Bantuan teknis langsung dari tim Nusavasoft.
+
+🌐 **Cek Edisi Premium:** [yualan.web.id](https://yualan.web.id)
+
+---
+
+## ⚖️ Lisensi
+
+Proyek ini dilisensikan di bawah **GNU GPL v2**. Pengguna memiliki kebebasan penuh untuk memodifikasi dan menjalankan sistem ini di infrastruktur masing-masing dengan tetap mematuhi aturan distribusi kode sumber asli.
+
+---
+
+**Created Under PT. Nusavasoft Digital Solutions**

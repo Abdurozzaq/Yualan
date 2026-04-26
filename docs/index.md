@@ -1,121 +1,86 @@
-# Yualan POS Documentation Index
+# Yualan Community Edition Documentation Index
 
-Selamat datang di dokumentasi lengkap Yualan POS! Pilih topik yang ingin Anda pelajari:
+Selamat datang di pusat dokumentasi resmi **Yualan Community Edition (Dedicated Enterprise)**. Dokumentasi ini dirancang untuk membantu Anda memahami, menginstal, dan mengembangkan solusi POS mandiri Anda sendiri.
 
 ## 📚 Dokumentasi Utama
 
-### 🎯 Getting Started
-- **[📖 Project Overview](README.md)** - Pengenalan project, arsitektur, dan fitur utama
-- **[🚀 Installation Guide](installation.md)** - Panduan instalasi lengkap untuk development dan production
-- **[⚙️ Server Requirements](server-requirement.md)** - Spesifikasi server, konfigurasi PHP, database, dan web server
+### 🎯 Memulai (Getting Started)
+- **[📖 Ringkasan Proyek](../README.md)** - Pengenalan proyek, filosofi Dedicated Enterprise, dan fitur utama.
+- **[🚀 Panduan Instalasi](installation.md)** - Langkah-langkah setup lengkap untuk lingkungan pengembangan dan produksi.
+- **[⚙️ Kebutuhan Server](server-requirement.md)** - Spesifikasi perangkat keras, konfigurasi PHP, PostgreSQL, dan Web Server.
 
-### 👨‍💻 Development
-- **[💻 Development Guide](development-guide.md)** - Panduan pengembangan, testing, dan code style
-- **[🗄️ Database Schema](database-schema.md)** - Struktur database, relationships, dan migration guide
-- **[⏰ Scheduler Guide](scheduler.md)** - Automated tasks, cron jobs, dan background processing
+### 👨‍💻 Pengembangan (Development)
+- **[💻 Panduan Developer](development-guide.md)** - Struktur kode, standar pengembangan, dan alur kontribusi.
+- **[🗄️ Skema Database](database-schema.md)** - Detail struktur tabel, relasi, dan panduan migrasi data.
+- **[⏰ Panduan Scheduler](scheduler.md)** - Pengaturan tugas otomatis, cron jobs, dan pemrosesan latar belakang.
 
-### 🚀 Deployment & Operations
-- **[☁️ Deployment Guide](deployment.md)** - Panduan deploy ke VPS, cloud platforms, dan shared hosting
-- **[🔧 Troubleshooting](troubleshooting.md)** - Solusi masalah umum dan debugging guide
-- **[📊 Performance Optimization](performance.md)** - Tips optimasi performa (coming soon)
+### 🚀 Operasional & Deployment
+- **[☁️ Panduan Deployment](deployment.md)** - Strategi deploy ke VPS atau Dedicated Server untuk performa enterprise.
+- **[🔧 Troubleshooting](troubleshooting.md)** - Solusi untuk masalah umum, penanganan error, dan panduan debugging.
 
-### 🤝 Community
-- **[🤝 Contributing Guide](contributing.md)** - Cara berkontribusi, code of conduct, dan development process
-- **[📝 Changelog](CHANGELOG.md)** - Riwayat perubahan dan rilis (coming soon)
-- **[❓ FAQ](FAQ.md)** - Pertanyaan yang sering ditanyakan (coming soon)
+### 🤝 Komunitas & Kontribusi
+- **[🤝 Panduan Kontribusi](contributing.md)** - Cara berkontribusi kode, pelaporan bug, dan etika komunitas.
 
 ---
 
-## 🔍 Quick Navigation
+## 🔍 Navigasi Cepat
 
 ### Saya ingin...
 
-**🚀 Memulai menggunakan Yualan POS**
-1. Baca [Project Overview](README.md) untuk memahami fitur dan arsitektur
-2. Ikuti [Installation Guide](installation.md) untuk setup development
+**🚀 Menjalankan Yualan POS di Server Sendiri**
+1. Baca [Ringkasan Proyek](../README.md) untuk memahami model Dedicated Enterprise.
+2. Periksa [Kebutuhan Server](server-requirement.md) untuk memastikan infrastruktur siap.
+3. Ikuti [Panduan Instalasi](installation.md) untuk setup awal.
 
-**👨‍💻 Berkontribusi pada development**
-1. Baca [Contributing Guide](contributing.md) untuk process dan guidelines
-2. Setup development environment dengan [Installation Guide](installation.md)
-3. Pelajari [Development Guide](development-guide.md) untuk best practices
-4. Pahami [Database Schema](database-schema.md) untuk development backend
+**👨‍💻 Memodifikasi atau Menambah Fitur**
+1. Baca [Panduan Kontribusi](contributing.md) untuk memahami standar kami.
+2. Pelajari [Panduan Developer](development-guide.md) untuk praktik terbaik pengkodean.
+3. Pahami [Skema Database](database-schema.md) sebelum melakukan perubahan skema.
 
-**☁️ Deploy ke production**
-1. Periksa [Server Requirements](server-requirement.md) untuk spec minimum
-2. Ikuti [Deployment Guide](deployment.md) sesuai platform target
-3. Setup [Scheduler Guide](scheduler.md) untuk automated tasks
-4. Monitor dengan [Troubleshooting](troubleshooting.md) guide
-
-**🔧 Mengatasi masalah**
-1. Cek [Troubleshooting](troubleshooting.md) untuk masalah umum
-2. Lihat [Server Requirements](server-requirement.md) untuk konfigurasi
-3. Periksa logs sesuai panduan di [Development Guide](development-guide.md)
+**☁️ Melakukan Deploy untuk Produksi**
+1. Gunakan [Panduan Deployment](deployment.md) untuk konfigurasi server yang aman.
+2. Pastikan [Panduan Scheduler](scheduler.md) sudah dikonfigurasi dengan benar.
+3. Gunakan [Troubleshooting](troubleshooting.md) jika menemukan kendala saat *go-live*.
 
 ---
 
-## 📋 Documentation Status
+## 📋 Status Dokumentasi
 
-| Document | Status | Last Updated |
+| Dokumen | Status | Pembaruan Terakhir |
 |----------|--------|--------------|
-| [README.md](README.md) | ✅ Complete | 2024-08-10 |
-| [installation.md](installation.md) | ✅ Complete | 2024-08-10 |
-| [development-guide.md](development-guide.md) | ✅ Complete | 2024-08-10 |
-| [database-schema.md](database-schema.md) | ✅ Complete | 2024-08-10 |
-| [deployment.md](deployment.md) | ✅ Complete | 2024-08-10 |
-| [server-requirement.md](server-requirement.md) | ✅ Complete | 2024-08-10 |
-| [scheduler.md](scheduler.md) | ✅ Complete | 2024-08-10 |
-| [troubleshooting.md](troubleshooting.md) | ✅ Complete | 2024-08-10 |
-| [contributing.md](contributing.md) | ✅ Complete | 2024-08-10 |
+| [README.md](../README.md) | ✅ Selesai | 2026-04-26 |
+| [installation.md](installation.md) | ✅ Selesai | 2026-04-26 |
+| [development-guide.md](development-guide.md) | ✅ Selesai | 2026-04-26 |
+| [database-schema.md](database-schema.md) | ✅ Selesai | 2026-04-26 |
+| [deployment.md](deployment.md) | ✅ Selesai | 2026-04-26 |
+| [server-requirement.md](server-requirement.md) | ✅ Selesai | 2026-04-26 |
+| [scheduler.md](scheduler.md) | ✅ Selesai | 2026-04-26 |
+| [troubleshooting.md](troubleshooting.md) | ✅ Selesai | 2026-04-26 |
+| [contributing.md](contributing.md) | ✅ Selesai | 2026-04-26 |
 
 ---
 
-## 🤝 Contributing to Documentation
+## 🔗 Sumber Daya Eksternal
 
-Dokumentasi ini adalah living document yang terus berkembang. Jika Anda menemukan:
-
-- **Error atau informasi yang outdated**: Buat issue di GitHub
-- **Missing information**: Suggest improvement atau buat PR
-- **Typos**: Langsung buat PR untuk perbaikan kecil
-
-### How to Improve Documentation
-
-1. **Fork repository** dan clone ke local
-2. **Edit file documentation** di folder `/docs`
-3. **Test locally** jika ada code examples
-4. **Submit PR** dengan description yang jelas
-
-### Documentation Guidelines
-
-- Gunakan bahasa Indonesia untuk consistency
-- Include code examples yang working
-- Add screenshots untuk UI-related topics
-- Keep formatting consistent dengan existing docs
-- Update index ini jika menambah document baru
-
----
-
-## 🔗 External Resources
-
-### Laravel & Vue.js
+### Teknologi Inti
 - [Laravel Documentation](https://laravel.com/docs)
 - [Vue.js Guide](https://vuejs.org/guide/)
 - [Inertia.js Documentation](https://inertiajs.com/)
+- [PostgreSQL Documentation](https://www.postgresql.org/docs/)
 
-### Tools & Services
+### Desain & UI
 - [Tailwind CSS](https://tailwindcss.com/docs)
-- [TypeScript Handbook](https://www.typescriptlang.org/docs/)
-- [iPaymu API Documentation](https://ipaymu.com/developer/)
+- [Lucide Icons](https://lucide.dev/icons)
 
-### Community
+### Komunitas
 - [GitHub Repository](https://github.com/Abdurozzaq/Yualan)
 - [GitHub Issues](https://github.com/Abdurozzaq/Yualan/issues)
-- [GitHub Discussions](https://github.com/Abdurozzaq/Yualan/discussions)
 
 ---
 
-**Need help?** 
-- 📧 Create an issue on GitHub
-- 💬 Start a discussion on GitHub Discussions  
-- 🤝 Join our community (Discord/Telegram links coming soon)
+**Butuh Bantuan Lebih Lanjut?**
+- 📧 Buat *issue* di GitHub untuk bug teknis.
+- ⚡ Untuk solusi tanpa ribet, pertimbangkan **[Yualan Premium](https://yualan.web.id)**.
 
-**Happy coding with Yualan POS!** 🚀
+**Created Under PT. Nusavasoft Digital Solutions**
+
