@@ -1,0 +1,46 @@
+services:
+  yualan-app:
+    build:
+      context: .
+      platforms:
+        - "linux/amd64"
+        - "linux/arm64"
+    image: rozzaqnh/yualan-community-edition:latest
+    container_name: yualan-ce
+    restart: unless-stopped
+    ports:
+      - "8627:80"
+    environment:
+      - DB_CONNECTION=sqlite
+      - DB_DATABASE=database/database.sqlite
+      # Jika ingin menggunakan PostgreSQL, uncomment baris di bawah:
+      # - DB_CONNECTION=pgsql
+      # - DB_HOST=yualan-db
+      # - DB_PORT=5432
+      # - DB_DATABASE=yualan_db
+      # - DB_USERNAME=postgres
+      # - DB_PASSWORD=secret
+      # depends_on:
+      #   - yualan-db
+    volumes:
+      - ./.env:/var/www/html/.env
+    networks:
+      - yualan-net
+  # yualan-db:
+  #   image: postgres:15-alpine
+  #   container_name: yualan-db
+  #   environment:
+  #     POSTGRES_DB: yualan_db
+  #     POSTGRES_USER: postgres
+  #     POSTGRES_PASSWORD: secret
+  #   volumes:
+  #     - pgdata:/var/lib/postgresql/data
+  #   networks:
+  #     - yualan-net
+
+networks:
+  yualan-net:
+    driver: bridge
+
+volumes:
+  pgdata:

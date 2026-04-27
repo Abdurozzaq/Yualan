@@ -91,6 +91,15 @@ php artisan migrate --seed --force
 npm run build
 ```
 
+### Cara 3: Menggunakan Docker (All-in-One)
+Paling praktis dan cepat, semua dependensi sudah terbungkus dalam satu image.
+
+```bash
+# 1. Jalankan aplikasi dengan Docker Compose
+docker-compose up -d
+```
+Aplikasi akan langsung tersedia di `http://localhost:8000`.
+
 ---
 
 ## ⚡ Malas Setup Server?
