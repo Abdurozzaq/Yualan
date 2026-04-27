@@ -68,13 +68,13 @@ npm run build
 ```
 
 ### Cara 2: Menggunakan Docker (Paling Cepat)
-Sangat direkomendasikan jika Anda tidak ingin menginstal PHP atau Node.js secara manual di server.
+Sangat direkomendasikan jika Anda ingin langsung menjalankan aplikasi tanpa perlu setup environment atau clone repository.
 
 ```bash
-# 1. Jalankan aplikasi dengan Docker Compose
-docker-compose up -d
+# Jalankan aplikasi langsung dari Docker Hub
+docker run -d -p 8627:80 --name yualan-app rozzaqnh/yualan-community-edition:latest
 ```
-Aplikasi akan langsung tersedia di `http://localhost:8627`.
+Aplikasi akan tersedia di `http://localhost:8627`.
 
 ### Cara 3: Manual (Git Clone)
 Jika Anda ingin melakukan instalasi secara manual tanpa Docker:
