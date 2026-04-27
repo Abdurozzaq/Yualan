@@ -45,14 +45,14 @@ Sistem ini ideal bagi instansi yang:
 ## 🏗️ Teknologi Inti
 - **Backend**: Laravel 12 (PHP 8.3+)
 - **Frontend**: Vue 3 + Inertia.js (Modern SPA)
-- **Database**: PostgreSQL (Priority for Enterprise Stability)
+- **Database**: SQLite (Default for easy setup) / PostgreSQL (Supported for Enterprise Stability)
 - **Styling**: Tailwind CSS & Vanilla CSS
 
 ---
 
 ## 🛠️ Instalasi Server Mandiri
 
-Pastikan server Anda sudah terpasang PHP 8.3+, Node.js 20+, dan PostgreSQL 15+.
+Pastikan server Anda sudah terpasang PHP 8.3+ dan Node.js 20+. Jika menggunakan PostgreSQL, pastikan PostgreSQL 15+ juga terpasang.
 
 ```bash
 # 1. Clone repository
@@ -65,7 +65,7 @@ npm install
 
 # 3. Konfigurasi Environment
 cp .env.example .env
-# Sesuaikan koneksi PostgreSQL Anda di .env
+# Sesuaikan koneksi database Anda di .env (Default: SQLite)
 
 # 4. Inisialisasi Database
 php artisan key:generate
