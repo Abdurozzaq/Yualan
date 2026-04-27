@@ -67,8 +67,17 @@ npm install
 npm run build
 ```
 
-### Cara 2: Manual (Git Clone)
-Jika Anda ingin melakukan instalasi secara manual:
+### Cara 2: Menggunakan Docker (Paling Cepat)
+Sangat direkomendasikan jika Anda tidak ingin menginstal PHP atau Node.js secara manual di server.
+
+```bash
+# 1. Jalankan aplikasi dengan Docker Compose
+docker-compose up -d
+```
+Aplikasi akan langsung tersedia di `http://localhost:8627`.
+
+### Cara 3: Manual (Git Clone)
+Jika Anda ingin melakukan instalasi secara manual tanpa Docker:
 
 ```bash
 # 1. Clone repository
