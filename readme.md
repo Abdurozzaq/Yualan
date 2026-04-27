@@ -54,6 +54,22 @@ Sistem ini ideal bagi instansi yang:
 
 Pastikan server Anda sudah terpasang PHP 8.3+ dan Node.js 20+. Jika menggunakan PostgreSQL, pastikan PostgreSQL 15+ juga terpasang.
 
+### Cara 1: Menggunakan Composer (Direkomendasikan)
+Gunakan perintah ini untuk mengunduh dan menyiapkan proyek secara otomatis:
+
+```bash
+# 1. Buat proyek baru
+composer create-project abdurozzaq/yualan --stability alpha
+cd yualan
+
+# 2. Bangun Aset Frontend
+npm install
+npm run build
+```
+
+### Cara 2: Manual (Git Clone)
+Jika Anda ingin melakukan instalasi secara manual:
+
 ```bash
 # 1. Clone repository
 git clone https://github.com/Abdurozzaq/Yualan.git
