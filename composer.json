@@ -1,13 +1,22 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "laravel/vue-starter-kit",
+    "name": "abdurozzaq/yualan",
     "type": "project",
-    "description": "The skeleton application for the Laravel framework.",
+    "description": "Yualan POS - Solusi Point of Sale (POS) Mandiri untuk Instansi Tunggal yang Mengutamakan Kendali Penuh atas Data dan Infrastruktur.",
     "keywords": [
         "laravel",
-        "framework"
+        "framework",
+        "yualan",
+        "pos",
+        "abdurozzaq",
+        "point-of-sale"
     ],
-    "license": "MIT",
+    "license": "GPL-2.0-only",
+    "homepage": "https://github.com/Abdurozzaq/Yualan",
+    "support": {
+        "issues": "https://github.com/Abdurozzaq/Yualan/issues",
+        "source": "https://github.com/Abdurozzaq/Yualan"
+    },
     "require": {
         "php": "^8.2",
         "barryvdh/laravel-dompdf": "^3.1",

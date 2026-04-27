@@ -1,4 +1,6 @@
 {
+    "name": "yualan-pos",
+    "description": "Yualan POS - Frontend Assets",
     "private": true,
     "type": "module",
     "scripts": {
