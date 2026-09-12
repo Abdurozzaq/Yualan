@@ -247,9 +247,9 @@ class SaleController extends Controller {
         }
         if ($search) {
             $query->where(function($q) use ($search) {
-                $q->where('name', 'ILIKE', '%' . $search . '%')
-                  ->orWhere('unit', 'ILIKE', '%' . $search . '%')
-                  ->orWhere('sku', 'ILIKE', '%' . $search . '%');
+                $q->where('name', 'LIKE', '%' . $search . '%')
+                  ->orWhere('unit', 'LIKE', '%' . $search . '%')
+                  ->orWhere('sku', 'LIKE', '%' . $search . '%');
             });
         }
         $products = $query->with('category')->orderBy($sortField, $sortDirection)->paginate($perPage, ['*'], 'page', $page);
@@ -393,12 +393,12 @@ class SaleController extends Controller {
         // Apply search filter
         if ($search) {
             $salesQuery->where(function ($query) use ($search) {
-                $query->where('invoice_number', 'ILIKE', '%' . $search . '%')
+                $query->where('invoice_number', 'LIKE', '%' . $search . '%')
                     ->orWhereHas('customer', function ($q) use ($search) {
-                        $q->where('name', 'ILIKE', '%' . $search . '%');
+                        $q->where('name', 'LIKE', '%' . $search . '%');
                     })
                     ->orWhereHas('user', function ($q) use ($search) {
-                        $q->where('name', 'ILIKE', '%' . $search . '%');
+                        $q->where('name', 'LIKE', '%' . $search . '%');
                     });
             });
         }
@@ -1192,12 +1192,12 @@ class SaleController extends Controller {
         // Apply search filter
         if ($search) {
             $salesQuery->where(function ($query) use ($search) {
-                $query->where('invoice_number', 'ILIKE', '%' . $search . '%')
+                $query->where('invoice_number', 'LIKE', '%' . $search . '%')
                     ->orWhereHas('customer', function ($q) use ($search) {
-                        $q->where('name', 'ILIKE', '%' . $search . '%');
+                        $q->where('name', 'LIKE', '%' . $search . '%');
                     })
                     ->orWhereHas('user', function ($q) use ($search) {
-                        $q->where('name', 'ILIKE', '%' . $search . '%');
+                        $q->where('name', 'LIKE', '%' . $search . '%');
                     });
             });
         }

@@ -32,9 +32,18 @@
 
         <title inertia>{{ config('app.name', 'Laravel') }}</title>
 
-        <link rel="icon" href="/favicon.ico" sizes="any">
-        <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-        <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+        <!-- Icons & PWA -->
+        <link rel="icon" type="image/png" sizes="32x32" href="/ios/32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="/ios/16.png">
+        <link rel="icon" type="image/png" sizes="192x192" href="/android/launchericon-192x192.png">
+        <link rel="apple-touch-icon" sizes="180x180" href="/ios/180.png">
+        <link rel="manifest" href="/manifest.json">
+        <meta name="theme-color" content="#2563eb">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="default">
+        <meta name="apple-mobile-web-app-title" content="Yualan POS">
+        <meta name="msapplication-TileImage" content="/windows/Square150x150Logo.scale-100.png">
+        <meta name="msapplication-TileColor" content="#2563eb">
 
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />

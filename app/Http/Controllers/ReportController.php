@@ -116,9 +116,9 @@ class ReportController extends Controller
             ')
             ->when($search, function ($q) use ($search) {
                 $q->where(function ($qq) use ($search) {
-                    $qq->where('products.name', 'ilike', "%$search%")
-                       ->orWhere('products.sku', 'ilike', "%$search%")
-                       ->orWhere('products.unit', 'ilike', "%$search%");
+                    $qq->where('products.name', 'LIKE', "%$search%")
+                       ->orWhere('products.sku', 'LIKE', "%$search%")
+                       ->orWhere('products.unit', 'LIKE', "%$search%");
                 });
             })
             ->groupBy('products.id', 'products.name', 'products.sku', 'products.unit', 'products.price', 'products.cost_price')

@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import type { HTMLAttributes } from 'vue';
-import { ShoppingCart } from 'lucide-vue-next';
 
 defineOptions({
     inheritAttrs: false,
@@ -11,16 +10,16 @@ interface Props {
 }
 
 defineProps<Props>();
-
-const appName = "Yualan POS";
 </script>
 
 <template>
     <div class="flex items-center gap-3 select-none group">
-        <!-- Logo Icon -->
-        <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600 shadow-lg shadow-blue-200 dark:shadow-none group-hover:scale-105 transition-transform duration-300">
-            <ShoppingCart class="size-6 text-white" />
-        </div>
+        <!-- Logo Image -->
+        <img 
+            src="/android/launchericon-192x192.png" 
+            alt="Yualan Logo" 
+            class="h-10 w-10 shrink-0 rounded-xl object-contain shadow-md shadow-blue-200 dark:shadow-none group-hover:scale-105 transition-transform duration-300"
+        />
         
         <!-- Text Branding -->
         <div class="flex flex-col leading-tight">

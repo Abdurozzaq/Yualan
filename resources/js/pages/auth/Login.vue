@@ -90,7 +90,7 @@ const submit = () => {
 
             <div class="text-center text-xs text-muted-foreground mt-4 pt-4 border-t border-border">
                 Administrator? 
-                <TextLink href="/admin-panel/login" :tabindex="6" class="text-gray-500 hover:text-gray-800 dark:hover:text-gray-300">System Login</TextLink>
+                <TextLink href="/admin-panel" :tabindex="6" class="text-gray-500 hover:text-gray-800 dark:hover:text-gray-300">System Login</TextLink>
             </div>
         </form>
     </AuthBase>

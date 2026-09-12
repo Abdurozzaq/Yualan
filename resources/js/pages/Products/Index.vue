@@ -431,7 +431,7 @@ const imagePreviewUrl = computed(() => {
     if (form.image) {
         return URL.createObjectURL(form.image);
     } else if (currentProductImage.value) {
-        return appDomain + '/file/' + currentProductImage.value;
+        return '/file/' + currentProductImage.value;
     }
     return null;
 });
@@ -612,7 +612,7 @@ const appDomain = import.meta.env.VITE_API_DOMAIN || 'http://localhost:8000';
                             <TableCell>
                                 <img
                                     v-if="product.image"
-                                    :src="appDomain + '/file/' + product.image"
+                                    :src="'/file/' + product.image"
                                     alt="Product Image"
                                     class="w-12 h-12 object-cover rounded-md"
                                 />

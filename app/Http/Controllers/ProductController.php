@@ -43,14 +43,14 @@ class ProductController extends Controller
         if ($search) {
             $productsQuery->where(function ($query) use ($search, $filterField) {
                 if ($filterField && in_array($filterField, ['name', 'sku', 'description', 'unit', 'ingredients'])) {
-                    $query->where($filterField, 'ILIKE', '%' . $search . '%');
+                    $query->where($filterField, 'LIKE', '%' . $search . '%');
                 } else {
                     // Default search across common fields
-                    $query->where('name', 'ILIKE', '%' . $search . '%')
-                          ->orWhere('sku', 'ILIKE', '%' . $search . '%')
-                          ->orWhere('description', 'ILIKE', '%' . $search . '%')
-                          ->orWhere('unit', 'ILIKE', '%' . $search . '%')
-                          ->orWhere('ingredients', 'ILIKE', '%' . $search . '%');
+                    $query->where('name', 'LIKE', '%' . $search . '%')
+                          ->orWhere('sku', 'LIKE', '%' . $search . '%')
+                          ->orWhere('description', 'LIKE', '%' . $search . '%')
+                          ->orWhere('unit', 'LIKE', '%' . $search . '%')
+                          ->orWhere('ingredients', 'LIKE', '%' . $search . '%');
                 }
             });
         }

@@ -24,20 +24,18 @@ class ReportSalesDetailController extends Controller
         $query = Sale::where('tenant_id', $tenant->id);
 
         if ($filterType === 'day') {
-            $date = date('Y-m-d', strtotime($filterDate));
-            $query->whereDate('created_at', $date);
+            $date = \Carbon\Carbon::parse($filterDate);
+            $query->whereDate('created_at', $date->format('Y-m-d'));
         } elseif ($filterType === 'week') {
-            $date = date('Y-m-d', strtotime($filterDate));
-            $week = date('W', strtotime($date));
-            $year = date('Y', strtotime($date));
-            $query->whereRaw("EXTRACT('week' FROM created_at) = ?", [$week])
-                  ->whereRaw("EXTRACT('year' FROM created_at) = ?", [$year]);
+            $date = \Carbon\Carbon::parse($filterDate);
+            $query->whereBetween('created_at', [
+                $date->copy()->startOfWeek()->format('Y-m-d 00:00:00'), 
+                $date->copy()->endOfWeek()->format('Y-m-d 23:59:59')
+            ]);
         } elseif ($filterType === 'month') {
-            $date = date('Y-m-d', strtotime($filterDate));
-            $month = date('m', strtotime($date));
-            $year = date('Y', strtotime($date));
-            $query->whereMonth('created_at', $month)
-                  ->whereYear('created_at', $year);
+            $date = \Carbon\Carbon::parse($filterDate);
+            $query->whereMonth('created_at', $date->format('m'))
+                  ->whereYear('created_at', $date->format('Y'));
         }
         // Jika 'all', tidak tambah constraint tanggal
 

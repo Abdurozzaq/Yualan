@@ -36,11 +36,11 @@ class CategoryController extends Controller
             $categoriesQuery->where(function ($query) use ($search, $filterField) {
                 if ($filterField && in_array($filterField, ['name', 'description'])) {
                     // Apply filter to a specific field if provided
-                    $query->where($filterField, 'ILIKE', '%' . $search . '%'); // Use ILIKE for case-insensitive search in PostgreSQL
+                    $query->where($filterField, 'LIKE', '%' . $search . '%'); // Use ILIKE for case-insensitive search in PostgreSQL
                 } else {
                     // Default to searching both name and description
-                    $query->where('name', 'ILIKE', '%' . $search . '%')
-                        ->orWhere('description', 'ILIKE', '%' . $search . '%');
+                    $query->where('name', 'LIKE', '%' . $search . '%')
+                        ->orWhere('description', 'LIKE', '%' . $search . '%');
                 }
             });
         }

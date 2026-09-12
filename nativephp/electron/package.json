@@ -1,6 +1,6 @@
 {
     "name": "yualan-pos-dev",
-    "version": "1.0.0",
+    "version": "1.0.2",
     "description": "Point of Sales System",
     "main": "./out/main/index.js",
     "author": "Abdurozzaq Nurul Hadi",

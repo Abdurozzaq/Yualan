@@ -38,8 +38,8 @@ class InventoryController extends Controller
 
         if ($search) {
             $productsQuery->where(function ($query) use ($search) {
-                $query->where('name', 'ILIKE', '%' . $search . '%')
-                      ->orWhere('sku', 'ILIKE', '%' . $search . '%');
+                $query->where('name', 'LIKE', '%' . $search . '%')
+                      ->orWhere('sku', 'LIKE', '%' . $search . '%');
             });
         }
 
@@ -75,8 +75,8 @@ class InventoryController extends Controller
         $productsQuery = Product::where('tenant_id', $tenant->id);
         if ($q) {
             $productsQuery->where(function ($query) use ($q) {
-                $query->where('name', 'ILIKE', "%" . $q . "%")
-                      ->orWhere('sku', 'ILIKE', "%" . $q . "%");
+                $query->where('name', 'LIKE', "%" . $q . "%")
+                      ->orWhere('sku', 'LIKE', "%" . $q . "%");
             });
         }
         $products = $productsQuery->orderBy('name')->limit($limit)->get(['id', 'name', 'stock', 'cost_price']);
@@ -110,10 +110,10 @@ class InventoryController extends Controller
 
         if ($search) {
             $movementsQuery->where(function ($query) use ($search) {
-                $query->where('reason', 'ILIKE', '%' . $search . '%')
+                $query->where('reason', 'LIKE', '%' . $search . '%')
                       ->orWhereHas('product', function ($q) use ($search) {
-                          $q->where('name', 'ILIKE', '%' . $search . '%')
-                            ->orWhere('sku', 'ILIKE', '%' . $search . '%');
+                          $q->where('name', 'LIKE', '%' . $search . '%')
+                            ->orWhere('sku', 'LIKE', '%' . $search . '%');
                       });
             });
         }

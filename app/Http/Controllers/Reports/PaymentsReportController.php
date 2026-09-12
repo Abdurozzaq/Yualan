@@ -41,16 +41,25 @@ class PaymentsReportController extends Controller
             )
             ->get()
             ->map(function ($row) {
+                $outstanding = (float)$row->outstanding_amount;
+                $status = $row->status;
+                
+                // If paid more or equal to total, outstanding is 0 and status is Lunas
+                if ($outstanding <= 0) {
+                    $outstanding = 0;
+                    $status = 'Lunas';
+                }
+
                 return [
                     'id' => $row->id,
                     'date' => $row->date ? date('Y-m-d', strtotime($row->date)) : '',
                     'invoice_number' => $row->invoice_number,
                     'customer_name' => $row->customer_name,
                     'payment_method' => $row->payment_method,
-                    'status' => $row->status,
+                    'status' => $status,
                     'total_amount' => (float)$row->total_amount,
-                    'paid_amount' => (float)$row->paid_amount,
-                    'outstanding_amount' => (float)$row->outstanding_amount,
+                    'paid_amount' => min((float)$row->total_amount, (float)$row->paid_amount),
+                    'outstanding_amount' => $outstanding,
                     'notes' => $row->notes,
                 ];
             })

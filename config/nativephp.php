@@ -4,9 +4,9 @@ return [
     /**
      * The version of your app.
      * It is used to determine if the app needs to be updated.
-     * Increment this value every time you release a new version of your app.
+     * By default, we will read this from the NATIVEPHP_APP_VERSION environment variable.
      */
-    'version' => env('NATIVEPHP_APP_VERSION', '1.0.1'),
+    'version' => env('NATIVEPHP_APP_VERSION', '1.0.2'),
 
     /**
      * The ID of your application. This should be a unique identifier

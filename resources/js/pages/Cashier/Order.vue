@@ -877,7 +877,7 @@ const appDomain = import.meta.env.VITE_API_DOMAIN || 'http://localhost:8000';
                         <div class="w-full h-28 xs:h-24 sm:h-28 md:h-24 lg:h-28 xl:h-24 bg-gray-100 dark:bg-gray-600 rounded-md mb-2 overflow-hidden flex items-center justify-center">
                             <img
                                 v-if="product.image"
-                                :src="appDomain + '/file/' + product.image"
+                                :src="'/file/' + product.image"
                                 alt="Product Image"
                                 class="w-full h-full object-cover rounded-md"
                             />

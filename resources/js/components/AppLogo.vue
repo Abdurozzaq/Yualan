@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { ShoppingCart } from 'lucide-vue-next';
 import { useSidebar } from '@/components/ui/sidebar/utils';
 
 const { state } = useSidebar();
@@ -7,10 +6,12 @@ const { state } = useSidebar();
 
 <template>
     <div class="flex items-center gap-3 select-none group px-2 py-1 transition-all duration-300">
-        <!-- Icon -->
-        <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-600 shadow-lg shadow-blue-200 dark:shadow-none group-hover:scale-105 transition-transform duration-300">
-            <ShoppingCart class="size-6 text-white" />
-        </div>
+        <!-- Logo Image -->
+        <img 
+            src="/android/launchericon-192x192.png" 
+            alt="Yualan Logo" 
+            class="h-10 w-10 shrink-0 rounded-xl object-contain shadow-md shadow-blue-200 dark:shadow-none group-hover:scale-105 transition-transform duration-300"
+        />
         
         <!-- Text Branding (Hidden when sidebar is collapsed) -->
         <div v-if="state !== 'collapsed'" class="flex flex-col leading-tight animate-in fade-in slide-in-from-left-2 duration-300">

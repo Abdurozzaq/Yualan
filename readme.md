@@ -1,123 +1,93 @@
-# 🚀 Yualan Community Edition (Dedicated Enterprise)
+# Yualan Community Edition (Dedicated Enterprise)
 
-**Solusi Point of Sale (POS) Mandiri untuk Instansi Tunggal yang Mengutamakan Kendali Penuh atas Data dan Infrastruktur.**
-
----
-
-## 👋 Tentang Yualan Community Edition
-
-**Yualan Community Edition (Dedicated Enterprise)** adalah platform POS *self-hosted* yang dirancang khusus bagi pemilik bisnis dan organisasi yang membutuhkan otoritas mutlak atas basis data mereka. 
-
-Sistem ini ideal bagi instansi yang:
-- Menginginkan kedaulatan data penuh tanpa ketergantungan pada pihak ketiga.
-- Memerlukan akses database langsung untuk integrasi sistem internal.
-- Memiliki tim IT mandiri yang mampu mengelola infrastruktur server pribadi.
-- Membutuhkan performa tinggi melalui alokasi sumber daya server yang berdedikasi.
-
-### 🖼️ Preview Antarmuka
-![Dashboard Preview](public/dashboard.png)
-*Tampilan Dashboard Analytics*
-
-![Ordering Preview](public/ordering.png)
-*Antarmuka Point of Sale (POS)*
+Solusi Point of Sale (POS) *self-hosted* dan *single-tenant* untuk instansi yang membutuhkan kendali penuh atas data dan infrastruktur server.
 
 ---
 
-## ✨ Fitur Utama
+## Gambaran Umum
 
-### 🛒 Operasional Kasir & Penjualan
-- **Transaksi Cepat & Responsif** - Dioptimalkan untuk alur kerja yang padat.
-- **Manajemen Produk Enterprise** - Dukungan SKU, kategori kompleks, dan manajemen unit barang.
-- **Voucher & Promosi** - Sistem manajemen promo mandiri untuk meningkatkan loyalitas pelanggan.
-- **Customer CRM** - Kelola database pelanggan Anda sendiri secara privat.
+Yualan Community Edition dirancang untuk memberikan kedaulatan data secara mutlak dan akses database langsung tanpa ketergantungan pada pihak ketiga.
 
-### 📦 Inventaris & Rantai Pasokan
-- **Stock Card Real-Time** - Pantau histori pergerakan barang dengan detail.
-- **Adjustment & Receiving** - Modul penerimaan barang dan penyesuaian stok yang akurat.
-- **Supplier Directory** - Kelola data pemasok barang untuk mempermudah operasional.
-
-### 📊 Pelaporan & Transparansi
-- **Laporan Detail Penjualan** - Akses data mentah transaksi untuk keperluan audit dan analisis.
-- **Pembayaran & Piutang** - Pantau arus kas masuk dan manajemen piutang pelanggan.
+### Tangkapan Layar
+* Dashboard Analytics: `public/dashboard.png`
+* Antarmuka Kasir: `public/ordering.png`
 
 ---
 
-## 🏗️ Teknologi Inti
-- **Backend**: Laravel 12 (PHP 8.3+)
-- **Frontend**: Vue 3 + Inertia.js (Modern SPA)
-- **Database**: SQLite (Default for easy setup) / PostgreSQL (Supported for Enterprise Stability)
-- **Styling**: Tailwind CSS & Vanilla CSS
+## Fitur Utama
+
+### POS & Penjualan
+* **Transaksi Cepat** - Alur kerja kasir yang optimal dan responsif.
+* **Manajemen Produk** - Dukungan SKU, kategori kompleks, dan satuan unit.
+* **Promo & Voucher** - Pengaturan diskon dan promosi mandiri.
+* **CRM Pelanggan** - Pengelolaan database pelanggan secara privat.
+
+### Inventaris & Rantai Pasokan
+* **Stock Card Real-Time** - Riwayat pergerakan barang secara mendetail.
+* **Penerimaan & Penyesuaian** - Modul stok masuk dan penyesuaian akurat.
+* **Direktori Supplier** - Pengelolaan data pemasok barang.
+
+### Pelaporan
+* **Laporan Penjualan** - Akses data transaksi mentah untuk audit.
+* **Manajemen Keuangan** - Pemantauan arus kas dan piutang.
 
 ---
 
-## 🛠️ Instalasi Server Mandiri
+## Teknologi Inti
+* **Backend**: Laravel 12 (PHP 8.3+)
+* **Frontend**: Vue 3 + Inertia.js (SPA)
+* **Database**: SQLite / PostgreSQL 15+
+* **Styling**: Tailwind CSS
 
-Pastikan server Anda sudah terpasang PHP 8.3+ dan Node.js 20+. Jika menggunakan PostgreSQL, pastikan PostgreSQL 15+ juga terpasang.
+---
 
-### Cara 1: Menggunakan Composer (Direkomendasikan)
-Gunakan perintah ini untuk mengunduh dan menyiapkan proyek secara otomatis:
+## Instalasi Server
 
+Membutuhkan PHP 8.3+, Node.js 20+, dan opsional PostgreSQL 15+.
+
+### Metode 1: Composer
 ```bash
-# 1. Buat proyek baru
 composer create-project abdurozzaq/yualan --stability alpha
 cd yualan
-
-# 2. Bangun Aset Frontend
-npm install
-npm run build
+npm install && npm run build
 ```
 
-### Cara 2: Menggunakan Docker (Paling Cepat)
-Sangat direkomendasikan jika Anda ingin langsung menjalankan aplikasi tanpa perlu setup environment atau clone repository.
-
+### Metode 2: Docker
 ```bash
-# Jalankan aplikasi langsung dari Docker Hub
 docker run -d -p 8627:80 --name yualan-app rozzaqnh/yualan-community-edition:latest
 ```
-Aplikasi akan tersedia di `http://localhost:8627`.
+Akses melalui `http://localhost:8627`.
 
-### Cara 3: Manual (Git Clone)
-Jika Anda ingin melakukan instalasi secara manual tanpa Docker:
-
+### Metode 3: Manual Git Clone
 ```bash
-# 1. Clone repository
 git clone https://github.com/Abdurozzaq/Yualan.git
 cd Yualan
-
-# 2. Instalasi Dependensi
 composer install --optimize-autoloader --no-dev
 npm install
-
-# 3. Konfigurasi Environment
 cp .env.example .env
-# Sesuaikan koneksi database Anda di .env (Default: SQLite)
-
-# 4. Inisialisasi Database
 php artisan key:generate
 php artisan migrate --seed --force
-
-# 5. Build Aset Frontend
 npm run build
 ```
 
----
-
-## ⚡ Malas Setup Server?
-
-Bagi instansi yang ingin menggunakan fitur lengkap Yualan tanpa perlu repot mengelola server sendiri, kami menyediakan **Yualan Premium**.
-
-- **Terima Beres** - Hosting, SSL, dan Maintenance ditangani oleh kami.
-- **Fitur Lanjutan** - Termasuk Laba Bersih, Analisis Produk Terlaris, Manajemen Karyawan, dan update rutin.
-- **Dukungan Prioritas** - Bantuan teknis langsung dari tim Nusavasoft.
-
-🌐 **Cek Edisi Premium:** [yualan.web.id](https://yualan.web.id)
+### Metode 4: Build Aplikasi Desktop (Windows)
+Aplikasi ini juga dapat dibuild menjadi aplikasi desktop mandiri (installer `.exe`) menggunakan NativePHP. 
+Pastikan Anda sudah menginstall dependensi PHP & Node.js, kemudian jalankan:
+```bash
+php artisan native:build win x64
+```
+Hasil build installer akan tersimpan di dalam direktori `nativephp/electron/dist/`.
 
 ---
 
-## ⚖️ Lisensi
+## Alternatif Terkelola
 
-Proyek ini dilisensikan di bawah **GNU GPL v2**. Pengguna memiliki kebebasan penuh untuk memodifikasi dan menjalankan sistem ini di infrastruktur masing-masing dengan tetap mematuhi aturan distribusi kode sumber asli.
+Bagi yang menginginkan infrastruktur, SSL, pemeliharaan, serta fitur lanjutan (Laba Bersih & Manajemen Karyawan) tanpa repot kelola server, tersedia **Yualan Premium** di [yualan.web.id](https://yualan.web.id).
 
 ---
 
-**Created Under PT. Nusavasoft Digital Solutions**
+## Lisensi
+
+Dilisensikan di bawah **GNU GPL v2**.
+
+**PT. Nusavasoft Digital Solutions**

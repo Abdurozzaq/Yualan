@@ -187,7 +187,7 @@ const formatTime = (dateTimeString: string) => {
                                 <div class="relative">
                                     <img
                                         v-if="product.product_image"
-                                        :src="`/storage/${product.product_image}`"
+                                        :src="`/file/${product.product_image}`"
                                         alt="Product Image"
                                         class="w-14 h-14 object-cover rounded-xl shadow-sm"
                                     />

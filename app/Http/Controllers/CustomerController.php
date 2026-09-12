@@ -40,13 +40,13 @@ class CustomerController extends Controller
         if ($search) {
             $customersQuery->where(function ($query) use ($search, $filterField) {
                 if ($filterField && in_array($filterField, ['name', 'email', 'phone', 'address'])) {
-                    $query->where($filterField, 'ILIKE', '%' . $search . '%');
+                    $query->where($filterField, 'LIKE', '%' . $search . '%');
                 } else {
                     // Default search across common fields
-                    $query->where('name', 'ILIKE', '%' . $search . '%')
-                        ->orWhere('email', 'ILIKE', '%' . $search . '%')
-                        ->orWhere('phone', 'ILIKE', '%' . $search . '%')
-                        ->orWhere('address', 'ILIKE', '%' . $search . '%');
+                    $query->where('name', 'LIKE', '%' . $search . '%')
+                        ->orWhere('email', 'LIKE', '%' . $search . '%')
+                        ->orWhere('phone', 'LIKE', '%' . $search . '%')
+                        ->orWhere('address', 'LIKE', '%' . $search . '%');
                 }
             });
         }
