@@ -965,7 +965,7 @@ const appDomain = import.meta.env.VITE_API_DOMAIN || 'http://localhost:8000';
         </div>
 
                 <!-- Summary Section -->
-                <div class="space-y-3 mt-auto bg-gray-50 dark:bg-gray-900/50 -mx-4 -mb-4 p-4 rounded-t-3xl border-t shadow-[0_-10px_20px_rgba(0,0,0,0.05)] lg:bg-transparent lg:p-0 lg:rounded-none lg:border-t-0 lg:shadow-none lg:mx-0 lg:mb-0">
+                <div class="space-y-3 mt-auto bg-gray-50 dark:bg-gray-800/80 -mx-4 -mb-4 p-4 rounded-t-3xl border-t border-gray-200 dark:border-gray-700 shadow-[0_-10px_20px_rgba(0,0,0,0.05)] dark:shadow-none lg:bg-transparent lg:dark:bg-transparent lg:p-0 lg:rounded-none lg:border-t-0 lg:shadow-none lg:mx-0 lg:mb-0">
                     <!-- Subtotal & Total (Always visible) -->
                     <div class="flex flex-col gap-1">
                         <div class="flex justify-between items-center text-gray-500 dark:text-gray-400 text-xs">
@@ -1003,7 +1003,7 @@ const appDomain = import.meta.env.VITE_API_DOMAIN || 'http://localhost:8000';
                     <!-- Settings Content (Collapsible on mobile) -->
                     <div :class="['space-y-4 overflow-y-auto transition-all duration-300', showOrderSettings ? 'max-h-[300px] py-2' : 'max-h-0 overflow-hidden lg:max-h-none lg:py-0']">
                         <!-- Voucher & Promo Section -->
-                        <div class="bg-white dark:bg-gray-800 p-3 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm">
+                        <div class="bg-white dark:bg-gray-700/30 p-3 rounded-xl border border-gray-100 dark:border-gray-600/50">
                         <Label for="voucher" class="text-gray-700 dark:text-gray-300 flex items-center gap-1 text-sm font-medium mb-1">
                             <ReceiptText class="h-4 w-4" /> Voucher:
                         </Label>
@@ -1038,7 +1038,7 @@ const appDomain = import.meta.env.VITE_API_DOMAIN || 'http://localhost:8000';
                         </div>
                     </div>
 
-                    <div class="bg-white dark:bg-gray-800 p-3 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm">
+                    <div class="bg-white dark:bg-gray-700/30 p-3 rounded-xl border border-gray-100 dark:border-gray-600/50">
                         <Label for="promo" class="text-gray-700 dark:text-gray-300 flex items-center gap-1 text-sm font-medium mb-1">
                             <Percent class="h-4 w-4" /> Promo:
                         </Label>
@@ -1073,7 +1073,7 @@ const appDomain = import.meta.env.VITE_API_DOMAIN || 'http://localhost:8000';
                     </div>
 
                     <!-- Discount -->
-                    <div class="space-y-2">
+                    <div class="space-y-2 bg-white dark:bg-gray-700/30 p-3 rounded-xl border border-gray-100 dark:border-gray-600/50">
                         <div class="flex justify-between items-center">
                             <Label for="discount" class="text-gray-700 dark:text-gray-300 flex items-center gap-1 text-sm font-medium">
                                 <DollarSign class="h-4 w-4" /> Diskon (Nominal)
@@ -1097,7 +1097,7 @@ const appDomain = import.meta.env.VITE_API_DOMAIN || 'http://localhost:8000';
                     </div>
 
                     <!-- Tax -->
-                    <div class="space-y-2">
+                    <div class="space-y-2 bg-white dark:bg-gray-700/30 p-3 rounded-xl border border-gray-100 dark:border-gray-600/50">
                         <div class="flex justify-between items-center">
                             <Label for="tax_rate" class="text-gray-700 dark:text-gray-300 flex items-center gap-1 text-sm font-medium">
                                 <Percent class="h-4 w-4" /> Pajak (%)
@@ -1118,7 +1118,7 @@ const appDomain = import.meta.env.VITE_API_DOMAIN || 'http://localhost:8000';
                     </div>
 
                     <!-- Total & Payment (Always visible part for Desktop, Hidden part for Mobile toggle) -->
-                    <div class="space-y-4">
+                    <div class="space-y-4 bg-white dark:bg-gray-700/30 p-3 rounded-xl border border-gray-100 dark:border-gray-600/50">
                         <div class="flex justify-between items-center">
                             <Label for="payment_method" class="text-gray-700 dark:text-gray-300 text-sm font-bold">Metode:</Label>
                             <Select v-model="form.payment_method" class="w-40">

@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Middleware\CheckSuperadmin;
+use App\Http\Middleware\CheckEnvAdmin;
 use App\Http\Middleware\CheckTenantAccess;
 use App\Http\Middleware\CheckAdmin;
 use App\Http\Middleware\HandleAppearance;
@@ -27,7 +27,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
             'tenant.access' => CheckTenantAccess::class,
-            'superadmin.access' => CheckSuperadmin::class,
+            'env.admin' => \App\Http\Middleware\CheckEnvAdmin::class,
             'admin.access' => CheckAdmin::class,
             'check.subscription' => \App\Http\Middleware\CheckSubscription::class,
         ]);

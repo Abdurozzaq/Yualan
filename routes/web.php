@@ -62,6 +62,31 @@ Route::get('/file/products/{folder}/{filename}', [FileController::class, 'showPr
 Route::post('/midtrans/callback', [SaleController::class, 'midtransNotify'])->name('midtrans.callback');
 // Informational pages removed as per request
 
+// Route untuk versioning
+Route::get('/version', function () {
+    return response()->json([
+        'version' => config('app.version', '1.0.2'),
+        'description' => 'System Version'
+    ]);
+});
+
+// Env Admin Routes
+if (config('app.admin_url')) {
+    $adminUrl = config('app.admin_url');
+    Route::prefix($adminUrl)->name('env_admin.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\EnvAdminController::class, 'login'])->name('login');
+        Route::post('/login', [\App\Http\Controllers\EnvAdminController::class, 'authenticate'])->name('authenticate');
+        
+        Route::middleware(['env.admin'])->group(function () {
+            Route::get('/dashboard', [\App\Http\Controllers\EnvAdminController::class, 'dashboard'])->name('dashboard');
+            Route::get('/users', [\App\Http\Controllers\EnvAdminController::class, 'users'])->name('users');
+            Route::put('/users/{user}/password', [\App\Http\Controllers\EnvAdminController::class, 'updatePassword'])->name('users.password');
+            Route::delete('/users/{user}', [\App\Http\Controllers\EnvAdminController::class, 'destroy'])->name('users.destroy');
+            Route::post('/logout', [\App\Http\Controllers\EnvAdminController::class, 'logout'])->name('logout');
+        });
+    });
+}
+
 Route::middleware('guest')->group(function () {
     Route::get('register', [RegisteredUserController::class, 'create'])
         ->name('register');
@@ -145,13 +170,6 @@ Route::middleware('auth')->group(function () {
      */
 
 
-
-
-
-    /**
-     * END
-     * ############### SUPERADMIN AREA ###############
-     */
 
 
     /**

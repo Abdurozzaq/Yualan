@@ -56,9 +56,6 @@ const submit = () => {
                 <div class="grid gap-2">
                     <div class="flex items-center justify-between">
                         <Label for="password" class="font-bold">Password</Label>
-                        <TextLink v-if="canResetPassword" :href="route('password.request')" class="text-xs font-medium text-blue-600 hover:text-blue-500" :tabindex="5">
-                            Lupa password?
-                        </TextLink>
                     </div>
                     <Input
                         id="password"
@@ -86,9 +83,14 @@ const submit = () => {
                 </Button>
             </div>
 
-            <div class="text-center text-sm text-muted-foreground">
+            <div class="text-center text-sm text-muted-foreground mt-2">
                 Don't have an account?
                 <TextLink :href="route('register')" :tabindex="5">Sign up</TextLink>
+            </div>
+
+            <div class="text-center text-xs text-muted-foreground mt-4 pt-4 border-t border-border">
+                Administrator? 
+                <TextLink href="/admin-panel/login" :tabindex="6" class="text-gray-500 hover:text-gray-800 dark:hover:text-gray-300">System Login</TextLink>
             </div>
         </form>
     </AuthBase>

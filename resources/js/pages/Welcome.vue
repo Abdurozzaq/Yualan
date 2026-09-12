@@ -23,6 +23,7 @@ const isAuthenticated = computed(() => !!page.props.auth?.user);
         <div class="relative z-10 w-full max-w-3xl mx-auto text-center space-y-10 animate-fade-in">
             <!-- Branding -->
             <div class="space-y-6">
+                <br>
                 <div class="inline-flex items-center gap-3 bg-white dark:bg-gray-900 px-6 py-3 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 mb-4">
                     <Server class="w-5 h-5 text-blue-600" />
                     <span class="text-sm font-black uppercase tracking-widest text-gray-900 dark:text-gray-100">{{ subName }}</span>
@@ -91,6 +92,8 @@ const isAuthenticated = computed(() => !!page.props.auth?.user);
                     Created Under <span class="text-blue-600 dark:text-blue-400">PT. Nusavasoft Digital Solutions</span>
                 </p>
             </div>
+
+            <br>
         </div>
     </div>
 </template>
